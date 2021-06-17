@@ -26,9 +26,9 @@ int handle_arith(uint8_t rx1, uint8_t rx2, uint8_t arith_code, Registers *reg) {
             agg = r1 + r2; break;
         case 0x5:
             agg = r1 - r2; break;
-        case 0x8:
+        case 0xC:
             agg = r1 + 1; break;
-        case 0x9:
+        case 0xD:
             agg = r1 - 1; break;
         default: // invalid
             return 1;

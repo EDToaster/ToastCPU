@@ -93,11 +93,12 @@ add       rx1, rx2
 sub       rx1, rx2
      rx1 := rx1 - rx2
 
-1000 1000 xxxx ----
+// if 4th bit is 1, override b with 1 
+1000 1100 xxxx ----
 inc       rx1
      rx1 := rx1 + 1
 
-1000 1001 xxxx ----
+1000 1101 xxxx ----
 dec       rx1
      rx1 := rx1 - 1
 

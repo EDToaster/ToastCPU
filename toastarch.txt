@@ -22,7 +22,7 @@ R8 - R12: General Purpose     [I, J, K, L, M]          # scratch pad
 R13: Stack Pointer
 R14: Status Register
      [15:8] Register Bank Select
-     [7:0]  (. . . V N Z C X)
+     [7:0]  (. . . V C N Z X)
             V: 1 if last operation caused overflow
             C: 1 if last operation caused carry
             N: 1 if last result was negative
@@ -38,11 +38,11 @@ The Instruction Opcode is 4 bits
 
 # Data movement
 
-0000 xxxx xxxx
+0000 xxxx xxxx ----
 load rx1, [rx2]
      Move the data pointed to by rx2 into rx1
 
-0001 xxxx xxxx
+0001 xxxx xxxx ----
 str  [rx1], rx2
      Move rx2 into the data pointed by rx1
 
@@ -69,43 +69,43 @@ halt
 
 # Arithmetic operations
 
-1000 0000 xxxx ----
-not       rx1
+1000 xxxx ---- 0000
+not  rx1
      rx1 := ~rx1
 
-1000 0001 xxxx xxxx
-and       rx1, rx2
+1000 xxxx xxxx 0001
+and  rx1, rx2
      rx1 := rx1 & rx2
 
-1000 0010 xxxx xxxx
-or        rx1, rx2
+1000 xxxx xxxx 0010
+or   rx1, rx2
      rx1 := rx1 | rx2
 
-1000 0011 xxxx xxxx
-xor       rx1, rx2
+1000 xxxx xxxx 0011
+xor  rx1, rx2
      rx1 := rx1 ^ rx2
 
-1000 0100 xxxx xxxx
-add       rx1, rx2
+1000 xxxx xxxx 0100
+add  rx1, rx2
      rx1 := rx1 + rx2
 
-1000 0101 xxxx xxxx
-sub       rx1, rx2
+1000 xxxx xxxx 0101
+sub  rx1, rx2
      rx1 := rx1 - rx2
 
 // if 4th bit is 1, override b with 1 
-1000 1100 xxxx ----
-inc       rx1
+1000 xxxx ---- 1100
+inc  rx1
      rx1 := rx1 + 1
 
-1000 1101 xxxx ----
-dec       rx1
+1000 xxxx ---- 1101
+dec  rx1
      rx1 := rx1 - 1
 
-1001 0000 ---- ----
+1001 ---- ---- 0000 
 incrb
      Increment the register page
 
-1001 0001  ---- ----
+1001 ---- ---- 0001
 decrb
      Decrement the register page

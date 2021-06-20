@@ -1,6 +1,5 @@
 module read_register(
 	input [3:0] addr,
-	input [7:0] bank_select,
 	input [15:0] bank[256][8],
 	input [15:0] scratch[5],
 	input [15:0] SP, SR, PC,
@@ -17,7 +16,7 @@ module read_register(
 			4'h4, 
 			4'h5, 
 			4'h6, 
-			4'h7:	data = bank[bank_select][addr[2:0]];
+			4'h7:	data = bank[SR[15:8]][addr[2:0]];
 			4'h8,
 			4'h9, 
 			4'hA, 
@@ -33,11 +32,10 @@ endmodule
 
 module registers (
 	input clock,
-	input [7:0] bank_select,
 	
 	// reading
-	input [3:0] read_addr1, read_addr2,
-	output [15:0] read_data1, read_data2,
+	input [3:0] read_addr1, read_addr2, read_addrpoke,
+	output [15:0] read_data1, read_data2, read_datapoke,
 	
 	// writing
 	input [3:0] write_addr,
@@ -55,7 +53,6 @@ module registers (
 	
 	read_register read1(
 		read_addr1,
-		bank_select,
 		bank,
 		scratch,
 		SP, SR, PC,
@@ -64,15 +61,22 @@ module registers (
 	
 	read_register read2(
 		read_addr2,
-		bank_select,
 		bank,
 		scratch,
 		SP, SR, PC,
 		read_data2
 	);
 	
+	read_register readpoke(
+		read_addrpoke,
+		bank,
+		scratch,
+		SP, SR, PC,
+		read_datapoke
+	);
+	
 	always_ff @(posedge clock) begin: write_cycle
-		if (~write_en) begin
+		if (write_en) begin
 			case(write_addr)
 				4'h0, 
 				4'h1, 
@@ -81,7 +85,7 @@ module registers (
 				4'h4, 
 				4'h5, 
 				4'h6, 
-				4'h7:	bank[bank_select][write_addr[2:0]][15:0] <= write_data;
+				4'h7:	bank[SR[15:8]][write_addr[2:0]][15:0] <= write_data;
 				4'h8,
 				4'h9, 
 				4'hA, 

@@ -46,11 +46,7 @@ load rx1, [rx2]
 str  [rx1], rx2
      Move rx2 into the data pointed by rx1
 
-0010 xxxx xxxx ----
-mov  rx1, rx2 
-     Move rx2 into rx1
-
-0011 xxxx xxxxxxxx
+0010 xxxx xxxxxxxx
 imov rxx, imm8
      Move imm8 into rxx, sign extend to 16 bits
 
@@ -92,6 +88,10 @@ add  rx1, rx2
 1000 xxxx xxxx 0101
 sub  rx1, rx2
      rx1 := rx1 - rx2
+
+1000 xxxx xxxx 0110
+mov  rx1, rx2
+     rx1 := rx2
 
 // if 4th bit is 1, override b with 1 
 1000 xxxx ---- 1100

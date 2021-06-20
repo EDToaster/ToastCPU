@@ -68,7 +68,7 @@ int main() {
         0x3C03,                 // imov  r12  0x03  // jump address
         0x2B80,                 // mov   r11  r8
         0x2890,                 // mov   r8   r9
-        0x849B,                 // mov   r9   r11
+        0x849B,                 // add   r9   r11
         0x89A0,                 // dec   r10
         0x4C80,                 // jnz   r12
         0x7000                  // halt

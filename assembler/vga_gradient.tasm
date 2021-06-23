@@ -1,0 +1,50 @@
+.reset
+    imov    r0  .start
+    jnz     r0
+.vga_addr
+    0xC000
+.vga_max_offset
+    0x3FFF
+    0x0000
+    0x0000
+    0x0000
+    0x0000
+    0x0000
+    0x0000
+    0x0000
+    0x0000
+    0x0000
+    0x0000
+    0x0000
+    0x0000
+.start
+    imov    r0  .vga_addr
+    load    r0  [r0]
+    imov    r1  .vga_max_offset
+    load    r1  [r1]
+    mov     r2  r1
+.loop
+    mov     r3  r2
+    ishr    r3  0x02
+    imov    r8  0x1F
+    and     r3  r8
+    mov     r4  r2
+    ishr    r4  0x09
+    imov    r8  0x1F
+    and     r4  r8
+    ishl    r3  0x05
+    ishl    r4  0x00
+    or      r3  r4
+.set_colour
+    mov     r5  r0
+    add     r5  r2
+    str     [r5] r3
+    imov    r6  .exit
+    mov     r2  r2
+    jz      r6
+.decrement_offset
+    isub    r2  0x01
+    imov    r6  .loop
+    jnz     r6
+.exit
+    halt

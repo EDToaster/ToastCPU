@@ -1,0 +1,99 @@
+DEPTH = 32768;                -- The size of memory in words
+WIDTH = 16;                   -- The size of data in bits
+ADDRESS_RADIX = HEX;          -- The radix for address values
+DATA_RADIX = HEX;             -- The radix for data values
+CONTENT                       -- start of (address : data pairs)
+BEGIN
+
+-- Reset Section
+00 : 2010; 	-- imov r0 16	// reset vector
+01 : 4080;	-- jnz  r0	// jump to reset vector
+
+-- Data Section
+02 : C000;	-- vga start address 
+03 : 3FFF;	-- offset max
+04 : 0000;
+05 : 0000;
+06 : 0000;
+07 : 0000;
+08 : 0000;
+09 : 0000;
+0A : 0000;
+0B : 0000;
+0C : 0000;
+0D : 0000;
+0E : 0000;
+0F : 0000;
+
+-- Program Section
+
+-- r0 = VGA Start Addr
+-- r1 = Max Offset
+-- r2 = Offset
+-- r3 = X/G/Final Colour
+-- r4 = Y/B
+-- r5 = X/R()
+-- r6 = Y/R()
+-- r7 = Address
+
+-- Set VGA Start Addr
+10 : 2002;	-- imov r0 	0x02
+11 : 0000; 	-- load r0 	[r0]
+
+-- Set Max Offset
+12 : 2103;	-- imov r1	0x03
+13 : 0110;	-- load r1	[r1]
+
+-- Initialize Offset
+14 : 8216;	-- mov 	r2	r1
+
+-- X 
+15 : 8326;	-- mov	r3	r2
+16 : 9328;	-- ishr r3	0x02	// X shift
+17 : 281F;	-- imov r8	0x1F	// X bitmask
+18 : 8381;	-- and 	r3	r8	// r3 = B
+
+19 : 8526;	-- mov	r5	r2
+1A : 9508;	-- ishr r5	0x00	// X shift
+1B : 2803;	-- imov r8	0x03	// X bitmask
+1C : 8581;	-- and 	r5	r8	// r5 = R(lower 2 bits)
+
+-- Y
+1D : 8426;	-- mov	r4	r2
+1E : 9498;	-- ishr r4	0x07	// Y shift
+1F : 281F;	-- imov r8	0x1F	// Y bitmask
+20 : 8481;	-- and 	r4	r8	// r4 = G
+
+21 : 8626;	-- mov	r6	r2
+22 : 9605;	-- ishr r6	0x05	// Y shift
+23 : 280C;	-- imov r8	0x0C	// Y bitmask
+24 : 8681;	-- and 	r6	r8	// r6 = R(upper 2 bits)
+
+-- G/B
+25 : 935A;	-- ishl	r3	0x05	// r3 <<= 5
+26 : 940A;	-- ishl r4	0x00	// r4 <<= 0
+27 : 95BA;	-- ishl	r5	0x0B	// r5 <<= 11
+28 : 96BA;	-- ishl r6	0x0B	// r6 <<= 11
+29 : 8342;	-- or 	r3	r4	// r3 |= r4
+2A : 8352;	-- or 	r3	r5	// r3 |= r5
+2B : 8362;	-- or 	r3	r6	// r3 |= r6
+
+-- Set Colour
+2C : 8706;	-- mov	r7	r0
+2D : 8724;	-- add 	r7	r2
+2E : 1730;	-- str	[r7]	r3	// set r3 into address
+
+-- Check r2 == 0, jz 0x29
+2F : 2835;	-- imov r8	0x35
+30 : 8226;	-- mov 	r2	r2
+31 : 4800;	-- jz 	r8
+-- Decrement r2 (offset)
+32 : 9215;	-- isub r2	0x01
+33 : 2815;	-- imov r8	0x15
+34 : 4880;	-- jnz	r8
+35 : 7000;	-- halt
+
+
+
+
+END;

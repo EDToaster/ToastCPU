@@ -1,3 +1,5 @@
+Following https://sourcecodeartisan.com/2020/09/13/llvm-backend-1.html
+
 16-bit data width
 16-bit address bus width
 

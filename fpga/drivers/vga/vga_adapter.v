@@ -142,9 +142,9 @@ module vga_adapter(
 	
 	/* These outputs drive the VGA display. The VGA_CLK is also used to clock the FSM responsible for
 	 * controlling the data transferred to the DAC driving the monitor. */
-	output [9:0] VGA_R;
-	output [9:0] VGA_G;
-	output [9:0] VGA_B;
+	output [7:0] VGA_R;
+	output [7:0] VGA_G;
+	output [7:0] VGA_B;
 	output VGA_HS;
 	output VGA_VS;
 	output VGA_BLANK;

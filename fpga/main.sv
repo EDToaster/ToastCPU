@@ -23,30 +23,18 @@ module main(
 	output logic VGA_VS,							//	VGA V_SYNC
 	output logic VGA_BLANK_N,						//	VGA BLANK
 	output logic VGA_SYNC_N,						//	VGA SYNC
-	output logic [9:0] VGA_R,   						//	VGA Red[9:0]
-	output logic [9:0] VGA_G,	 						//	VGA Green[9:0]
-	output logic [9:0] VGA_B   						//	VGA Blue[9:0]
+	output logic [7:0] VGA_R,   						//	VGA Red[7:0]
+	output logic [7:0] VGA_G,	 						//	VGA Green[7:0]
+	output logic [7:0] VGA_B   						//	VGA Blue[7:0]
 );
 
 	wire reset = KEY[0];
 
 	// create slower clock
-	reg [23:0] counter;
-	wire	 slow_clock = SW[9] ? ~KEY[1] : CLOCK_50;
-	//wire slow_clock = ~KEY[1];
-	
-	always_ff @(posedge CLOCK_50 or negedge reset)
-	begin: clock_divide
-		if (~reset) begin
-			counter <= 24'd0;
-		end else begin
-			counter = counter - 1'b1;
-		end
-	
-	end
+	wire slow_clock = SW[9] ? ~KEY[1] : CLOCK_50;
 	
 	logic [15:0] pc, mem, instruction;
-	logic reg_write, mem_to_reg, fetch_instruction, alu_override_imm, alu_override_b, 
+	logic reg_write, mem_to_reg, fetch_instruction, alu_override_imm8, alu_override_imm4, 
 			alu_set_flags, set_pc, pc_from_register, mem_write;
 //	logic do_halt;
 	logic Z;
@@ -62,8 +50,8 @@ module main(
 		.reg_write,
 		.mem_to_reg, 			// transfer memory to reg? (for load, etc)
 		.fetch_instruction,	// on clock
-		.alu_override_imm,		// override output of alu to be imm16 value?
-		.alu_override_b,		// override input b of alu to be 1?
+		.alu_override_imm8,	
+		.alu_override_imm4,
 		.alu_set_flags,			// on clock, set status flags?
 		.set_pc,					// on clock
 		.pc_from_register,		
@@ -94,8 +82,8 @@ module main(
 		.reg_write,
 		.mem_to_reg, 			// transfer memory to reg? (for load, etc)
 		.fetch_instruction,	// on clock
-		.alu_override_imm,		// override output of alu to be imm16 value?
-		.alu_override_b,		// override input b of alu to be 1?
+		.alu_override_imm8,	
+		.alu_override_imm4,	
 		.alu_set_flags,			// on clock, set status flags?
 		.set_pc,					// on clock
 		.pc_from_register,		
@@ -124,8 +112,6 @@ module main(
 		HEX0, HEX1, HEX2, HEX3
 	);
 
-	
-	
 	io_interface vga_io();
 	vga_driver (	
 		.reset,
@@ -140,7 +126,4 @@ module main(
 		.VGA_SYNC_N,
 		.VGA_CLK
 	);	
-
-
-
 endmodule

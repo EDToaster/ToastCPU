@@ -9,8 +9,8 @@ module datapath (
 	input logic reg_write,
 	input logic mem_to_reg, 			// transfer memory to reg? (for load, etc)
 	input logic fetch_instruction,	// on clock
-	input logic alu_override_imm,		// override output of alu to be imm16 value?
-	input logic alu_override_b,		// override input b of alu to be 1?
+	input logic alu_override_imm8,		// override output of alu to be imm16 value?
+	input logic alu_override_imm4,		// override input of alu_b to be imm4 value?
 	input logic alu_set_flags,			// on clock, set status flags?
 	input logic set_pc,					// on clock
 	input logic pc_from_register,		
@@ -67,8 +67,10 @@ module datapath (
 					 jump_reg = r1;
 	wire [3:0]  alu_op = current_instruction[3:0];
 	// sign extend immediate value to 16 bits
+	wire [3:0] 	imm4 = current_instruction[7:4];
 	wire [7:0]  imm8 = current_instruction[7:0];
-	wire [15:0] imm16 = { {8{imm8[7]}}, imm8[7:0] }; 	
+	wire [15:0] imm4_16 = { 12'b0 , imm4[3:0] };
+	wire [15:0] imm8_16 = {{ 8{imm8[7]} }  , imm8[7:0] }; 	
 	
 	
 	// registers
@@ -103,7 +105,7 @@ module datapath (
 	
 	
 	// alu
-	wire [15:0] a_in = reg_rdata1, b_in = alu_override_b ? 16'h1 : reg_rdata2;
+	wire [15:0] a_in = reg_rdata1, b_in = alu_override_imm4 ? imm4_16 : reg_rdata2;
 	wire [15:0] alu_out;
 	
 	wire V, C, N, Z, X, set_VC;
@@ -112,8 +114,9 @@ module datapath (
 	alu datapath_alu(
 		.a_in,
 		.b_in,
-		.override(imm16),
-		.override_en(alu_override_imm),
+		
+		.output_override(imm8_16),
+		.output_override_enable(alu_override_imm8),
 		
 		.operation(alu_op),
 		// todo: add carry support, including carry_enable

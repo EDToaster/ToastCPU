@@ -1,10 +1,11 @@
 module alu (
 	input [15:0] a_in,
 	input [15:0] b_in,
-	input [15:0] override,
-	input override_en,
 	
-	input [2:0] operation,
+	input [15:0] output_override,
+	input output_override_enable,
+	
+	input [3:0] operation,
 	input carry_in,
 	
 	// outputs
@@ -19,13 +20,16 @@ module alu (
 );
 
 	localparam
-		NOT = 3'h0,
-		AND = 3'h1,
-		OR	 = 3'h2,
-		XOR = 3'h3,
-		ADD = 3'h4,
-		SUB = 3'h5,
-		MOV = 3'h6;
+		NOT = 4'h0,
+		AND = 4'h1,
+		OR	 = 4'h2,
+		XOR = 4'h3,
+		ADD = 4'h4,
+		SUB = 4'h5,
+		MOV = 4'h6,
+		SHR = 4'h8,
+		SSHR= 4'h9,
+		SHL = 4'hA;
 
 	// if msb of select is a 1, then 
 	wire [15:0] a = a_in;
@@ -38,7 +42,7 @@ module alu (
 	
 	always_comb
 	begin: alu_V
-		if (override_en) begin V = 1'b0; end
+		if (output_override_enable) begin V = 1'b0; end
 		else begin 
 			case(operation)
 				ADD: V = (a[15] == b[15]) & (a[15] ^ agg[15]);
@@ -50,7 +54,7 @@ module alu (
 	
 	always_comb
 	begin: alu_C
-		if (override_en) begin C = 1'b0; end
+		if (output_override_enable) begin C = 1'b0; end
 		else begin 
 			case(operation)
 				ADD, SUB: C = inter_agg[16];
@@ -65,7 +69,7 @@ module alu (
 
 	always_comb
 	begin: alu_comb
-		if (override_en) begin inter_agg = { override[15], override }; end
+		if (output_override_enable) begin inter_agg = { output_override[15], output_override }; end
 		else begin 
 			case(operation)
 				NOT: inter_agg = ~a;
@@ -75,6 +79,9 @@ module alu (
 				ADD: inter_agg = a + b;
 				SUB: inter_agg = a - b;
 				MOV: inter_agg = b;
+				SHR: inter_agg = a >> b;
+				SSHR:inter_agg = a >>> b;
+				SHL: inter_agg = a << b;
 				default: inter_agg = 17'h0;
 			endcase
 		end

@@ -1,0 +1,83 @@
+DEPTH = 32768;                -- The size of memory in words
+WIDTH = 16;                   -- The size of data in bits
+ADDRESS_RADIX = HEX;          -- The radix for address values
+DATA_RADIX = HEX;             -- The radix for data values
+CONTENT                       -- start of (address : data pairs)
+BEGIN
+
+-- Reset Section
+00 : 2010; 	-- imov r0 16	// reset vector
+01 : 4080;	-- jnz  r0	// jump to reset vector
+
+-- Data Section
+02 : C000;	-- vga start address 
+03 : 3FFF;	-- offset max
+04 : 0000;
+05 : 0000;
+06 : 0000;
+07 : 0000;
+08 : 0000;
+09 : 0000;
+0A : 0000;
+0B : 0000;
+0C : 0000;
+0D : 0000;
+0E : 0000;
+0F : 0000;
+
+-- Program Section
+
+-- r0 = VGA Start Addr
+-- r1 = Max Offset
+-- r2 = Offset
+-- r3 = X/R/Final Colour
+-- r4 = Y/G
+-- r5 = Address
+
+-- Set VGA Start Addr
+10 : 2002;	-- imov r0 	0x02
+11 : 0000; 	-- load r0 	[r0]
+
+-- Set Max Offset
+12 : 2103;	-- imov r1	0x03
+13 : 0110;	-- load r1	[r1]
+
+-- Initialize Offset
+14 : 8216;	-- mov 	r2	r1
+
+-- X 
+15 : 8326;	-- mov	r3	r2
+16 : 9328;	-- ishr r3	0x02	// X shift
+17 : 281F;	-- imov r8	0x1F	// X bitmask
+18 : 8381;	-- and 	r3	r8	// r3 = B
+
+-- Y
+19 : 8426;	-- mov	r4	r2
+1A : 9498;	-- ishr r4	0x09	// Y shift
+1B : 281F;	-- imov r8	0x1F	// Y bitmask
+1C : 8481;	-- and 	r4	r8	// r4 = G
+
+-- G/B
+1D : 935A;	-- ishl	r3	0x05	// r3 <<= 5
+1E : 940A;	-- ishl r4	0x00	// r4 <<= 0
+1F : 8342;	-- or 	r3	r4	// r3 |= r4
+
+-- Set Colour
+20 : 8506;	-- mov	r5	r0
+21 : 8524;	-- add 	r5	r2
+22 : 1530;	-- str	[r5]	r3	// set r3 into address
+
+-- Check r2 == 0, jz 0x29
+23 : 2629;	-- imov r6	0x29
+24 : 8226;	-- mov 	r2	r2
+25 : 4600;	-- jz 	r6
+-- Decrement r2 (offset)
+26 : 9215;	-- isub r2	0x01
+27 : 2615;	-- imov r6	0x15
+28 : 4680;	-- jnz	r6
+29 : 7000;	-- halt
+
+
+
+
+END;

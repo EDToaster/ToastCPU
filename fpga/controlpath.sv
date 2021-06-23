@@ -8,8 +8,8 @@ module controlpath(
 	output logic reg_write,
 	output logic mem_to_reg, 			// transfer memory to reg? (for load, etc)
 	output logic fetch_instruction,	// on clock
-	output logic alu_override_imm,	// override output of alu to be imm16 value?
-	output logic alu_override_b,		// override input b of alu to be 1?
+	output logic alu_override_imm8,	// override output of alu to be imm16 value?
+	output logic alu_override_imm4,		// override input b of alu to be imm4 value?
 	output logic alu_set_flags,		// on clock, set status flags?
 	output logic set_pc,					// on clock
 	output logic pc_from_register,		
@@ -72,22 +72,13 @@ module controlpath(
 		reg_write = 1'b0;
 		mem_to_reg = 1'b0;
 		fetch_instruction = 1'b0;
-		alu_override_imm = 1'b0;
-		alu_override_b = 1'b0;
+		alu_override_imm8 = 1'b0;
+		alu_override_imm4 = 1'b0;
 		alu_set_flags = 1'b0;
 		set_pc = 1'b0;
 		pc_from_register = 1'b0;	
 		mem_write = 1'b0;
 		
-//			reset, 				// reset
-//			fetch_clk_in, 		// set pc into rom addr
-//			fetch_set_inst, 	// fetch instruction into registers
-//			set_load_addr, 	// set load addr into ram
-//			execute, 			// execute instruction (q is not clocked)
-//			//set_store_addr, 	// set store address into ram/io
-//			store, 				// set registers for next cycle
-//			halt 					// halt
-
 		unique case(curr_state)
 			reset_state:;
 			
@@ -117,8 +108,8 @@ module controlpath(
 				reg_write = 1'b1;
 				alu_set_flags = 1'b1;
 				set_pc = 1'b1;
-				alu_override_imm = opcode == 4'b0010;
-				alu_override_b = override_b;
+				alu_override_imm8 = opcode == 4'b0010;
+				alu_override_imm4 = opcode == 4'b1001;
 			end
 			
 			op_halt:; 					// halt
@@ -133,7 +124,7 @@ module controlpath(
 			4'b0010: op_decode_state = op_alu;
 			4'b0100: op_decode_state = op_jmp;
 			4'b0111: op_decode_state = op_halt;
-			4'b1000: op_decode_state = op_alu;
+			4'b1000, 4'b1001: op_decode_state = op_alu;
 			default: op_decode_state = op_halt;
 		endcase
 	end

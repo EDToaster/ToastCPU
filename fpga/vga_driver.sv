@@ -7,18 +7,18 @@ module vga_driver(
 	output logic VGA_VS,							//	VGA V_SYNC
 	output logic VGA_BLANK_N,						//	VGA BLANK
 	output logic VGA_SYNC_N,						//	VGA SYNC
-	output logic [9:0] VGA_R,   						//	VGA Red[9:0]
-	output logic [9:0] VGA_G,	 						//	VGA Green[9:0]
-	output logic [9:0] VGA_B   						//	VGA Blue[9:0]
+	output logic [7:0] VGA_R,   						//	VGA Red[7:0]
+	output logic [7:0] VGA_G,	 						//	VGA Green[7:0]
+	output logic [7:0] VGA_B   						//	VGA Blue[7:0]
 );
 
 	vga_adapter VGA(
 		.resetn(reset),
 		.clock(io.clock),
 		.CLOCK_50,
-		.colour(io.wdata[8:0]),
+		.colour(io.wdata[14:0]),
 		.x({1'h0, io.waddr[6:0]}),				//8 bits
-		.y({1'h0, io.waddr[13:7]}),	// 7 bits
+		.y(io.waddr[13:7]),	// 7 bits
 		.plot(io.wenable),
 		/* Signals for the DAC to drive the monitor. */
 		.VGA_R,
@@ -31,7 +31,7 @@ module vga_driver(
 		.VGA_CLK);
 	defparam VGA.RESOLUTION = "160x120";
 	defparam VGA.MONOCHROME = "FALSE";
-	defparam VGA.BITS_PER_COLOUR_CHANNEL = 3;
+	defparam VGA.BITS_PER_COLOUR_CHANNEL = 5;
 	defparam VGA.BACKGROUND_IMAGE = "black.mif";
 	
 

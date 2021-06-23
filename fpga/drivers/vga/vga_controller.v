@@ -56,9 +56,9 @@ module vga_controller(	vga_clock, resetn, pixel_colour, memory_address,
 	input vga_clock, resetn;
 	input [((MONOCHROME == "TRUE") ? (0) : (BITS_PER_COLOUR_CHANNEL*3-1)):0] pixel_colour;
 	output [((RESOLUTION == "320x240") ? (16) : (14)):0] memory_address;
-	output reg [9:0] VGA_R;
-	output reg [9:0] VGA_G;
-	output reg [9:0] VGA_B;
+	output reg [7:0] VGA_R;
+	output reg [7:0] VGA_G;
+	output reg [7:0] VGA_B;
 	output reg VGA_HS;
 	output reg VGA_VS;
 	output reg VGA_BLANK;
@@ -174,7 +174,7 @@ module vga_controller(	vga_clock, resetn, pixel_colour, memory_address,
 		VGA_B <= 'b0;
 		if (MONOCHROME == "FALSE")
 		begin
-			for (index = 10-BITS_PER_COLOUR_CHANNEL; index >= 0; index = index - BITS_PER_COLOUR_CHANNEL)
+			for (index = 8-BITS_PER_COLOUR_CHANNEL; index >= 0; index = index - BITS_PER_COLOUR_CHANNEL)
 			begin
 				for (sub_index = BITS_PER_COLOUR_CHANNEL - 1; sub_index >= 0; sub_index = sub_index - 1)
 				begin
@@ -186,7 +186,7 @@ module vga_controller(	vga_clock, resetn, pixel_colour, memory_address,
 		end
 		else
 		begin
-			for (index = 0; index < 10; index = index + 1)
+			for (index = 0; index < 8; index = index + 1)
 			begin
 				VGA_R[index] <= pixel_colour[0:0];
 				VGA_G[index] <= pixel_colour[0:0];

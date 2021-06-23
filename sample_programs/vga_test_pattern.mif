@@ -31,17 +31,17 @@ BEGIN
 12 : 2103;	-- imov r1 	0x03 	// r1 = pointer to offset max
 13 : 2600;	-- imov r6	0	// r6 = colour offset
 14 : 0210;	-- load r2 	[r1] 	// r2 = offset max, 	jump to here to reset
-15 : 860D;	-- dec  r6
-16 : 8326;	-- mov  r3 	r2	// r3 = r2,		jump to here on next 
-17 : 8304;	-- add  r3 	r0	// r3 += vga loc (is now the vga write location)
-18 : 8736;	-- mov  r7 	r3	// r7 = color
-19 : 8764;	-- add  r7	r6	// offset r7 with color offset
+15 : 8766;	-- mov 	r7	r6
+16 : 9614;	-- iadd	r6	0x01
+17 : 8326;	-- mov  r3 	r2	// r3 = r2,		jump to here on next 
+18 : 9714;	-- iadd	r7	0x01
+19 : 8304;	-- add  r3 	r0	// r3 += vga loc (is now the vga write location)
 1A : 1370;	-- str 	[r3]	r7	// vga loc = r3
 1B : 2414;	-- imov r4 	14 
 1C : 2516;	-- imov r5 	16
-1D : 820D;	-- dec  r2
+1D : 9215;	-- isub r2 	0x01
 1E : 4400;	-- jz 	r4
 1F : 4580; 	-- jnz  r5
-20 : 7000;
+20 : 7000;	
 
 END;

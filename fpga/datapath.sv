@@ -15,6 +15,9 @@ module datapath (
 	input logic set_pc,					// on clock
 	input logic pc_from_register,		
 	input logic mem_write,
+		
+	input logic set_sp,					// should we set the sp on this cycle?
+	input logic increase_sp,			// should the set_sp be an increase?
 	
 	input logic [3:0] register_addrpoke, 
 	
@@ -33,6 +36,7 @@ module datapath (
 	// sp/sr/pc
 	logic [15:0] SP, SR, PC;
 	wire [15:0] next_PC = pc_from_register ? reg_rdata1 : PC + 16'h1;
+	wire [15:0] next_SP = increase_sp ? SP + 16'h1 : SP - 16'h1;
 	
 	assign PC_poke = PC;
 	assign mem_poke = mem_rdata;
@@ -157,6 +161,10 @@ module datapath (
 			
 			if (set_pc) begin
 				PC <= next_PC;
+			end
+			
+			if (set_sp) begin
+				SP <= next_SP;
 			end
 
 		end

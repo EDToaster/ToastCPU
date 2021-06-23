@@ -13,6 +13,10 @@ module controlpath(
 	output logic alu_set_flags,		// on clock, set status flags?
 	output logic set_pc,					// on clock
 	output logic pc_from_register,		
+	
+	output logic set_sp,
+	output logic increase_sp,
+	
 	output logic mem_write,
 	
 	output logic [9:0] state
@@ -29,6 +33,13 @@ module controlpath(
 		op_load_set_register,
 		
 		op_store,
+		
+		op_push_store,
+		op_push_inc,
+		
+		op_pop_dec,
+		op_pop_set_addr,
+		op_pop_set_register,
 		
 		op_jmp,
 		op_alu,
@@ -78,6 +89,8 @@ module controlpath(
 		set_pc = 1'b0;
 		pc_from_register = 1'b0;	
 		mem_write = 1'b0;
+		set_sp = 1'b0;
+		increase_sp = 1'b0;
 		
 		unique case(curr_state)
 			reset_state:;
@@ -87,16 +100,26 @@ module controlpath(
 			
 			op_decode:;
 			
-			op_load_set_addr:;
-			op_load_set_register: begin
+			op_load_set_addr, op_pop_set_addr:;
+			op_load_set_register, op_pop_set_register: begin
 				reg_write = 1'b1;
 				mem_to_reg = 1'b1;
 				set_pc = 1'b1;
 			end
 			
-			op_store: begin
+			op_store, op_push_store: begin
 				mem_write = 1'b1;
 				set_pc = 1'b1;
+			end
+			
+			op_push_inc: begin
+				set_sp = 1'b1;
+				increase_sp = 1'b1;
+			end
+			
+			op_pop_dec: begin
+				set_sp = 1'b1;
+				increase_sp = 1'b0;
 			end
 			
 			op_jmp: begin
@@ -121,6 +144,8 @@ module controlpath(
 		case(opcode)
 			4'b0000: op_decode_state = op_load_set_addr;
 			4'b0001: op_decode_state = op_store;
+			4'b0101: op_decode_state = op_push_store;
+			4'b0110: op_decode_state = op_pop_dec;
 			4'b0010: op_decode_state = op_alu;
 			4'b0100: op_decode_state = op_jmp;
 			4'b0111: op_decode_state = op_halt;
@@ -141,6 +166,13 @@ module controlpath(
 			op_load_set_register: next_state = reset_state;
 			
 			op_store: next_state = reset_state;
+			
+			op_push_store: next_state = op_push_inc;
+			op_push_inc: next_state = reset_state;
+			
+			op_pop_dec: next_state = op_pop_set_addr;
+			op_pop_set_addr: next_state = op_pop_set_register;
+			op_pop_set_register: next_state = reset_state;
 			
 			op_jmp: next_state = reset_state;
 			op_alu: next_state = reset_state;

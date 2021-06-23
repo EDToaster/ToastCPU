@@ -24,6 +24,7 @@
     load    r1  [r1]
     mov     r2  r1
 .loop
+    imov    r5  .skip
     // get x [0,1]
     mov     r3  r2
     iand    r3  0x1
@@ -32,8 +33,7 @@
     isshr   r4  0x7
     iand    r4  0x1
     xor     r3  r4
-    imov    r5  .skip
-    jz      r3  r5
+    jz      r5
     // draw
     mov     r4  r2
     add     r4  r0

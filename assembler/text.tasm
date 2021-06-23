@@ -1,0 +1,80 @@
+.reset
+    imov    r0  .start
+    jnz     r0
+.vga_addr
+    0xC000
+.vga_max_offset
+    0x3FFF
+.bitmap
+    0b1110101011101010
+    0b1000111010101110
+    0b1110100010001110
+    0b1100101010101110
+    0b1110100011001110
+    0b1110110010001000
+    0b0110100010101100
+    0b1010111010101010
+    0b0100010001000100
+    0b1110001010100110
+    0b1000101011001010
+    0b1000100010001110
+    0b1010111010101010
+    0b0000000011101010
+    0b1110101010101110
+    0b1110101011101000
+    0b1110101010101111
+    0b1110101011001010
+    0b0110010001001100
+    0b1110010001000100
+    0b1010101010101110
+    0b1010101010100100
+    0b1010101011001010
+    0b1010010001001010
+    0b1010010001000100
+    0b1100010001000110
+.start
+    imov    r3  .vga_addr
+    load    r3  [r3]    // vga address
+    imov    r0  26
+    imov    r5  5       // x
+    imov    r6  20      // y (r7/r8 are temp x, y points for drawing)
+.print_letter
+    imov    r1  .bitmap
+    add     r1  r0
+    load    r1  [r1]    // r1 contains the bitmap info
+
+    // create offsets
+.reset_y
+    imov    r10 3       // y offset
+.reset_x
+    imov    r9  3       // x offset
+
+    // find pixel offset
+    mov     r7  r9      // x off
+    mov     r8  r10     // y off
+    ishl    r8  0x02    
+    or      r7  r8      // position into bitmap
+    // find pixel colour
+    mov     r11 r1      // r11 is the temp bitmap buffer
+    shr     r11 r7
+    iand    r11 0x1     // r11 is either 0 or 1
+    // find pixel position
+    mov     r7  r5
+    mov     r8  r6
+    add     r7  r9
+    add     r8  r10     // r7/r8 are final x, y positions to write
+    ishl    r8  0x7
+    or      r7  r8      // r7 is final offset
+    add     r7  r3      // r7 is final address
+    imov    r2  .skip
+    mov     r11 r11
+    jz      r2
+    // draw white
+    imov    r2  0xFF
+    str     [r7] r2
+.skip
+    imov    r2  .reset_x
+    mov     r9  r9
+    jz      
+.decr_x
+    

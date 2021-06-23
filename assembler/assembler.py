@@ -8,6 +8,8 @@ opcodes = {
     "imov": "0010",
     "jz": "0100",
     "jnz": "0100",
+    "push": "0101",
+    "pop": "0110",
     "halt": "0111",
     "not": "1000",
     "and": "1000",
@@ -31,6 +33,7 @@ opcodes = {
 }
 
 one_4bit_opcodes = ["not"]
+
 two_4bit_opcodes = [
     "load", "str", "and", "or", 
     "xor", "add", "sub", "mov", 
@@ -54,6 +57,8 @@ no_arg_opcodes = [
 opcodes_suffix = {
     "load": "0000",
     "str": "0000",
+    "push": "0000",
+    "pop": "0000",
     "not": "0000",
     "and": "0001",
     "or": "0010",
@@ -99,6 +104,7 @@ class Number:
 
 @dataclass
 class Word:
+    text: str
     labels: List[Label]
     word: List
     
@@ -123,6 +129,13 @@ class Word:
             instr += "0" * 7
         elif opcode in no_arg_opcodes:
             instr += "0" * 12
+        elif opcode == "push":
+            instr += "1101"
+            instr += self.word[1].to_binary(4)
+            instr += "0" * 4
+        elif opcode == "pop":
+            instr += self.word[1].to_binary(4)
+            instr += "11010000"
 
         return instr
 
@@ -144,9 +157,7 @@ class Program:
             return None
     
     def parse_opcode(self, token) -> Optional[Opcode]:
-        if token in ["load", "str", "imov", "jz", "jnz", "halt", 
-            "not", "and", "or", "xor", "add", "sub", "mov", "shr", "sshr", "shl",
-            "inot", "iand", "ior", "ixor", "iadd", "isub", "ishr", "isshr", "ishl"]:
+        if token in opcodes:
             return Opcode(token)
 
     def parse_register(self, token) -> Optional[Register]:
@@ -157,10 +168,9 @@ class Program:
             return None
 
     def parse_number(self, token) -> Optional[Number]:
-        x = re.search("^(0x[0-9A-Fa-f]+)$", token)
-        if x is not None:
-            return Number(int(x.group(1), 0))
-        else:
+        try:
+            return Number(int(token, 0))
+        except ValueError:
             return None
 
     def parse_token(self, token: str):
@@ -186,19 +196,19 @@ class Program:
         raw_format = []
         for line in lines:
             raw = [self.parse_token(tok.strip()) for tok in line.split()]
-            raw_format.append([r for r in raw if r is not None])
+            raw_format.append((line.strip(), [r for r in raw if r is not None]))
 
         # add labels to words
         labeled = []
         current_labels = []
-        for line in raw_format:
+        for (text, line) in raw_format:
             if len(line) < 1:
                 continue
 
             if isinstance(line[0], Label):
                 current_labels.append(line[0])
             else:
-                labeled.append(Word(current_labels, line))
+                labeled.append(Word(text, current_labels, line))
                 current_labels = []
 
         # find label locations
@@ -210,12 +220,12 @@ class Program:
         # replace labels with numbers
         labels_replaced = []
         for line in labeled:
-            word = Word(line.labels, [(label_locations[l] if isinstance(l, Label) else l) for l in line.word])
+            word = Word(line.text, line.labels, [(label_locations[l] if isinstance(l, Label) else l) for l in line.word])
             labels_replaced.append(word)
         
         [print (line) for line in labels_replaced]
 
-        return [line.to_binary() for line in labels_replaced]
+        return [(line.text, line.to_binary()) for line in labels_replaced]
 
 def main():
     import argparse
@@ -243,8 +253,9 @@ DATA_RADIX = HEX;             -- The radix for data values
 CONTENT                       -- start of (address : data pairs)
 BEGIN
 """)
-        for i, line in enumerate(binary):
-            f.write(f"{'{:0>4X}'.format(i)} : {'{:0>4X}'.format(int(line, 2))};\n")
+        for i, (text, line) in enumerate(binary):
+            print(line)
+            f.write(f"{'{:0>4X}'.format(i)} : {'{:0>4X}'.format(int(line, 2))}; -- {text}\n")
 
         f.write("END;")
 

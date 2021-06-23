@@ -35,7 +35,7 @@ module main(
 	
 	logic [15:0] pc, mem, instruction;
 	logic reg_write, mem_to_reg, fetch_instruction, alu_override_imm8, alu_override_imm4, 
-			alu_set_flags, set_pc, pc_from_register, mem_write;
+			alu_set_flags, set_pc, pc_from_register, set_sp, increase_sp, mem_write;
 //	logic do_halt;
 	logic Z;
 	
@@ -54,7 +54,11 @@ module main(
 		.alu_override_imm4,
 		.alu_set_flags,			// on clock, set status flags?
 		.set_pc,					// on clock
-		.pc_from_register,		
+		.pc_from_register,	
+	
+		.set_sp,
+		.increase_sp,
+	
 		.mem_write,
 		
 		.hex_io,
@@ -87,6 +91,10 @@ module main(
 		.alu_set_flags,			// on clock, set status flags?
 		.set_pc,					// on clock
 		.pc_from_register,		
+		
+		.set_sp, 
+		.increase_sp,
+		
 		.mem_write,
 		//.state(LEDR[9:0])
 	);

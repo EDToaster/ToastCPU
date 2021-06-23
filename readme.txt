@@ -1,4 +1,6 @@
-Following https://sourcecodeartisan.com/2020/09/13/llvm-backend-1.html
+llvm (maybe later) https://sourcecodeartisan.com/2020/09/13/llvm-backend-1.html
+sdcc (seems easier) http://fivedots.coe.psu.ac.th/~cj/masd/resources/sdcc-doc/SDCCUdoc-26.html
+https://8bitworkshop.com/blog/compilers/retargeting-a-c-compiler-to-6502.md.html
 
 16-bit data width
 16-bit address bus width

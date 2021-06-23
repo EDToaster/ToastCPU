@@ -1,22 +1,38 @@
-module main(
-	input CLOCK_50,
-	input [3:0] KEY,
-	input [9:0] SW,
+interface io_interface;
+	logic clock;
 	
-	output [9:0] LEDR,
-	output [6:0] HEX0,
-	output [6:0] HEX1,
-	output [6:0] HEX2,
-	output [6:0] HEX3,
-	output [6:0] HEX4,
-	output [6:0] HEX5
+	logic [15:0] waddr, raddr, wdata, rdata;
+	logic wenable;
+endinterface
+
+module main(
+	input logic CLOCK_50,
+	input logic [3:0] KEY,
+	input logic [9:0] SW,
+	
+	output logic [9:0] LEDR,
+	output logic [6:0] HEX0,
+	output logic [6:0] HEX1,
+	output logic [6:0] HEX2,
+	output logic [6:0] HEX3,
+	output logic [6:0] HEX4,
+	output logic [6:0] HEX5,
+	
+	output logic VGA_CLK,   						//	VGA Clock
+	output logic VGA_HS,							//	VGA H_SYNC
+	output logic VGA_VS,							//	VGA V_SYNC
+	output logic VGA_BLANK_N,						//	VGA BLANK
+	output logic VGA_SYNC_N,						//	VGA SYNC
+	output logic [9:0] VGA_R,   						//	VGA Red[9:0]
+	output logic [9:0] VGA_G,	 						//	VGA Green[9:0]
+	output logic [9:0] VGA_B   						//	VGA Blue[9:0]
 );
 
 	wire reset = KEY[0];
 
 	// create slower clock
 	reg [23:0] counter;
-	wire	 slow_clock = counter[1];
+	wire	 slow_clock = SW[9] ? ~KEY[1] : CLOCK_50;
 	//wire slow_clock = ~KEY[1];
 	
 	always_ff @(posedge CLOCK_50 or negedge reset)
@@ -37,6 +53,7 @@ module main(
 	
 	logic [15:0] register_datapoke;
 	
+	
 	datapath (
 		.clock(slow_clock),
 		.reset,					// reset low
@@ -51,6 +68,9 @@ module main(
 		.set_pc,					// on clock
 		.pc_from_register,		
 		.mem_write,
+		
+		.hex_io,
+		.vga_io,
 		
 		//.do_halt,
 		.Z_out(Z),
@@ -80,13 +100,10 @@ module main(
 		.set_pc,					// on clock
 		.pc_from_register,		
 		.mem_write,
-		.state(LEDR[9:0])
+		//.state(LEDR[9:0])
 	);
-	
-	display_word d_register(
-		register_datapoke,
-		HEX0, HEX1, HEX2, HEX3
-	);
+	assign LEDR[0] = pc_from_register;
+	assign LEDR[1] = alu_set_flags;
 	
 	display_byte d_pc(
 		pc[7:0],
@@ -96,5 +113,34 @@ module main(
 	//assign LEDR[9] = fetch_instruction;
 	//assign LEDR[8] = Z;
 	
+		// hex driver io
+	io_interface hex_io();
+//	hex_driver (
+//		.io(hex_io),
+//		.HEX0, .HEX1, .HEX2, .HEX3
+//	);
+	display_word(
+		register_datapoke,
+		HEX0, HEX1, HEX2, HEX3
+	);
+
 	
+	
+	io_interface vga_io();
+	vga_driver (	
+		.reset,
+		.CLOCK_50,
+		.io(vga_io),	
+		.VGA_R,
+		.VGA_G,
+		.VGA_B,
+		.VGA_HS,
+		.VGA_VS,
+		.VGA_BLANK_N,
+		.VGA_SYNC_N,
+		.VGA_CLK
+	);	
+
+
+
 endmodule

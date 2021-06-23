@@ -1,4 +1,5 @@
 
+
 // control signals for the datapath
 // are borrowed from the MIPS standard
 module datapath (
@@ -16,6 +17,9 @@ module datapath (
 	input logic mem_write,
 	
 	input logic [3:0] register_addrpoke, 
+	
+	io_interface hex_io,
+	io_interface vga_io,
 	
 	output logic [15:0] current_instruction,
 	//output logic do_halt,
@@ -45,13 +49,16 @@ module datapath (
 	assign Z_out = SR[1];
 	
 	memory_control memory(
-		.clock,		// PROBLEM! TODO: fix writing too many cycles in a row
+		.clock,		
 		.read_address(mem_raddr),
 		.write_address(mem_waddr),
 		.write_data(mem_wdata),
 		.write_enable(mem_wenable),
 		.read_data(mem_rdata),
-		.read_valid(mem_rvalid)
+		.read_valid(mem_rvalid),
+		
+		.hex_io,
+		.vga_io
 	);
 	
 	wire [3:0]  opcode = current_instruction[15:12];

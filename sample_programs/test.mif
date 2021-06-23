@@ -1,18 +1,95 @@
 DEPTH = 32768;                -- The size of memory in words
 WIDTH = 16;                   -- The size of data in bits
 ADDRESS_RADIX = HEX;          -- The radix for address values
-DATA_RADIX = BIN;             -- The radix for data values
+DATA_RADIX = HEX;             -- The radix for data values
 CONTENT                       -- start of (address : data pairs)
 BEGIN
 
-00 : 0010100000000001;  -- imov r1 8    // data of memory
-01 : 0010100100000001;
-02 : 0010101011111111;
-03 : 0010110000000011;
-04 : 1000101110000110;
-05 : 1000100010010110;
-06 : 1000100110110100;
-07 : 1000101000001101;
-08 : 0100110010000000;
-09 : 0111000000000000;
+-- Reset Section
+00 : 2010; 	-- imov r0 16	// reset vector
+01 : 4080;	-- jnz  r0	// jump to reset vector
+
+-- Data Section
+02 : C000;	-- vga start address 
+03 : 0000;
+04 : 0000;
+05 : 0000;
+06 : 0000;
+07 : 0000;
+08 : 0000;
+09 : 0000;
+0A : 0000;
+0B : 0000;
+0C : 0000;
+0D : 0000;
+0E : 0000;
+0F : 0000;
+
+-- Program Section
+
+-- r0 = Load VGA start pointer
+10 : 2002;	-- imov r0 	0x02
+11 : 0000; 	-- load r0 	[r0]
+
+-- r1 = Max X
+-- r2 = Max Y
+12 : 217F;	-- imov r1	0x7F
+13 : 223F;	-- imov r2 	0x3F
+
+-- r3, r4 = 1, 1 (point)
+14 : 2301;	-- imov r3 	0x00
+15 : 2401;	-- imov r4	0x00
+
+-- r5, r6 = 1, 1 (direction)
+16 : 2501;
+17 : 2601;
+
+-- Test X lower bound (r9 is the jump location)
+18 : 291C;	-- imov r9	0x1C
+19 : 8336;	-- mov  r3 	r3
+1A : 4980;	-- jnz 	r9
+1B : 2501;	-- imov r5 	0x01
+
+-- Test X upper bound (r7 temp test)
+1C : 2921;	-- imov r9	0x21
+1D : 8736;	-- mov 	r7 	r3
+1E : 8715;	-- sub 	r7	r1
+1F : 4980;	-- jnz 	r9
+20 : 25FF;	-- imov r5	0xFF
+
+-- Test Y lower bound (r9 is the jump location)
+21 : 2925;	-- imov r9	0x24
+22 : 8446;	-- mov  r4 	r4
+23 : 4980;	-- jnz 	r9
+24 : 2601;	-- imov r6 	0x01
+
+-- Test Y upper bound (r7 temp test)
+25 : 292A;	-- imov r9	0x2A
+26 : 8746;	-- mov 	r7 	r4
+27 : 8725;	-- sub 	r7	r2
+28 : 4980;	-- jnz 	r9
+29 : 26FF;	-- imov r6	0xFF
+
+-- Move x, y (r7 is address), (r9,r10) = previous point
+2A : 8936;	-- mov 	r9	r3
+2B : 8A46;	-- mov 	r10	r4
+2C : 8354;	-- add 	r3	r5
+2D : 8464;	-- add 	r4	r6
+
+-- Undraw previous pixel
+2E : 2B00;	-- imov r11 	0x00	// colour
+2F : 8706; 	-- mov 	r7	r0
+30 : 8794;	-- add	r7	r9
+31 : 17B0;	-- str  r7 	r11
+
+-- Draw
+32 : 2B07;	-- imov r11	0x07
+33 : 8706;	-- mov	r7 	r0
+34 : 8734;	-- add 	r7 	r3
+35 : 17B0;	-- str 	r7	r11 	// temp colour
+
+-- Next Frame
+36 : 2818; 	-- imov r8	0x18	// next frame instruction
+37 : 4880;	-- jnz 	r8
+
 END;

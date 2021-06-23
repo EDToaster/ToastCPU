@@ -1,0 +1,30 @@
+DEPTH = 32768;                -- The size of memory in words
+WIDTH = 16;                   -- The size of data in bits
+ADDRESS_RADIX = HEX;          -- The radix for address values
+DATA_RADIX = BIN;             -- The radix for data values
+CONTENT                       -- start of (address : data pairs)
+BEGIN
+
+-- Reset Section
+00 : 0010 0000 0001 0000; 	-- imov r0 16	// reset vector
+01 : 0100 0000 1000 0000;	-- jnz  r0	// jump to reset vector
+
+-- Data Section
+02 : 1100 0000 0000 0000;	-- hex word address 
+03 : 0000 0000 0000 0000;
+04 : 0000 0000 0000 0000;
+05 : 0000 0000 0000 0000;
+06 : 0000 0000 0000 0000;
+07 : 0000 0000 0000 0000;
+08 : 0000 0000 0000 0000;
+09 : 0000 0000 0000 0000;
+0A : 0000 0000 0000 0000;
+0B : 0000 0000 0000 0000;
+0C : 0000 0000 0000 0000;
+0D : 0000 0000 0000 0000;
+0E : 0000 0000 0000 0000;
+0F : 0000 0000 0000 0000;
+
+-- Program Section
+10 : 
+END;

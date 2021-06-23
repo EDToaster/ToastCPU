@@ -310,6 +310,13 @@ set_location_assignment PIN_C10 -to VGA_SYNC_N
 set_location_assignment PIN_D11 -to VGA_VS
 set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "23 MM HEAT SINK WITH 200 LFPM AIRFLOW"
 set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
+set_global_assignment -name MIF_FILE ../sample_programs/test.mif
+set_global_assignment -name SYSTEMVERILOG_FILE vga_driver.sv
+set_global_assignment -name VERILOG_FILE drivers/vga/vga_pll.v
+set_global_assignment -name VERILOG_FILE drivers/vga/vga_controller.v
+set_global_assignment -name VERILOG_FILE drivers/vga/vga_address_translator.v
+set_global_assignment -name VERILOG_FILE drivers/vga/vga_adapter.v
+set_global_assignment -name SYSTEMVERILOG_FILE hex_driver.sv
 set_global_assignment -name SYSTEMVERILOG_FILE memory.sv
 set_global_assignment -name SYSTEMVERILOG_FILE registers.sv
 set_global_assignment -name SYSTEMVERILOG_FILE datapath.sv

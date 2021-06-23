@@ -1,0 +1,18 @@
+DEPTH = 32768;                -- The size of memory in words
+WIDTH = 16;                   -- The size of data in bits
+ADDRESS_RADIX = HEX;          -- The radix for address values
+DATA_RADIX = BIN;             -- The radix for data values
+CONTENT                       -- start of (address : data pairs)
+BEGIN
+
+00 : 0010100000000001;  -- imov r1 8    // data of memory
+01 : 0010100100000001;
+02 : 0010101011111111;
+03 : 0010110000000011;
+04 : 1000101110000110;
+05 : 1000100010010110;
+06 : 1000100110110100;
+07 : 1000101000001101;
+08 : 0100110010000000;
+09 : 0111000000000000;
+END;

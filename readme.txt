@@ -93,19 +93,21 @@ sub  rx1, rx2
 mov  rx1, rx2
      rx1 := rx2
 
-// if 4th bit is 1, override b with 1 
-1000 xxxx ---- 1100
-inc  rx1
-     rx1 := rx1 + 1
+1000 xxxx xxxx 1000
+shr  rx1  rx2
+     rx1 := rx1 >> rx2
 
-1000 xxxx ---- 1101
-dec  rx1
-     rx1 := rx1 - 1
+1000 xxxx xxxx 1001
+sshr rx1  rx2
+     rx1 := rx1 >>> rx2
 
-1001 ---- ---- 0000 
-incrb
-     Increment the register page
+1000 xxxx xxxx 1010
+shl  rx1  rx2
+     rx1 := rx1 << rx2
 
-1001 ---- ---- 0001
-decrb
-     Decrement the register page
+# Immediate versions of Arithmetic operations 
+# imm4 is unsign-extended to 16 bits
+1001 xxxx xxxx xxxx
+i(op)rxx  imm4 opcode
+     rxx := rxx (op) imm4
+

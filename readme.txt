@@ -45,6 +45,7 @@ load rx1, [rx2]
 0001 xxxx xxxx ----
 str  [rx1], rx2
      Move rx2 into the data pointed by rx1
+     
 
 0010 xxxx xxxxxxxx
 imov rxx, imm8
@@ -55,9 +56,14 @@ imov rxx, imm8
 jz   rdst n
      Jump to rdst if the previous operation did result in zero, negated by n
 
-0101 # interrupt handling?
+# push pop
+0101 1101 xxxx ----
+push      rsrc
+     Push rsrc onto the stack, incrementing the stack pointer
 
-0110
+0110 xxxx 1101 ----
+pop  rdst
+     Pop rdst from the stack, decrementing the stack pointer
 
 0111
 halt

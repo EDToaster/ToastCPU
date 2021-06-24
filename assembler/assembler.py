@@ -196,6 +196,8 @@ class Program:
         raw_format = []
         for line in lines:
             raw = [self.parse_token(tok.strip()) for tok in line.split()]
+            if len(raw) < 1 or raw[0] is None:
+                continue
             raw_format.append((line.strip(), [r for r in raw if r is not None]))
 
         # add labels to words
@@ -254,7 +256,7 @@ CONTENT                       -- start of (address : data pairs)
 BEGIN
 """)
         for i, (text, line) in enumerate(binary):
-            print(line)
+            print(line, text)
             f.write(f"{'{:0>4X}'.format(i)} : {'{:0>4X}'.format(int(line, 2))}; -- {text}\n")
 
         f.write("END;")

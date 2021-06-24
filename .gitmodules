@@ -1,6 +1,0 @@
-[submodule "llvm"]
-	path = llvm
-	url = https://github.com/EDToaster/ToastCPU_Backend
-[submodule "vbcc"]
-	path = vbcc
-	url = https://github.com/EDToaster/ToastCPU-vbcc.git

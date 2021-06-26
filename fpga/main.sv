@@ -31,7 +31,13 @@ module main(
 	wire reset = KEY[0];
 
 	// create slower clock
-	wire slow_clock = SW[9] ? ~KEY[1] : CLOCK_50;
+	wire slow_clock = SW[9] ? counter[14] : CLOCK_50;
+	
+	logic [26:0] counter;
+	always_ff @(posedge CLOCK_50)
+	begin
+		counter <= counter + 1'b1;
+	end
 	
 	logic [15:0] pc, mem, instruction;
 	logic reg_write, mem_to_reg, fetch_instruction, alu_override_imm8, alu_override_imm4, 

@@ -313,10 +313,6 @@ set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
 set_global_assignment -name QIP_FILE ip/clkctrl/synthesis/clkctrl.qip
 set_global_assignment -name MIF_FILE ../sample_programs/test.mif
 set_global_assignment -name SYSTEMVERILOG_FILE vga_driver.sv
-set_global_assignment -name VERILOG_FILE drivers/vga/vga_pll.v
-set_global_assignment -name VERILOG_FILE drivers/vga/vga_controller.v
-set_global_assignment -name VERILOG_FILE drivers/vga/vga_address_translator.v
-set_global_assignment -name VERILOG_FILE drivers/vga/vga_adapter.v
 set_global_assignment -name SYSTEMVERILOG_FILE hex_driver.sv
 set_global_assignment -name SYSTEMVERILOG_FILE memory.sv
 set_global_assignment -name SYSTEMVERILOG_FILE registers.sv

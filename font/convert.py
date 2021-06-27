@@ -18,8 +18,9 @@ for f in files:
 
 print(output)
 
-ipsum = "Test Text abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789 .,! The Quick Brown Fox jumps over the Lazy Dog!"
+ipsum = "TZYX Text abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789 .,! The Quick Brown Fox jumps over the Lazy Dog!"
 
+import random as r
 
 for c in ipsum[:2048]:
-    print("0x{:04X}".format(ord(c)))
+    print("0b00{:03b}{:03b}{:08b}".format(r.randint(0, 7), r.randint(0, 7), ord(c)))

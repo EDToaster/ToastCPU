@@ -19,7 +19,7 @@ for f in files:
 print(output)
 
 ipsum = "Test Text abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789 .,! The Quick Brown Fox jumps over the Lazy Dog!"
-ipsum = ipsum.upper()
+
 
 for c in ipsum[:2048]:
     print("0x{:04X}".format(ord(c)))

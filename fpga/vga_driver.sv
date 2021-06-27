@@ -127,9 +127,9 @@ module vga_driver(
 			
 			text_x = x[9:3];
 			text_y = y[9:4];
-			text_valid = y[3] && x < 64 && y < 32;	// every other one
+			text_valid = ~y[3] && text_x < 64 && text_y < 32;	// every other one
 			
-			ascii = text_buffer[text_x[5:0]][text_y[4:0]];
+			ascii = text_valid ? text_buffer[text_x[5:0]][text_y[4:0]] : 8'h0;
 			
 			// lut needs to be synchronous here because when it wasn't it was very scuffed.
 			case(ascii) 

@@ -54,52 +54,17 @@ module vga_driver(
 	output logic [7:0] VGA_B   						//	VGA Blue[7:0]
 );
 
-//	vga_adapter VGA(
-//		.resetn(reset),
-//		.clock(io.clock),
-//		.CLOCK_50,
-//		.colour(io.wdata[14:0]),
-//		.x({1'h0, io.waddr[6:0]}),				//8 bits
-//		.y(io.waddr[13:7]),	// 7 bits
-//		.plot(io.wenable),
-//		/* Signals for the DAC to drive the monitor. */
-//		.VGA_R,
-//		.VGA_G,
-//		.VGA_B,
-//		.VGA_HS,
-//		.VGA_VS,
-//		.VGA_BLANK(VGA_BLANK_N),
-//		.VGA_SYNC(VGA_SYNC_N),
-//		.VGA_CLK);
-//	defparam VGA.RESOLUTION = "160x120";
-//	defparam VGA.MONOCHROME = "FALSE";
-//	defparam VGA.BITS_PER_COLOUR_CHANNEL = 5;
-//	defparam VGA.BACKGROUND_IMAGE = "black.mif";
-
 	// memory control (ascii, col x row)
 	// 64 col, 32 row
 	// 8x8 letters
-	logic [7:0] text_buffer[0:63][0:31];
-	logic [6:0] init_col, init_row;
-	initial begin
-		for (init_col = 0; init_col < 64; init_col = init_col + 1) begin
-			for (init_row = 0; init_row < 32; init_row = init_row + 1) begin
-				text_buffer[init_col][init_row] = init_col + 8'h41;
-			end
+	logic [7:0] text_buffer[0:63][0:29];
+	
+	always_ff @(posedge io.clock) begin: set_letter
+		if (io.wenable) begin
+			text_buffer[io.waddr[5:0]][io.waddr[10:6]] <= io.wdata[7:0];
 		end
 	end
 	
-	logic [7:0] ascii;
-	logic [7:0][7:0] bitmap;
-	
-	always_comb begin: bitmap_lut
-		case(ascii) 
-			8'h00: bitmap <= {8{8'h0}};
-			8'h41: bitmap <= { 8'b0, {2{8'b00100100}}, 8'b00111100, {2{8'b00100100}}, 8'b00011000, 8'b0 };
-			8'h42: bitmap <= { 8'b0, 8'b000011100, {2{8'b00100100}}, 8'b000011100, 8'b00100100, 8'b00011100 };
-			default: bitmap <= {8{8'b01010101}};
-		endcase
-	end
 
 	// text mode VGA adapter
 	_vga_pll(
@@ -116,7 +81,6 @@ module vga_driver(
 		v_fp = 10,
 		v_sw = 2,
 		v_bp = 33
-		
 		;
 		
 	
@@ -135,31 +99,107 @@ module vga_driver(
 	assign vsync = (y < (v_al + v_fp)) || (y >= (v_al + v_fp + v_sw));
 	assign valid = (x < h_ap) && (y < v_al);
 	
-	logic [11:0] x, y;
 	
 	// get char position, offset, colour
-	wire [8:0] x_bufpos = x[11:3];
-	wire [8:0] y_bufpos = y[11:3];
-	wire [2:0] x_bitpos = x[2:0];
-	wire [2:0] y_bitpos = y[2:0];
-	assign ascii = text_buffer[x_bufpos][y_bufpos];
-	assign colour = bitmap[y_bitpos][x_bitpos];
+	logic text_valid;
+	assign colour = bitmap[{y[2:0], x[2:0]}];
+	logic [6:0] text_x;
+	logic [5:0] text_y;
+	logic [7:0] ascii;
+	logic [0:63] bitmap;
 	
+	logic [11:0] x, y;
 	always_ff @(posedge VGA_CLK or negedge reset) begin: pixel_counters
 		if (~reset) begin
 			x <= 11'b0;
 			y <= 11'b0;
 		end else begin
 			if (x < (h_ap + h_fp + h_sw + h_bp - 1)) begin
-				x <= x + 1'b1;
+				x = x + 1'b1;
 			end else begin
-				x <= 11'b0;
+				x = 11'b0;
 				if (y < (v_al + v_fp + v_sw + v_bp - 1)) begin
-					y <= y + 1'b1;
+					y = y + 1'b1;
 				end else begin
-					y <= 11'b0;
+					y = 11'b0;
 				end
-			end
+			end 
+			
+			text_x = x[9:3];
+			text_y = y[9:4];
+			text_valid = y[3] && x < 64 && y < 32;	// every other one
+			
+			ascii = text_buffer[text_x[5:0]][text_y[4:0]];
+			
+			// lut needs to be synchronous here because when it wasn't it was very scuffed.
+			case(ascii) 
+				8'h21 : bitmap <= 64'h0040404040004000;
+				8'h2C : bitmap <= 64'h0000000000606020;
+				8'h2E : bitmap <= 64'h0000000000606000;
+				8'h30 : bitmap <= 64'h0018242C34241800;
+				8'h31 : bitmap <= 64'h0008182808083C00;
+				8'h32 : bitmap <= 64'h0018240408103C00;
+				8'h33 : bitmap <= 64'h0018240804241800;
+				8'h34 : bitmap <= 64'h000818283C080800;
+				8'h35 : bitmap <= 64'h003C203804043800;
+				8'h36 : bitmap <= 64'h0018203824241800;
+				8'h37 : bitmap <= 64'h003C040810101000;
+				8'h38 : bitmap <= 64'h0018241824241800;
+				8'h39 : bitmap <= 64'h001824241C041800;
+				8'h41 : bitmap <= 64'h001824243C242400;
+				8'h61 : bitmap <= 64'h000018041C241C00;
+				8'h42 : bitmap <= 64'h0038243824243800;
+				8'h62 : bitmap <= 64'h0020203824243800;
+				8'h43 : bitmap <= 64'h0018242020241800;
+				8'h63 : bitmap <= 64'h0000182420241800;
+				8'h44 : bitmap <= 64'h0038242424243800;
+				8'h64 : bitmap <= 64'h0004041C24241C00;
+				8'h45 : bitmap <= 64'h003C203820203C00;
+				8'h65 : bitmap <= 64'h000018243C201C00;
+				8'h46 : bitmap <= 64'h003C203820202000;
+				8'h66 : bitmap <= 64'h000C103810101000;
+				8'h47 : bitmap <= 64'h001C20202C241C00;
+				8'h67 : bitmap <= 64'h00001C24241C0438;
+				8'h48 : bitmap <= 64'h0024243C24242400;
+				8'h68 : bitmap <= 64'h0020203824242400;
+				8'h49 : bitmap <= 64'h0038101010103800;
+				8'h69 : bitmap <= 64'h0000200020202000;
+				8'h4A : bitmap <= 64'h001C040404241800;
+				8'h6A : bitmap <= 64'h0000040004042418;
+				8'h4B : bitmap <= 64'h0024283028242400;
+				8'h6B : bitmap <= 64'h0020202830282400;
+				8'h4C : bitmap <= 64'h0020202020203C00;
+				8'h6C : bitmap <= 64'h0018080808081C00;
+				8'h4D : bitmap <= 64'h00446C5444444400;
+				8'h6D : bitmap <= 64'h0000006C54444400;
+				8'h4E : bitmap <= 64'h002424342C242400;
+				8'h6E : bitmap <= 64'h0000002834242400;
+				8'h4F : bitmap <= 64'h0018242424241800;
+				8'h6F : bitmap <= 64'h0000001824241800;
+				8'h50 : bitmap <= 64'h0038242438202000;
+				8'h70 : bitmap <= 64'h0000182424382020;
+				8'h51 : bitmap <= 64'h0018242424241A00;
+				8'h71 : bitmap <= 64'h00001824241C0404;
+				8'h52 : bitmap <= 64'h0038242438242400;
+				8'h72 : bitmap <= 64'h0000182420202000;
+				8'h53 : bitmap <= 64'h001C201804241800;
+				8'h73 : bitmap <= 64'h0000182018041800;
+				8'h54 : bitmap <= 64'h007C101010101000;
+				8'h74 : bitmap <= 64'h0010103810141800;
+				8'h55 : bitmap <= 64'h0024242424243C00;
+				8'h75 : bitmap <= 64'h0000002424241800;
+				8'h56 : bitmap <= 64'h0024242424241800;
+				8'h76 : bitmap <= 64'h0000002424140800;
+				8'h57 : bitmap <= 64'h00444444546C4400;
+				8'h77 : bitmap <= 64'h00000044546C4400;
+				8'h58 : bitmap <= 64'h0044281028444400;
+				8'h78 : bitmap <= 64'h0000242418242400;
+				8'h59 : bitmap <= 64'h0044281010101000;
+				8'h79 : bitmap <= 64'h000024241C042418;
+				8'h5A : bitmap <= 64'h003C040810203C00;
+				8'h7A : bitmap <= 64'h0000380810203800;
+				default: bitmap <= 64'h0;
+			endcase
 		end
 	end
 	

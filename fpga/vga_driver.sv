@@ -132,8 +132,8 @@ module vga_driver(
 			end 
 			
 			text_x = x[9:3];
-			text_y = y[9:4];
-			text_valid = ~y[3] && text_x < 64 && text_y < 32;	// every other one
+			text_y = y[8:3];
+			text_valid = /*~y[3] &&*/ text_x < 64 && text_y < 32;	// every other one
 			
 			ascii = text_valid ? text_buffer[{text_y[4:0], text_x[5:0]}] : 8'h0;
 			foreground = text_valid ? text_foreground[{text_y[4:0], text_x[5:0]}] : 3'b0;

@@ -40,15 +40,14 @@ iadd     at, 0x7
 push     at
 // get jump address
 mov      at, t0   
-jnz      at
+jmp      at
 ```
 
 A `ret` macro assumes the value at the top of the stack is the value of the callee's return address.
 
 ```
 pop     at
-mov     at, at  // this will be cleaner once I implement a non-conditional jump
-jnz     at
+jmp     at
 ```
 
 Note that the `call` and `ret` macros do not need to save the register, as that is the responsibility of the user `callee` function.

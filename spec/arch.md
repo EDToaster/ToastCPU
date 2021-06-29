@@ -32,11 +32,17 @@ All addresses and datasizes are 16 bits wide. This means that `toast` has a tota
 
 # Registers
 
-There are a total of 16 16-bit registers:
+(Read more about registers and calling conventions in the [application binary interface](abi.md) document)
 
-1. 13 general use registers (r0 to r12), 
-2. Stack Pointer (SP, initialized to 0x8000 on reset)
-3. Status Register (SR, containing processor flags):
+There are a total of 16 16-bit integer registers:
+
+* (at) 1 Assembler Temporary register 
+* (rv) 1 Return Value register
+* (p0 to p2) 3 Function Argument Registers 
+* (t0 to t3) 4 Temporary Scratch Registers 
+* (t4 to t7) 4 Saved Temporary Registers
+* (sp) Stack Pointer, initialized to 0x8000 on reset
+* (sr) Status Register, containing processor flags:
    * Bit 4: V, if last operation caused overflow
    * Bit 3: C, if last operation caused carry
    * Bit 2: N, if last operation produced a negative number

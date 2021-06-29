@@ -37,8 +37,7 @@ All addresses and datasizes are 16 bits wide. This means that `toast` has a tota
 There are a total of 16 16-bit integer registers:
 
 * (at) 1 Assembler Temporary register 
-* (rv) 1 Return Value register
-* (p0 to p2) 3 Function Argument Registers 
+* (p0 to p3) 4 Function Argument Registers 
 * (t0 to t3) 4 Temporary Scratch Registers 
 * (t4 to t7) 4 Saved Temporary Registers
 * (sp) Stack Pointer, initialized to 0x8000 on reset
@@ -87,11 +86,6 @@ imov rxx  imm8
 
 0011 (Unused)
 
-0100 xxxx x --- ----
-jz   rdst n
-     (J-type) Jump to rdst if the previous operation resulted in a set `Z` flag. 
-              If `n` is set, negate this condition.
-
 0101 1101 xxxx ----
 push      rsrc
      (D-type) Push rsrc onto the stack, then increment SP.
@@ -134,6 +128,16 @@ halt
                  ishr  = 1000
                  isshr = 1001
                  ishl  = 1010
+
+1010 xxxx ---- xxxx
+(op) rdst      jop
+     (J-type) Jump to the destination described by the value of rdst using the following conditions 
+              jop : condition
+              0000: (jmp) unconditional jump
+              0001: (jz)  jump if zero
+              0010: (jnz) jump if not zero
+              0011: (jn)  jump if negative
+              0100: (jp)  jump if positive
 ```
 
 # Todo

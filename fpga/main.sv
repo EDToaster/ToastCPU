@@ -31,7 +31,7 @@ module main(
 	wire reset = KEY[0];
 
 	// create slower clock
-	wire slow_clock = SW[9] ? ~KEY[1]/*counter[14]*/ : CLOCK_50;
+	wire slow_clock = SW[9] ? counter[14] : CLOCK_50;
 	
 	logic [26:0] counter;
 	always_ff @(posedge CLOCK_50)

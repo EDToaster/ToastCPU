@@ -144,5 +144,5 @@ halt
 ```
 
 # Todo
-- [ ] Change all J-type instructions so that the `opcode` is the same, and use last four bits to differentiate between `jz`, `jeq`, etc
+- [x] Change all J-type instructions so that the `opcode` is the same, and use last four bits to differentiate between `jz`, `jeq`, etc
 - [ ] Implement hardware interrupts

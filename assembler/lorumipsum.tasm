@@ -18,7 +18,7 @@
     iadd    r0 1
     iadd    r1 1
     imov    r3 .loop
-    jnz     r3
+    jmp     r3      // now using unconditional jumps
 .halt
     halt
 .text

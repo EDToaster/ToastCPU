@@ -6,8 +6,18 @@ opcodes = {
     "load": "0000",
     "str": "0001",
     "imov": "0010",
-    "jz": "0100",
-    "jnz": "0100",
+    
+    "jmp": "1010",
+    "jz": "1010",
+    "jnz": "1010",
+    "jp": "1010",
+    "jn": "1010",
+    "jmpl": "1010",
+    "jzl": "1010",
+    "jnzl": "1010",
+    "jpl": "1010",
+    "jnl": "1010",
+
     "push": "0101",
     "pop": "0110",
     "halt": "0111",
@@ -32,7 +42,7 @@ opcodes = {
     "ishl": "1001",
 }
 
-one_4bit_opcodes = ["not"]
+one_4bit_opcodes = ["not", ]
 
 two_4bit_opcodes = [
     "load", "str", "and", "or", 
@@ -43,13 +53,21 @@ two_4bit_opcodes = [
 imm8_opcodes = [
     "imov"
 ]
-negate_jump_opcodes = [
-    "jz", "jnz"
-]
-negate_jump_flags = {
-    "jz": "0",
-    "jnz": "1"
+
+jump_opcodes = {
+    "jmp": "00000",
+    "jz": "00001",
+    "jnz": "00010",
+    "jn": "00011",
+    "jp": "00100",
+    "jmpl": "10000",
+    "jzl": "10001",
+    "jnzl": "10010",
+    "jnl": "10011",
+    "jpl": "10100",
 }
+
+
 no_arg_opcodes = [
     "halt"
 ]
@@ -123,10 +141,10 @@ class Word:
         elif opcode in imm8_opcodes:
             instr += self.word[1].to_binary(4)
             instr += self.word[2].to_binary(8)
-        elif opcode in negate_jump_opcodes:
+        elif opcode in jump_opcodes:
             instr += self.word[1].to_binary(4)
-            instr += negate_jump_flags[opcode]
-            instr += "0" * 7
+            instr += "000"
+            instr += jump_opcodes[opcode]
         elif opcode in no_arg_opcodes:
             instr += "0" * 12
         elif opcode == "push":

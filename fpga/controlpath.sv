@@ -3,6 +3,8 @@ module controlpath(
 	input logic reset, // reset low
 	//input logic do_halt,
 	input logic Z,
+	input logic N,
+	
 	input logic [15:0] instruction,
 	
 	output logic reg_write,
@@ -18,7 +20,9 @@ module controlpath(
 	output logic increase_sp,
 	
 	output logic mem_write,
-	
+	output logic mem_write_is_stack,	// for push, jal instructions
+	output logic mem_write_next_pc,	// for jal instructions
+		
 	output logic [9:0] state
 );
 	// halt is set on ALU fault or halt command
@@ -41,6 +45,8 @@ module controlpath(
 		op_pop_set_addr,
 		op_pop_set_register,
 		
+		op_jmp_link,
+		op_jmp_link_inc,
 		op_jmp,
 		op_alu,
 		
@@ -50,8 +56,9 @@ module controlpath(
 	cpu_state curr_state, next_state;
 	
 	wire [3:0] opcode = instruction[15:12];
+	wire [3:0] jop = instruction[3:0];
 	wire override_b = instruction[3];
-	wire negate_jmp = instruction[7];
+	wire link_jump = instruction[4];
 	
 	assign state = {
 		(curr_state == reset_state), 
@@ -77,8 +84,26 @@ module controlpath(
 		end
 	end
 	
+	localparam 
+		jmp = 4'b0000,
+		jz	 = 4'b0001,
+		jnz = 4'b0010,
+		jn  = 4'b0011,
+		jp  = 4'b0100;
+	
+	wire do_jump;
 	// set control signals
 	always_comb begin: control_signals
+	
+		case (jop)
+			jmp: 	do_jump = 1'b1;
+			jz: 	do_jump = Z;
+			jnz: 	do_jump = ~Z;
+			jn: 	do_jump = N;
+			jp: 	do_jump = ~Z & ~N;
+			default: do_jump = 1'b0;
+		endcase
+		
 		// all control flags by default are 0
 		reg_write = 1'b0;
 		mem_to_reg = 1'b0;
@@ -89,6 +114,8 @@ module controlpath(
 		set_pc = 1'b0;
 		pc_from_register = 1'b0;	
 		mem_write = 1'b0;
+		mem_write_is_stack = 1'b0;
+		mem_write_next_pc = 1'b0;
 		set_sp = 1'b0;
 		increase_sp = 1'b0;
 		
@@ -107,12 +134,17 @@ module controlpath(
 				set_pc = 1'b1;
 			end
 			
-			op_store, op_push_store: begin
+			op_store: begin
 				mem_write = 1'b1;
 				set_pc = 1'b1;
 			end
 			
-			op_push_inc: begin
+			op_push_store: begin
+				mem_write = 1'b1;
+				mem_write_is_stack = 1'b1;
+			end
+			
+			op_push_inc, op_jmp_link_inc: begin
 				set_sp = 1'b1;
 				increase_sp = 1'b1;
 			end
@@ -122,8 +154,14 @@ module controlpath(
 				increase_sp = 1'b0;
 			end
 			
+			op_jmp_link: begin
+				mem_write = 1'b1;
+				mem_write_is_stack = 1'b1;
+				mem_write_next_pc = 1'b1;
+			end
+			
 			op_jmp: begin
-				pc_from_register = Z ^ negate_jmp;
+				pc_from_register = do_jump;
 				set_pc = 1'b1;
 			end
 			
@@ -147,7 +185,7 @@ module controlpath(
 			4'b0101: op_decode_state = op_push_store;
 			4'b0110: op_decode_state = op_pop_dec;
 			4'b0010: op_decode_state = op_alu;
-			4'b0100: op_decode_state = op_jmp;
+			4'b1010: op_decode_state = (link_jump & do_jump) ? op_jmp_link : op_jmp;
 			4'b0111: op_decode_state = op_halt;
 			4'b1000, 4'b1001: op_decode_state = op_alu;
 			default: op_decode_state = op_halt;
@@ -174,6 +212,8 @@ module controlpath(
 			op_pop_set_addr: next_state = op_pop_set_register;
 			op_pop_set_register: next_state = reset_state;
 			
+			op_jmp_link: next_state = op_jmp_link_inc;
+			op_jmp_link_inc: next_state = op_jmp;
 			op_jmp: next_state = reset_state;
 			op_alu: next_state = reset_state;
 			

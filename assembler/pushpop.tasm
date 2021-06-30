@@ -1,6 +1,0 @@
-.start
-    imov    r0  0xAA
-    push    r0
-    imov    r1  0x55
-    pop     r1
-    halt

@@ -31,7 +31,7 @@ module main(
 	wire reset = KEY[0];
 
 	// create slower clock
-	wire slow_clock = SW[9] ? counter[14] : CLOCK_50;
+	wire slow_clock = SW[9] ? ~KEY[1]/*counter[14]*/ : CLOCK_50;
 	
 	logic [26:0] counter;
 	always_ff @(posedge CLOCK_50)
@@ -41,9 +41,9 @@ module main(
 	
 	logic [15:0] pc, mem, instruction;
 	logic reg_write, mem_to_reg, fetch_instruction, alu_override_imm8, alu_override_imm4, 
-			alu_set_flags, set_pc, pc_from_register, set_sp, increase_sp, mem_write;
+			alu_set_flags, set_pc, pc_from_register, set_sp, increase_sp, mem_write, mem_write_is_stack, mem_write_next_pc;
 //	logic do_halt;
-	logic Z;
+	logic Z, N;
 	
 	logic [15:0] register_datapoke;
 	
@@ -66,12 +66,15 @@ module main(
 		.increase_sp,
 	
 		.mem_write,
+		.mem_write_is_stack,
+		.mem_write_next_pc,
 		
 		.hex_io,
 		.vga_io,
 		
 		//.do_halt,
 		.Z_out(Z),
+		.N_out(N),
 		.current_instruction(instruction),
 		.PC_poke(pc),
 		.mem_poke(mem),
@@ -85,6 +88,7 @@ module main(
 		.reset, // reset low
 		//.do_halt,
 		.Z,
+		.N,
 	
 		.instruction,
 
@@ -102,6 +106,8 @@ module main(
 		.increase_sp,
 		
 		.mem_write,
+		.mem_write_is_stack,
+		.mem_write_next_pc,
 		//.state(LEDR[9:0])
 	);
 	assign LEDR[0] = pc_from_register;

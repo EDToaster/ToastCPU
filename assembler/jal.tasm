@@ -1,0 +1,7 @@
+.entry
+    imov r0 .func
+    jmpl r0
+    imov r0 0xAA
+.func
+    pop r0
+    halt

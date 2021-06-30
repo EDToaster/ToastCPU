@@ -15,9 +15,12 @@ module datapath (
 	input logic set_pc,					// on clock
 	input logic pc_from_register,		
 	input logic mem_write,
+	input logic mem_write_is_stack,	// set the write address to stack pointer
+	input logic mem_write_next_pc,	// set the write data to be next PC 
 		
 	input logic set_sp,					// should we set the sp on this cycle?
 	input logic increase_sp,			// should the set_sp be an increase?
+	
 	
 	input logic [3:0] register_addrpoke, 
 	
@@ -27,6 +30,7 @@ module datapath (
 	output logic [15:0] current_instruction,
 	//output logic do_halt,
 	output logic Z_out,
+	output logic N_out,
 	output logic [15:0] PC_poke,
 	output logic [15:0] mem_poke,
 	output logic [15:0] register_datapoke
@@ -46,11 +50,12 @@ module datapath (
 	wire mem_wenable = mem_write, mem_rvalid;
 	
 	assign mem_raddr = fetch_instruction ? PC : reg_rdata2;	// always reading from pc or r2
-	assign mem_waddr = reg_rdata1;									// always writing to r1
-	assign mem_wdata = reg_rdata2;									// always writing data from r2
+	assign mem_waddr = mem_write_is_stack ? SP : reg_rdata1;
+	assign mem_wdata = mem_write_next_pc ? next_PC : reg_rdata2;
 	
 //	assign do_halt = opcode == 4'b0111;
 	assign Z_out = SR[1];
+	assign N_out = SR[2];
 	
 	memory_control memory(
 		.clock,		

@@ -53,11 +53,26 @@ module vga_driver(
 	output logic [7:0] VGA_G,	 						//	VGA Green[7:0]
 	output logic [7:0] VGA_B   						//	VGA Blue[7:0]
 );
+	localparam 
+		bitmap_width = 6,
+		bitmap_height = 8,
+		bitmap_widthbits = 4,
+		bitmap_heightbits = 4,
+		bitmap_addressbits = 8,
+		
+		text_buffer_width = 100,
+		text_buffer_height = 60,
+		text_buffer_widthbits = 7,
+		text_buffer_heightbits = 7,
+		text_buffer_addressbits = 14,
+		
+		vga_offset_bits = 4
+		;
 
 	
 	always_ff @(posedge io.clock) begin: set_letter
 		if (io.wenable) begin
-			text_buffer[io.waddr[11:0]] <= io.wdata[13:0];
+			text_buffer[io.waddr[text_buffer_addressbits-1:0]] <= io.wdata[13:0];
 		end
 	end
 	
@@ -87,28 +102,30 @@ module vga_driver(
 	// pixel counters
 	logic X_CLEAR, Y_CLEAR;	// clear x, y counters
 	logic [9:0] X, Y;			// x, y pixel positions
-	logic [3:0] X_offset, Y_offset;
-	logic [6:0] X_text, Y_text;
+	logic [bitmap_widthbits-1:0] X_offset;
+	logic [bitmap_heightbits-1:0] Y_offset;
+	logic [text_buffer_widthbits-1:0] X_text;
+	logic [text_buffer_heightbits-1:0] Y_text;
 	
 	// sync delays
-	logic [1:0] VGA_HS_SHIFT, VGA_VS_SHIFT, VGA_BLANK_SHIFT;
-	assign VGA_HS = VGA_HS_SHIFT[1];
-	assign VGA_VS = VGA_VS_SHIFT[1];
-	assign VGA_BLANK_N = VGA_BLANK_SHIFT[1];
+	logic [vga_offset_bits-1:0] VGA_HS_SHIFT, VGA_VS_SHIFT, VGA_BLANK_SHIFT;
+	assign VGA_HS = VGA_HS_SHIFT[vga_offset_bits-1];
+	assign VGA_VS = VGA_VS_SHIFT[vga_offset_bits-1];
+	assign VGA_BLANK_N = VGA_BLANK_SHIFT[vga_offset_bits-1];
 	
 	always_ff @(posedge VGA_CLK or negedge reset) begin: inc_x
 		if (~reset) begin
 			X <= 10'b0;
-			X_text <= 7'h0;
-			X_offset <= 4'h0;
+			X_text <= 0;
+			X_offset <= 0;
 		end else if (X_CLEAR) begin
 			X <= 10'b0;
-			X_text <= 7'h0;
-			X_offset <= 4'h0;
+			X_text <= 0;
+			X_offset <= 0;
 		end else begin
 			X <= X + 1'b1;
-			if (X_offset == 4'd7) begin
-				X_offset <= 4'h0;
+			if (X_offset == bitmap_width-1) begin
+				X_offset <= 0;
 				X_text <= X_text + 1'b1;
 			end else begin
 				X_offset <= X_offset + 1'b1;
@@ -120,16 +137,16 @@ module vga_driver(
 	always_ff @(posedge VGA_CLK or negedge reset) begin: inc_y
 		if (~reset) begin
 			Y <= 10'b0;
-			Y_text <= 7'h0;
-			Y_offset <= 4'h0;
+			Y_text <= 0;
+			Y_offset <= 0;
 		end else if (X_CLEAR && Y_CLEAR) begin 
 			Y <= 10'b0;
-			Y_text <= 7'h0;
-			Y_offset <= 4'h0;
+			Y_text <= 0;
+			Y_offset <= 0;
 		end else if (X_CLEAR) begin
 			Y <= Y + 1'b1;
-			if (Y_offset == 4'd11) begin
-				Y_offset <= 4'h0;
+			if (Y_offset == bitmap_height-1) begin
+				Y_offset <= 0;
 				Y_text <= Y_text + 1'b1;
 			end else begin
 				Y_offset <= Y_offset + 1'b1;
@@ -139,292 +156,300 @@ module vga_driver(
 	assign Y_CLEAR = (Y == (v_total - 1));
 	
 	
-	logic [13:0] text_buffer[0:64*40-1];
+	logic [13:0] text_buffer[0:text_buffer_width*text_buffer_height-1];
 	
 	always_ff @(posedge VGA_CLK) begin: sync_generator
 		// two clock delay, for loading the pixels
-		VGA_HS_SHIFT <= {VGA_HS_SHIFT[0], ~((X >= h_ap + h_fp) & (X < h_ap + h_fp + h_sw))};
-		VGA_VS_SHIFT <= {VGA_VS_SHIFT[0], ~((Y >= v_al + v_fp) & (Y < v_al + v_fp + v_sw))};
-		VGA_BLANK_SHIFT <= {VGA_BLANK_SHIFT[0], ((X < h_ap) & (Y < v_al))};
+		VGA_HS_SHIFT <= {VGA_HS_SHIFT[vga_offset_bits-2:0], ~((X >= h_ap + h_fp) & (X < h_ap + h_fp + h_sw))};
+		VGA_VS_SHIFT <= {VGA_VS_SHIFT[vga_offset_bits-2:0], ~((Y >= v_al + v_fp) & (Y < v_al + v_fp + v_sw))};
+		VGA_BLANK_SHIFT <= {VGA_BLANK_SHIFT[vga_offset_bits-2:0], ((X < h_ap) & (Y < v_al))};
+	end
+	
+	// PIPELINE STAGE ZERO - Finding Addresses
+	logic [text_buffer_addressbits-1:0] text_buffer_address;
+	logic [bitmap_addressbits-1:0] bitmap_address_stage0;
+	logic [text_buffer_widthbits-1:0] X_text_stage0;
+	logic [text_buffer_heightbits-1:0] Y_text_stage0;
+	always_ff @(posedge VGA_CLK) begin: calculate_text_buffer_address
+		text_buffer_address <= Y_text * text_buffer_width + X_text;
+		bitmap_address_stage0 <= Y_offset * bitmap_width + X_offset;
+		X_text_stage0 <= X_text;
+		Y_text_stage0 <= Y_text;
 	end
 	
 	// PIPELINE STAGE ONE	
 	logic [13:0] text_buffer_output;
-	logic [3:0] X_offset_stage1, Y_offset_stage1;
+	logic [bitmap_addressbits-1:0] bitmap_address_stage1;
 	always_ff @(posedge VGA_CLK) begin: fetch_text_buffer_output
-		text_buffer_output <= ((Y_text < 40) & (X_text < 64)) ? text_buffer[{ Y_text[5:0], X_text[5:0] }] : 14'b0;
-		X_offset_stage1 <= X_offset;
-		Y_offset_stage1 <= Y_offset;
+		text_buffer_output <= ((Y_text_stage0 < text_buffer_height) & (X_text_stage0 < text_buffer_width)) ? text_buffer[text_buffer_address] : 14'b0;
+		bitmap_address_stage1 <= bitmap_address_stage0;
 	end
 	
 	// PIPELINE STAGE TWO
-	logic [0:8*12-1] bitmap;
+	logic [0:bitmap_width*bitmap_height-1] bitmap;
 	logic [2:0] background, foreground;
-	logic [3:0] X_offset_stage2, Y_offset_stage2;
+	logic [bitmap_addressbits-1:0] bitmap_address_stage2;
 	always_ff @(posedge VGA_CLK) begin: fetch_bitmap
 		unique case(text_buffer_output[7:0]) 
-			8'h00 : bitmap <= 96'h000000000000000000000000;
-			8'h01 : bitmap <= 96'h007EC381A581BD99C37E0000;
-			8'h02 : bitmap <= 96'h007EFFFFDBFFC3E7FF7E0000;
-			8'h03 : bitmap <= 96'h000044EEFEFEFE7C38100000;
-			8'h04 : bitmap <= 96'h0010387CFEFE7C3810000000;
-			8'h05 : bitmap <= 96'h00183C3CFFE7E718187E0000;
-			8'h06 : bitmap <= 96'h00183C7EFFFF7E18187E0000;
-			8'h07 : bitmap <= 96'h000000003C7E7E3C00000000;
-			8'h08 : bitmap <= 96'hFFFFFFFFC38181C3FFFFFFFF;
-			8'h09 : bitmap <= 96'h00003C7E664242667E3C0000;
-			8'h0A : bitmap <= 96'hFFFFC38199BDBD9981C3FFFF;
-			8'h0B : bitmap <= 96'h003E0E3A72F8CCCCCC780000;
-			8'h0C : bitmap <= 96'h003C6666663C187E18180000;
-			8'h0D : bitmap <= 96'h001F19191F181878F8700000;
-			8'h0E : bitmap <= 96'h007F637F63636367E7E6C000;
-			8'h0F : bitmap <= 96'h000018DB7EE7E77EDB180000;
-			8'h10 : bitmap <= 96'h0080C0E0F8FEF8E0C0800000;
-			8'h11 : bitmap <= 96'h0002060E3EFE3E0E06020000;
-			8'h12 : bitmap <= 96'h00183C7E1818187E3C180000;
-			8'h13 : bitmap <= 96'h006666666666000066660000;
-			8'h14 : bitmap <= 96'h007FDBDBDB7B1B1B1B1B0000;
-			8'h15 : bitmap <= 96'h007E63303C66663C0CC67E00;
-			8'h16 : bitmap <= 96'h00000000000000FEFEFE0000;
-			8'h17 : bitmap <= 96'h00183C7E1818187E3C187E00;
-			8'h18 : bitmap <= 96'h00183C7E1818181818180000;
-			8'h19 : bitmap <= 96'h001818181818187E3C180000;
-			8'h1A : bitmap <= 96'h000000180CFE0C1800000000;
-			8'h1B : bitmap <= 96'h0000003060FE603000000000;
-			8'h1C : bitmap <= 96'h00000000C0C0C0FE00000000;
-			8'h1D : bitmap <= 96'h0000002466FF662400000000;
-			8'h1E : bitmap <= 96'h0000101038387C7CFEFE0000;
-			8'h1F : bitmap <= 96'h0000FEFE7C7C383810100000;
-			8'h20 : bitmap <= 96'h000000000000000000000000;
-			8'h21 : bitmap <= 96'h003078787830300030300000;
-			8'h22 : bitmap <= 96'h006666662400000000000000;
-			8'h23 : bitmap <= 96'h006C6CFE6C6C6CFE6C6C0000;
-			8'h24 : bitmap <= 96'h30307CC0C0780C0CF8303000;
-			8'h25 : bitmap <= 96'h000000C4CC183060CC8C0000;
-			8'h26 : bitmap <= 96'h0070D8D870FADECCDC760000;
-			8'h27 : bitmap <= 96'h003030306000000000000000;
-			8'h28 : bitmap <= 96'h000C183060606030180C0000;
-			8'h29 : bitmap <= 96'h006030180C0C0C1830600000;
-			8'h2A : bitmap <= 96'h000000663CFF3C6600000000;
-			8'h2B : bitmap <= 96'h00000018187E181800000000;
-			8'h2C : bitmap <= 96'h000000000000000038386000;
-			8'h2D : bitmap <= 96'h0000000000FE000000000000;
-			8'h2E : bitmap <= 96'h000000000000000038380000;
-			8'h2F : bitmap <= 96'h000002060C183060C0800000;
-			8'h30 : bitmap <= 96'h007CC6CEDED6F6E6C67C0000;
-			8'h31 : bitmap <= 96'h001030F03030303030FC0000;
-			8'h32 : bitmap <= 96'h0078CCCC0C183060CCFC0000;
-			8'h33 : bitmap <= 96'h0078CC0C0C380C0CCC780000;
-			8'h34 : bitmap <= 96'h000C1C3C6CCCFE0C0C1E0000;
-			8'h35 : bitmap <= 96'h00FCC0C0C0F80C0CCC780000;
-			8'h36 : bitmap <= 96'h003860C0C0F8CCCCCC780000;
-			8'h37 : bitmap <= 96'h00FEC6C6060C183030300000;
-			8'h38 : bitmap <= 96'h0078CCCCEC78DCCCCC780000;
-			8'h39 : bitmap <= 96'h0078CCCCCC7C181830700000;
-			8'h3A : bitmap <= 96'h000000383800003838000000;
-			8'h3B : bitmap <= 96'h000000383800003838183000;
-			8'h3C : bitmap <= 96'h000C183060C06030180C0000;
-			8'h3D : bitmap <= 96'h000000007E007E0000000000;
-			8'h3E : bitmap <= 96'h006030180C060C1830600000;
-			8'h3F : bitmap <= 96'h0078CC0C1830300030300000;
-			8'h40 : bitmap <= 96'h007CC6C6DEDEDEC0C07C0000;
-			8'h41 : bitmap <= 96'h003078CCCCCCFCCCCCCC0000;
-			8'h42 : bitmap <= 96'h00FC6666667C666666FC0000;
-			8'h43 : bitmap <= 96'h003C66C6C0C0C0C6663C0000;
-			8'h44 : bitmap <= 96'h00F86C66666666666CF80000;
-			8'h45 : bitmap <= 96'h00FE6260647C646062FE0000;
-			8'h46 : bitmap <= 96'h00FE6662647C646060F00000;
-			8'h47 : bitmap <= 96'h003C66C6C0C0CEC6663E0000;
-			8'h48 : bitmap <= 96'h00CCCCCCCCFCCCCCCCCC0000;
-			8'h49 : bitmap <= 96'h007830303030303030780000;
-			8'h4A : bitmap <= 96'h001E0C0C0C0CCCCCCC780000;
-			8'h4B : bitmap <= 96'h00E6666C6C786C6C66E60000;
-			8'h4C : bitmap <= 96'h00F060606060626666FE0000;
-			8'h4D : bitmap <= 96'h00C6EEFEFED6C6C6C6C60000;
-			8'h4E : bitmap <= 96'h00C6C6E6F6FEDECEC6C60000;
-			8'h4F : bitmap <= 96'h00386CC6C6C6C6C66C380000;
-			8'h50 : bitmap <= 96'h00FC6666667C606060F00000;
-			8'h51 : bitmap <= 96'h00386CC6C6C6CEDE7C0C1E00;
-			8'h52 : bitmap <= 96'h00FC6666667C6C6666E60000;
-			8'h53 : bitmap <= 96'h0078CCCCC07018CCCC780000;
-			8'h54 : bitmap <= 96'h00FCB4303030303030780000;
-			8'h55 : bitmap <= 96'h00CCCCCCCCCCCCCCCC780000;
-			8'h56 : bitmap <= 96'h00CCCCCCCCCCCCCC78300000;
-			8'h57 : bitmap <= 96'h00C6C6C6C6D6D66C6C6C0000;
-			8'h58 : bitmap <= 96'h00CCCCCC783078CCCCCC0000;
-			8'h59 : bitmap <= 96'h00CCCCCCCC78303030780000;
-			8'h5A : bitmap <= 96'h00FECE9818306062C6FE0000;
-			8'h5B : bitmap <= 96'h003C303030303030303C0000;
-			8'h5C : bitmap <= 96'h000080C06030180C06020000;
-			8'h5D : bitmap <= 96'h003C0C0C0C0C0C0C0C3C0000;
-			8'h5E : bitmap <= 96'h10386CC60000000000000000;
-			8'h5F : bitmap <= 96'h00000000000000000000FF00;
-			8'h60 : bitmap <= 96'h303018000000000000000000;
-			8'h61 : bitmap <= 96'h00000000780C7CCCCC760000;
-			8'h62 : bitmap <= 96'h00E060607C66666666DC0000;
-			8'h63 : bitmap <= 96'h0000000078CCC0C0CC780000;
-			8'h64 : bitmap <= 96'h001C0C0C7CCCCCCCCC760000;
-			8'h65 : bitmap <= 96'h0000000078CCFCC0CC780000;
-			8'h66 : bitmap <= 96'h00386C6060F8606060F00000;
-			8'h67 : bitmap <= 96'h0000000076CCCCCC7C0CCC78;
-			8'h68 : bitmap <= 96'h00E060606C76666666E60000;
-			8'h69 : bitmap <= 96'h0018180078181818187E0000;
-			8'h6A : bitmap <= 96'h000C0C003C0C0C0C0CCCCC78;
-			8'h6B : bitmap <= 96'h00E06060666C786C66E60000;
-			8'h6C : bitmap <= 96'h0078181818181818187E0000;
-			8'h6D : bitmap <= 96'h00000000FCD6D6D6D6C60000;
-			8'h6E : bitmap <= 96'h00000000F8CCCCCCCCCC0000;
-			8'h6F : bitmap <= 96'h0000000078CCCCCCCC780000;
-			8'h70 : bitmap <= 96'h00000000DC666666667C60F0;
-			8'h71 : bitmap <= 96'h0000000076CCCCCCCC7C0C1E;
-			8'h72 : bitmap <= 96'h00000000EC6E766060F00000;
-			8'h73 : bitmap <= 96'h0000000078CC6018CC780000;
-			8'h74 : bitmap <= 96'h00002060FC6060606C380000;
-			8'h75 : bitmap <= 96'h00000000CCCCCCCCCC760000;
-			8'h76 : bitmap <= 96'h00000000CCCCCCCC78300000;
-			8'h77 : bitmap <= 96'h00000000C6C6D6D66C6C0000;
-			8'h78 : bitmap <= 96'h00000000C66C38386CC60000;
-			8'h79 : bitmap <= 96'h00000000666666663C0C18F0;
-			8'h7A : bitmap <= 96'h00000000FC8C1860C4FC0000;
-			8'h7B : bitmap <= 96'h001C303060C06030301C0000;
-			8'h7C : bitmap <= 96'h001818181800181818180000;
-			8'h7D : bitmap <= 96'h00E03030180C183030E00000;
-			8'h7E : bitmap <= 96'h0073DACE0000000000000000;
-			8'h7F : bitmap <= 96'h00000010386CC6C6FE000000;
-			8'h80 : bitmap <= 96'h0078CCCCC0C0C0CCCC7830F0;
-			8'h81 : bitmap <= 96'h00CCCC00CCCCCCCCCC760000;
-			8'h82 : bitmap <= 96'h0C18300078CCFCC0CC780000;
-			8'h83 : bitmap <= 96'h3078CC00780C7CCCCC760000;
-			8'h84 : bitmap <= 96'h00CCCC00780C7CCCCC760000;
-			8'h85 : bitmap <= 96'hC0603000780C7CCCCC760000;
-			8'h86 : bitmap <= 96'h386C6C38F80C7CCCCC760000;
-			8'h87 : bitmap <= 96'h0000000078CCC0C0CC7830F0;
-			8'h88 : bitmap <= 96'h3078CC0078CCFCC0C07C0000;
-			8'h89 : bitmap <= 96'h00CCCC0078CCFCC0C07C0000;
-			8'h8A : bitmap <= 96'hC060300078CCFCC0C07C0000;
-			8'h8B : bitmap <= 96'h006C6C0078181818187E0000;
-			8'h8C : bitmap <= 96'h10386C0078181818187E0000;
-			8'h8D : bitmap <= 96'h6030180078181818187E0000;
-			8'h8E : bitmap <= 96'h00CC003078CCCCFCCCCC0000;
-			8'h8F : bitmap <= 96'h78CCCC7878CCCCFCCCCC0000;
-			8'h90 : bitmap <= 96'h0C1830FCC4C0F8C0C4FC0000;
-			8'h91 : bitmap <= 96'h00000000FE1B7FD8D8EF0000;
-			8'h92 : bitmap <= 96'h003E78D8D8FED8D8D8DE0000;
-			8'h93 : bitmap <= 96'h3078CC0078CCCCCCCC780000;
-			8'h94 : bitmap <= 96'h00CCCC0078CCCCCCCC780000;
-			8'h95 : bitmap <= 96'hC060300078CCCCCCCC780000;
-			8'h96 : bitmap <= 96'h3078CC00CCCCCCCCCC760000;
-			8'h97 : bitmap <= 96'hC0603000CCCCCCCCCC760000;
-			8'h98 : bitmap <= 96'h00666600666666663C0C18F0;
-			8'h99 : bitmap <= 96'hCC0078CCCCCCCCCCCC780000;
-			8'h9A : bitmap <= 96'hCC00CCCCCCCCCCCCCC780000;
-			8'h9B : bitmap <= 96'h00303078CCC0C0CC78303000;
-			8'h9C : bitmap <= 96'h3C66606060FC6060C0FE0000;
-			8'h9D : bitmap <= 96'hCCCCCCCC78FC30FC30300000;
-			8'h9E : bitmap <= 96'hF0888888F0889E8C8D860000;
-			8'h9F : bitmap <= 96'h0E1B18187E181818D8700000;
-			8'hA0 : bitmap <= 96'h0C183000780C7CCCCC760000;
-			8'hA1 : bitmap <= 96'h0C18300078181818187E0000;
-			8'hA2 : bitmap <= 96'h0C18300078CCCCCCCC780000;
-			8'hA3 : bitmap <= 96'h0C183000CCCCCCCCCC760000;
-			8'hA4 : bitmap <= 96'h0076DC00F8CCCCCCCCCC0000;
-			8'hA5 : bitmap <= 96'h76DC00C6E6F6DECEC6C60000;
-			8'hA6 : bitmap <= 96'h0078CCCC7E00FE0000000000;
-			8'hA7 : bitmap <= 96'h0078CCCC7800FE0000000000;
-			8'hA8 : bitmap <= 96'h003030003060C0C0CC780000;
-			8'hA9 : bitmap <= 96'h0000000000FCC0C0C0000000;
-			8'hAA : bitmap <= 96'h0000000000FC0C0C0C000000;
-			8'hAB : bitmap <= 96'h0042C6CCD8306EC3860C1F00;
-			8'hAC : bitmap <= 96'h0063E66C78376FDBB33F0300;
-			8'hAD : bitmap <= 96'h003030003030787878300000;
-			8'hAE : bitmap <= 96'h000000003366CCCC66330000;
-			8'hAF : bitmap <= 96'h00000000CC66333366CC0000;
-			8'hB0 : bitmap <= 96'h249249249249249249249249;
-			8'hB1 : bitmap <= 96'h55AA55AA55AA55AA55AA55AA;
-			8'hB2 : bitmap <= 96'h6DDBB66DDBB66DDBB66DDBB6;
-			8'hB3 : bitmap <= 96'h181818181818181818181818;
-			8'hB4 : bitmap <= 96'h1818183060C0603018181818;
-			8'hB5 : bitmap <= 96'h18183060C00000C060301818;
-			8'hB6 : bitmap <= 96'h6666666666C6666666666666;
-			8'hB7 : bitmap <= 96'h0000000000FC6E6666666666;
-			8'hB8 : bitmap <= 96'h00000000F01808E838181818;
-			8'hB9 : bitmap <= 96'h66666666C60606C666666666;
-			8'hBA : bitmap <= 96'h666666666666666666666666;
-			8'hBB : bitmap <= 96'h00000000E03018CC66666666;
-			8'hBC : bitmap <= 96'h66666666CC1830E000000000;
-			8'hBD : bitmap <= 96'h666666666EFC000000000000;
-			8'hBE : bitmap <= 96'h18181838E80818F000000000;
-			8'hBF : bitmap <= 96'h0000000000C0603018181818;
-			8'hC0 : bitmap <= 96'h1818180C0603000000000000;
-			8'hC1 : bitmap <= 96'h1818183C66C3000000000000;
-			8'hC2 : bitmap <= 96'h0000000000C3663C18181818;
-			8'hC3 : bitmap <= 96'h1818180C0603060C18181818;
-			8'hC4 : bitmap <= 96'h0000000000FF000000000000;
-			8'hC5 : bitmap <= 96'h1818183C66C3663C18181818;
-			8'hC6 : bitmap <= 96'h18180C0603000003060C1818;
-			8'hC7 : bitmap <= 96'h666666666663666666666666;
-			8'hC8 : bitmap <= 96'h6666666633180C0700000000;
-			8'hC9 : bitmap <= 96'h00000000070C183366666666;
-			8'hCA : bitmap <= 96'h66666666C30000FF00000000;
-			8'hCB : bitmap <= 96'h00000000FF0000C366666666;
-			8'hCC : bitmap <= 96'h666666666360606366666666;
-			8'hCD : bitmap <= 96'h00000000FF0000FF00000000;
-			8'hCE : bitmap <= 96'h66666666C31818C366666666;
-			8'hCF : bitmap <= 96'h18183C66C30000FF00000000;
-			8'hD0 : bitmap <= 96'h6666666666FF000000000000;
-			8'hD1 : bitmap <= 96'h00000000FF0000FF18181818;
-			8'hD2 : bitmap <= 96'h0000000000FF666666666666;
-			8'hD3 : bitmap <= 96'h66666666763F000000000000;
-			8'hD4 : bitmap <= 96'h1818181C1710180F00000000;
-			8'hD5 : bitmap <= 96'h000000000F1810171C181818;
-			8'hD6 : bitmap <= 96'h00000000003F766666666666;
-			8'hD7 : bitmap <= 96'h6666666666C3666666666666;
-			8'hD8 : bitmap <= 96'h18183C66C31818C3663C1818;
-			8'hD9 : bitmap <= 96'h1818183060C0000000000000;
-			8'hDA : bitmap <= 96'h000000000003060C18181818;
-			8'hDB : bitmap <= 96'hFFFFFFFFFFFFFFFFFFFFFFFF;
-			8'hDC : bitmap <= 96'h000000000000FFFFFFFFFFFF;
-			8'hDD : bitmap <= 96'hF0F0F0F0F0F0F0F0F0F0F0F0;
-			8'hDE : bitmap <= 96'h0F0F0F0F0F0F0F0F0F0F0F0F;
-			8'hDF : bitmap <= 96'hFFFFFFFFFFFF000000000000;
-			8'hE0 : bitmap <= 96'h0000000076DECCCCDE760000;
-			8'hE1 : bitmap <= 96'h0078CCCCD8CCCCCCF8C06000;
-			8'hE2 : bitmap <= 96'h00FCCCCCC0C0C0C0C0C00000;
-			8'hE3 : bitmap <= 96'h00FE6C6C6C6C6C6C6C660000;
-			8'hE4 : bitmap <= 96'h00FCC46460306064C4FC0000;
-			8'hE5 : bitmap <= 96'h000000007EC8CCCCCC780000;
-			8'hE6 : bitmap <= 96'h0000000066666666667B60C0;
-			8'hE7 : bitmap <= 96'h00000076DC181818180E0000;
-			8'hE8 : bitmap <= 96'h00FC3078CCCCCC7830FC0000;
-			8'hE9 : bitmap <= 96'h0078CCCCCCFCCCCCCC780000;
-			8'hEA : bitmap <= 96'h007CC6C6C6C66C6C6CEE0000;
-			8'hEB : bitmap <= 96'h003C603078CCCCCCCC780000;
-			8'hEC : bitmap <= 96'h00000076DBDBDB6E00000000;
-			8'hED : bitmap <= 96'h0000067CDED6F67CC0000000;
-			8'hEE : bitmap <= 96'h003C60C0C0FCC0C0603C0000;
-			8'hEF : bitmap <= 96'h000078CCCCCCCCCCCCCC0000;
-			8'hF0 : bitmap <= 96'h0000FC0000FC0000FC000000;
-			8'hF1 : bitmap <= 96'h00003030FC303000FC000000;
-			8'hF2 : bitmap <= 96'h0060301818306000FC000000;
-			8'hF3 : bitmap <= 96'h0018306060301800FC000000;
-			8'hF4 : bitmap <= 96'h00000E1B1B18181818181818;
-			8'hF5 : bitmap <= 96'h18181818181818D8D8700000;
-			8'hF6 : bitmap <= 96'h0000303000FC003030000000;
-			8'hF7 : bitmap <= 96'h000073DBCE0073DBCE000000;
-			8'hF8 : bitmap <= 96'h003C6666663C000000000000;
-			8'hF9 : bitmap <= 96'h000000001C1C000000000000;
-			8'hFA : bitmap <= 96'h000000000018000000000000;
-			8'hFB : bitmap <= 96'h00070404044464341C0C0000;
-			8'hFC : bitmap <= 96'h00D86C6C6C6C000000000000;
-			8'hFD : bitmap <= 96'h00780C18307C000000000000;
-			8'hFE : bitmap <= 96'h00003C3C3C3C3C3C3C3C0000;
-			8'hFF : bitmap <= 96'h000000000000000000000000;
+			8'h00 : bitmap = 48'h000000000000;
+			8'h01 : bitmap = 48'h73EABE8B6700;
+			8'h02 : bitmap = 48'h73E8B6DB6500;
+			8'h03 : bitmap = 48'h014FBE708000;
+			8'h04 : bitmap = 48'h00873E708000;
+			8'h05 : bitmap = 48'h21C73ED88700;
+			8'h06 : bitmap = 48'h20873EF88700;
+			8'h07 : bitmap = 48'h00001CF9C000;
+			8'h08 : bitmap = 48'hFFFFF3873FFF;
+			8'h09 : bitmap = 48'h00C4A1852300;
+			8'h0A : bitmap = 48'hFF3B5E7ADCFF;
+			8'h0B : bitmap = 48'h386298924600;
+			8'h0C : bitmap = 48'h72289C21C200;
+			8'h0D : bitmap = 48'h30A208218600;
+			8'h0E : bitmap = 48'h7924925B6C00;
+			8'h0F : bitmap = 48'h02A73672A000;
+			8'h10 : bitmap = 48'h01061C610000;
+			8'h11 : bitmap = 48'h00431C304000;
+			8'h12 : bitmap = 48'h21CF88F9C200;
+			8'h13 : bitmap = 48'h514514014500;
+			8'h14 : bitmap = 48'h7BAE9A28A280;
+			8'h15 : bitmap = 48'h7A0722702F00;
+			8'h16 : bitmap = 48'h00000003EF80;
+			8'h17 : bitmap = 48'h21CA88200F80;
+			8'h18 : bitmap = 48'h21CA88208200;
+			8'h19 : bitmap = 48'h208208A9C200;
+			8'h1A : bitmap = 48'h00813E108000;
+			8'h1B : bitmap = 48'h00843E408000;
+			8'h1C : bitmap = 48'h000084210F80;
+			8'h1D : bitmap = 48'h00053E500000;
+			8'h1E : bitmap = 48'h21CF9C71C000;
+			8'h1F : bitmap = 48'h01C71CF9C200;
+			8'h20 : bitmap = 48'h000000000000;
+			8'h21 : bitmap = 48'h208208008200;
+			8'h22 : bitmap = 48'h514500000000;
+			8'h23 : bitmap = 48'h514F94F94500;
+			8'h24 : bitmap = 48'h21EA1C2BC200;
+			8'h25 : bitmap = 48'hC32108426180;
+			8'h26 : bitmap = 48'h428A10AA4680;
+			8'h27 : bitmap = 48'h208200000000;
+			8'h28 : bitmap = 48'h108410408100;
+			8'h29 : bitmap = 48'h408104108400;
+			8'h2A : bitmap = 48'h008A9CA88000;
+			8'h2B : bitmap = 48'h00823E208000;
+			8'h2C : bitmap = 48'h000000608400;
+			8'h2D : bitmap = 48'h00003E000000;
+			8'h2E : bitmap = 48'h000000018600;
+			8'h2F : bitmap = 48'h002108420000;
+			8'h30 : bitmap = 48'h7229AACA2700;
+			8'h31 : bitmap = 48'h218208208700;
+			8'h32 : bitmap = 48'h722084210F80;
+			8'h33 : bitmap = 48'hF842040A2700;
+			8'h34 : bitmap = 48'h10C524F84100;
+			8'h35 : bitmap = 48'hFA0F020A2700;
+			8'h36 : bitmap = 48'h31083C8A2700;
+			8'h37 : bitmap = 48'hF82108410400;
+			8'h38 : bitmap = 48'h72289C8A2700;
+			8'h39 : bitmap = 48'h72289E084600;
+			8'h3A : bitmap = 48'h018600618000;
+			8'h3B : bitmap = 48'h018600608400;
+			8'h3C : bitmap = 48'h108420408100;
+			8'h3D : bitmap = 48'h000F80F80000;
+			8'h3E : bitmap = 48'h408102108400;
+			8'h3F : bitmap = 48'h722084200200;
+			8'h40 : bitmap = 48'h722AAEA20700;
+			8'h41 : bitmap = 48'h7228BE8A2880;
+			8'h42 : bitmap = 48'hF228BC8A2F00;
+			8'h43 : bitmap = 48'h722820822700;
+			8'h44 : bitmap = 48'hF228A28A2F00;
+			8'h45 : bitmap = 48'hFA083C820F80;
+			8'h46 : bitmap = 48'hFA083C820800;
+			8'h47 : bitmap = 48'h72282E8A2700;
+			8'h48 : bitmap = 48'h8A28BE8A2880;
+			8'h49 : bitmap = 48'h708208208700;
+			8'h4A : bitmap = 48'h384104124600;
+			8'h4B : bitmap = 48'h8A4A30A24880;
+			8'h4C : bitmap = 48'h820820820F80;
+			8'h4D : bitmap = 48'h8B6AAA8A2880;
+			8'h4E : bitmap = 48'h8A2CAA9A2880;
+			8'h4F : bitmap = 48'h7228A28A2700;
+			8'h50 : bitmap = 48'hF228BC820800;
+			8'h51 : bitmap = 48'h7228A2AA4680;
+			8'h52 : bitmap = 48'hF228BCA24880;
+			8'h53 : bitmap = 48'h7A081C082F00;
+			8'h54 : bitmap = 48'hF88208208200;
+			8'h55 : bitmap = 48'h8A28A28A2700;
+			8'h56 : bitmap = 48'h8A28A2514200;
+			8'h57 : bitmap = 48'h8A28AAAAA500;
+			8'h58 : bitmap = 48'h8A2508522880;
+			8'h59 : bitmap = 48'h8A2894208200;
+			8'h5A : bitmap = 48'hF82108420F80;
+			8'h5B : bitmap = 48'h308208208300;
+			8'h5C : bitmap = 48'h020408102000;
+			8'h5D : bitmap = 48'h608208208600;
+			8'h5E : bitmap = 48'h214880000000;
+			8'h5F : bitmap = 48'h000000000F80;
+			8'h60 : bitmap = 48'h410200000000;
+			8'h61 : bitmap = 48'h0007027A2780;
+			8'h62 : bitmap = 48'h820B328A2F00;
+			8'h63 : bitmap = 48'h000720822700;
+			8'h64 : bitmap = 48'h0826A68A2780;
+			8'h65 : bitmap = 48'h000722FA0700;
+			8'h66 : bitmap = 48'h312438410400;
+			8'h67 : bitmap = 48'h01E8A2782700;
+			8'h68 : bitmap = 48'h820B328A2880;
+			8'h69 : bitmap = 48'h008018208700;
+			8'h6A : bitmap = 48'h100304124600;
+			8'h6B : bitmap = 48'h410494614480;
+			8'h6C : bitmap = 48'h608208208700;
+			8'h6D : bitmap = 48'h000D2AAAAA80;
+			8'h6E : bitmap = 48'h000B328A2880;
+			8'h6F : bitmap = 48'h0007228A2700;
+			8'h70 : bitmap = 48'h000F22F20800;
+			8'h71 : bitmap = 48'h0006A6782080;
+			8'h72 : bitmap = 48'h000B32820800;
+			8'h73 : bitmap = 48'h000720702F00;
+			8'h74 : bitmap = 48'h410E10412300;
+			8'h75 : bitmap = 48'h0008A28A6680;
+			8'h76 : bitmap = 48'h0008A2894200;
+			8'h77 : bitmap = 48'h0008A2AAA500;
+			8'h78 : bitmap = 48'h000894214880;
+			8'h79 : bitmap = 48'h0008A2782700;
+			8'h7A : bitmap = 48'h000F84210F80;
+			8'h7B : bitmap = 48'h188210208180;
+			8'h7C : bitmap = 48'h208208208200;
+			8'h7D : bitmap = 48'hC08204208C00;
+			8'h7E : bitmap = 48'h010A84000000;
+			8'h7F : bitmap = 48'h000008522F80;
+			8'h80 : bitmap = 48'h722822708E00;
+			8'h81 : bitmap = 48'h5008A28A6680;
+			8'h82 : bitmap = 48'h108722FA0700;
+			8'h83 : bitmap = 48'h2147027A2780;
+			8'h84 : bitmap = 48'h5007027A2780;
+			8'h85 : bitmap = 48'h4087027A2780;
+			8'h86 : bitmap = 48'h30C7027A2780;
+			8'h87 : bitmap = 48'h00072089CE00;
+			8'h88 : bitmap = 48'h214722FA0700;
+			8'h89 : bitmap = 48'h500722FA0700;
+			8'h8A : bitmap = 48'h408722FA0700;
+			8'h8B : bitmap = 48'h500018208700;
+			8'h8C : bitmap = 48'h214018208700;
+			8'h8D : bitmap = 48'h408018208700;
+			8'h8E : bitmap = 48'h5007228BE880;
+			8'h8F : bitmap = 48'h2147228BE880;
+			8'h90 : bitmap = 48'h108FA0F20F80;
+			8'h91 : bitmap = 48'h00070A7A8780;
+			8'h92 : bitmap = 48'h7A8A3EA28B80;
+			8'h93 : bitmap = 48'h21401C8A2700;
+			8'h94 : bitmap = 48'h50001C8A2700;
+			8'h95 : bitmap = 48'h40801C8A2700;
+			8'h96 : bitmap = 48'h2140228A6680;
+			8'h97 : bitmap = 48'h4088A28A6680;
+			8'h98 : bitmap = 48'h5008A2782700;
+			8'h99 : bitmap = 48'h5007228A2700;
+			8'h9A : bitmap = 48'h5008A28A2700;
+			8'h9B : bitmap = 48'h008728A9C200;
+			8'h9C : bitmap = 48'h31243C420F80;
+			8'h9D : bitmap = 48'h8A253E23E200;
+			8'h9E : bitmap = 48'hE249389A4880;
+			8'h9F : bitmap = 48'h10A21C228400;
+			8'hA0 : bitmap = 48'h1087027A2780;
+			8'hA1 : bitmap = 48'h108018208700;
+			8'hA2 : bitmap = 48'h1087228A2700;
+			8'hA3 : bitmap = 48'h1088A28A6680;
+			8'hA4 : bitmap = 48'h29402CCA2880;
+			8'hA5 : bitmap = 48'h2948B2AA6880;
+			8'hA6 : bitmap = 48'h724700F80000;
+			8'hA7 : bitmap = 48'h722700F80000;
+			8'hA8 : bitmap = 48'h200210822700;
+			8'hA9 : bitmap = 48'h00003E820000;
+			8'hAA : bitmap = 48'h00003E082000;
+			8'hAB : bitmap = 48'h8A4A14884180;
+			8'hAC : bitmap = 48'h8A4A14B0E100;
+			8'hAD : bitmap = 48'h208008208200;
+			8'hAE : bitmap = 48'h000294A14280;
+			8'hAF : bitmap = 48'h000A14294A00;
+			8'hB0 : bitmap = 48'h264489912264;
+			8'hB1 : bitmap = 48'h56A56A56A56A;
+			8'hB2 : bitmap = 48'h6F6B5BDAD6F6;
+			8'hB3 : bitmap = 48'h208208208208;
+			8'hB4 : bitmap = 48'h208238208208;
+			8'hB5 : bitmap = 48'h208E08E08208;
+			8'hB6 : bitmap = 48'h514534514514;
+			8'hB7 : bitmap = 48'h00003C514514;
+			8'hB8 : bitmap = 48'h000E08E08208;
+			8'hB9 : bitmap = 48'h514D04D14514;
+			8'hBA : bitmap = 48'h514514514514;
+			8'hBB : bitmap = 48'h000F04D14514;
+			8'hBC : bitmap = 48'h514D04F00000;
+			8'hBD : bitmap = 48'h51453C000000;
+			8'hBE : bitmap = 48'h208E08E00000;
+			8'hBF : bitmap = 48'h000038208208;
+			8'hC0 : bitmap = 48'h20820F000000;
+			8'hC1 : bitmap = 48'h20823F000000;
+			8'hC2 : bitmap = 48'h00003F208208;
+			8'hC3 : bitmap = 48'h20820F208208;
+			8'hC4 : bitmap = 48'h00003F000000;
+			8'hC5 : bitmap = 48'h20823F208208;
+			8'hC6 : bitmap = 48'h2083C83C8208;
+			8'hC7 : bitmap = 48'h514517514514;
+			8'hC8 : bitmap = 48'h5145D07C0000;
+			8'hC9 : bitmap = 48'h0007D05D4514;
+			8'hCA : bitmap = 48'h514DC0FC0000;
+			8'hCB : bitmap = 48'h000FC0DD4514;
+			8'hCC : bitmap = 48'h5145D05D4514;
+			8'hCD : bitmap = 48'h000FC0FC0000;
+			8'hCE : bitmap = 48'h514DC0DD4514;
+			8'hCF : bitmap = 48'h208FC0FC0000;
+			8'hD0 : bitmap = 48'h51453F000000;
+			8'hD1 : bitmap = 48'h000FC0FC8208;
+			8'hD2 : bitmap = 48'h00003F514514;
+			8'hD3 : bitmap = 48'h51451F000000;
+			8'hD4 : bitmap = 48'h2083C83C0000;
+			8'hD5 : bitmap = 48'h0003C83C8208;
+			8'hD6 : bitmap = 48'h00001F514514;
+			8'hD7 : bitmap = 48'h514537514514;
+			8'hD8 : bitmap = 48'h208FC0FC8208;
+			8'hD9 : bitmap = 48'h208238000000;
+			8'hDA : bitmap = 48'h00000F208208;
+			8'hDB : bitmap = 48'hFFFFFFFFFFFF;
+			8'hDC : bitmap = 48'h000000FFFFFF;
+			8'hDD : bitmap = 48'hE38E38E38E38;
+			8'hDE : bitmap = 48'h1C71C71C71C7;
+			8'hDF : bitmap = 48'hFFFFFF000000;
+			8'hE0 : bitmap = 48'h0006A4924680;
+			8'hE1 : bitmap = 48'h31249C492B00;
+			8'hE2 : bitmap = 48'hFA2820820800;
+			8'hE3 : bitmap = 48'h000F94514980;
+			8'hE4 : bitmap = 48'hF90204210F80;
+			8'hE5 : bitmap = 48'h0007A4924600;
+			8'hE6 : bitmap = 48'h00092493A800;
+			8'hE7 : bitmap = 48'h0007A820A100;
+			8'hE8 : bitmap = 48'h21CAAAA9C200;
+			8'hE9 : bitmap = 48'h3128BE8A4600;
+			8'hEA : bitmap = 48'h7228A2514D80;
+			8'hEB : bitmap = 48'h3102047A2700;
+			8'hEC : bitmap = 48'h00052A500000;
+			8'hED : bitmap = 48'h20872A708200;
+			8'hEE : bitmap = 48'h000720F20700;
+			8'hEF : bitmap = 48'h01C8A28A2880;
+			8'hF0 : bitmap = 48'h03E03E03E000;
+			8'hF1 : bitmap = 48'h208F8823E000;
+			8'hF2 : bitmap = 48'h818198800F80;
+			8'hF3 : bitmap = 48'h08CC0C080F80;
+			8'hF4 : bitmap = 48'h004288208208;
+			8'hF5 : bitmap = 48'h208208228400;
+			8'hF6 : bitmap = 48'h00803E008000;
+			8'hF7 : bitmap = 48'h010A8442A100;
+			8'hF8 : bitmap = 48'h624918000000;
+			8'hF9 : bitmap = 48'h000008708000;
+			8'hFA : bitmap = 48'h000000200000;
+			8'hFB : bitmap = 48'h388208A18200;
+			8'hFC : bitmap = 48'h614514000000;
+			8'hFD : bitmap = 48'h604210700000;
+			8'hFE : bitmap = 48'h000E38E00000;
+			8'hFF : bitmap = 48'h000000000000;
 		endcase
 		
-		
-		
-		X_offset_stage2 <= X_offset_stage1;
-		Y_offset_stage2 <= Y_offset_stage1;
+		bitmap_address_stage2 <= bitmap_address_stage1;
 		background <= text_buffer_output[10:8];
 		foreground <= text_buffer_output[13:11];
 	end
@@ -432,7 +457,7 @@ module vga_driver(
 	// PIPELINE STAGE THREE
 	logic [3:0] colour;
 	always_ff @(posedge VGA_CLK) begin: set_colour
-		colour <= bitmap[{Y_offset_stage2[3:0], X_offset_stage2[2:0]}] ? foreground : background;
+		colour <= bitmap[bitmap_address_stage2] ? foreground : background;
 	end
 	
 	

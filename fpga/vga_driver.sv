@@ -1,43 +1,13 @@
 module _vga_pll (
-	clock_in,
-	clock_out);
+	input logic clock_in,
+	output logic clock_out);
 
-	input	  clock_in;
-	output	  clock_out;
-
-	wire [5:0] clock_output_bus;
-	wire [1:0] clock_input_bus;
-	wire gnd;
-	
-	assign gnd = 1'b0;
-	assign clock_input_bus = { gnd, clock_in }; 
-
-	altpll	altpll_component (
-				.inclk (clock_input_bus),
-				.clk (clock_output_bus)
-				);
-	defparam
-		altpll_component.operation_mode = "NORMAL",
-		altpll_component.intended_device_family = "Cyclone II",
-		altpll_component.lpm_type = "altpll",
-		altpll_component.pll_type = "FAST",
-		/* Specify the input clock to be a 50MHz clock. A 50 MHz clock is present
-		 * on PIN_N2 on the DE2 board. We need to specify the input clock frequency
-		 * in order to set up the PLL correctly. To do this we must put the input clock
-		 * period measured in picoseconds in the inclk0_input_frequency parameter.
-		 * 1/(20000 ps) = 0.5 * 10^(5) Hz = 50 * 10^(6) Hz = 50 MHz. */
-		altpll_component.inclk0_input_frequency = 20000,
-		altpll_component.primary_clock = "INCLK0",
-		/* Specify output clock parameters. The output clock should have a
-		 * frequency of 25 MHz, with 50% duty cycle. */
-		altpll_component.compensate_clock = "CLK0",
-		altpll_component.clk0_phase_shift = "0",
-		altpll_component.clk0_divide_by = 2,
-		altpll_component.clk0_multiply_by = 1,		
-		altpll_component.clk0_duty_cycle = 50;
-		
-	assign clock_out = clock_output_bus[0];
-
+	vga_clk (
+			clock_in,        	//      ref_clk.clk
+			1'b0,    			//    ref_reset.reset
+			1'b0, 				// reset_source.reset
+			clock_out         //      vga_clk.clk
+		);
 endmodule
 
 module vga_driver(
@@ -94,6 +64,16 @@ module vga_driver(
 		v_sw = 2,
 		v_bp = 33,
 		v_total = v_al + v_fp + v_sw + v_bp
+//		h_ap = 1280,
+//		h_fp = 72,
+//		h_sw = 80,
+//		h_bp = 216,
+//		h_total = h_ap + h_fp + h_sw + h_bp,
+//		v_al = 720,
+//		v_fp = 3,
+//		v_sw = 5,
+//		v_bp = 30,
+//		v_total = v_al + v_fp + v_sw + v_bp
 		;
 		
 		
@@ -101,7 +81,7 @@ module vga_driver(
 	
 	// pixel counters
 	logic X_CLEAR, Y_CLEAR;	// clear x, y counters
-	logic [9:0] X, Y;			// x, y pixel positions
+	logic [10:0] X, Y;			// x, y pixel positions
 	logic [bitmap_widthbits-1:0] X_offset;
 	logic [bitmap_heightbits-1:0] Y_offset;
 	logic [text_buffer_widthbits-1:0] X_text;
@@ -115,11 +95,11 @@ module vga_driver(
 	
 	always_ff @(posedge VGA_CLK or negedge reset) begin: inc_x
 		if (~reset) begin
-			X <= 10'b0;
+			X <= 11'b0;
 			X_text <= 0;
 			X_offset <= 0;
 		end else if (X_CLEAR) begin
-			X <= 10'b0;
+			X <= 11'b0;
 			X_text <= 0;
 			X_offset <= 0;
 		end else begin
@@ -136,11 +116,11 @@ module vga_driver(
 	
 	always_ff @(posedge VGA_CLK or negedge reset) begin: inc_y
 		if (~reset) begin
-			Y <= 10'b0;
+			Y <= 11'b0;
 			Y_text <= 0;
 			Y_offset <= 0;
 		end else if (X_CLEAR && Y_CLEAR) begin 
-			Y <= 10'b0;
+			Y <= 11'b0;
 			Y_text <= 0;
 			Y_offset <= 0;
 		end else if (X_CLEAR) begin

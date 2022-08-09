@@ -36,6 +36,7 @@
     pop     r4
     // get value at 0xFFFF into r5
     iadd    r5 1
+    iadd    r0 1
     mov     r6 r5
     add     r6 r2
     str     r0 r6

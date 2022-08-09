@@ -13,7 +13,7 @@ BEGIN
 0006 : 0000; -- load    r0  r0
 0007 : 2103; -- imov    r1  .key_addr
 0008 : 0110; -- load    r1  r1
-0009 : 2A18; -- imov    r10 .halt
+0009 : 2A19; -- imov    r10 .halt
 000A : 2C12; -- imov    r12 .irq
 000B : 2207; -- imov    r2 0b00000111
 000C : 928A; -- ishl    r2 8
@@ -24,9 +24,10 @@ BEGIN
 0011 : A300; -- jmp     r3
 0012 : 64D0; -- pop     r4
 0013 : 9514; -- iadd    r5 1
-0014 : 8656; -- mov     r6 r5
-0015 : 8624; -- add     r6 r2
-0016 : 1060; -- str     r0 r6
-0017 : A400; -- jmp     r4
-0018 : 7000; -- halt
+0014 : 9014; -- iadd    r0 1
+0015 : 8656; -- mov     r6 r5
+0016 : 8624; -- add     r6 r2
+0017 : 1060; -- str     r0 r6
+0018 : A400; -- jmp     r4
+0019 : 7000; -- halt
 END;

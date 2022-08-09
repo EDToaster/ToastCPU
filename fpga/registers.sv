@@ -1,8 +1,8 @@
 module read_register(
 	input [3:0] addr,
 	input [15:0] bank[256][8],
-	input [15:0] scratch[5],
-	input [15:0] SP, SR, PC,
+	input [15:0] scratch[4],
+	input [15:0] IRA, SP, SR, PC,
 	
 	output [15:0] data
 );
@@ -20,8 +20,8 @@ module read_register(
 			4'h8,
 			4'h9, 
 			4'hA, 
-			4'hB, 
-			4'hC: data = scratch[addr[2:0]];
+			4'hB: data = scratch[addr[1:0]];
+			4'hC: data = IRA;
 			4'hD: data = SP;
 			4'hE: data = SR;
 			4'hF: data = PC;
@@ -49,13 +49,16 @@ module registers (
 );
 	
 	reg [15:0] bank[256][8];
-	reg [15:0] scratch[5];
+	
+	reg [15:0] IRA;
+	
+	reg [15:0] scratch[4];
 	
 	read_register read1(
 		read_addr1,
 		bank,
 		scratch,
-		SP, SR, PC,
+		IRA, SP, SR, PC,
 		read_data1
 	);
 	
@@ -63,7 +66,7 @@ module registers (
 		read_addr2,
 		bank,
 		scratch,
-		SP, SR, PC,
+		IRA, SP, SR, PC,
 		read_data2
 	);
 	
@@ -71,7 +74,7 @@ module registers (
 		read_addrpoke,
 		bank,
 		scratch,
-		SP, SR, PC,
+		IRA, SP, SR, PC,
 		read_datapoke
 	);
 	
@@ -89,8 +92,8 @@ module registers (
 				4'h8,
 				4'h9, 
 				4'hA, 
-				4'hB, 
-				4'hC: scratch[write_addr[2:0]][15:0] <= write_data;
+				4'hB: scratch[write_addr[1:0]][15:0] <= write_data;
+				4'hC: IRA <= write_data;
 				default:; // no op for writing to SP, SR, PC
 			endcase
 		end

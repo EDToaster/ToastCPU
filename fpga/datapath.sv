@@ -57,7 +57,7 @@ module datapath (
 	assign Z_out = SR[1];
 	assign N_out = SR[2];
 	
-	memory_control memory(
+	memory_control memory(	
 		.clock,		
 		.read_address(mem_raddr),
 		.write_address(mem_waddr),

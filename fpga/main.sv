@@ -28,6 +28,12 @@ module main(
 	output logic [7:0] VGA_B   						//	VGA Blue[7:0]
 );
 
+	// controls
+	// KEY[0] = ~reset
+	// SW[9]  = clock speed switch
+	// SW[8]  = slow clock increment enable
+
+
 	wire reset = KEY[0];
 
 	// create slower clock
@@ -36,7 +42,7 @@ module main(
 	logic [26:0] counter;
 	always_ff @(posedge CLOCK_50)
 	begin
-		counter <= counter + 1'b1;
+		counter <= counter + SW[8];
 	end
 	
 	logic [15:0] pc, mem, instruction;
@@ -69,7 +75,7 @@ module main(
 		.mem_write_is_stack,
 		.mem_write_next_pc,
 		
-		.hex_io,
+		.key_io,
 		.vga_io,
 		
 		//.do_halt,
@@ -122,7 +128,7 @@ module main(
 	//assign LEDR[8] = Z;
 	
 		// hex driver io
-	io_interface hex_io();
+	io_interface key_io();
 //	hex_driver (
 //		.io(hex_io),
 //		.HEX0, .HEX1, .HEX2, .HEX3

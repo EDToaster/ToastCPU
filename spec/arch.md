@@ -42,11 +42,13 @@ There are a total of 16 16-bit integer registers:
 * (t4 to t7) 4 Saved Temporary Registers
 * (sp) Stack Pointer, initialized to 0x8000 on reset
 * (sr) Status Register, containing processor flags:
+   * WIP: Bits 15-8: Register bank #
    * Bit 4: V, if last operation caused overflow
    * Bit 3: C, if last operation caused carry
    * Bit 2: N, if last operation produced a negative number
    * Bit 1: Z, if last operation produced 0x0000
    * Bit 0: X, if last operation produced 0xFFFF
+* (pc) Program Counter
 
 ## Status Register
 
@@ -84,7 +86,9 @@ str  rx1  rx2
 imov rxx  imm8
      (I-type) Move imm8 (sign extended to 16 bits) into register rxx
 
-0011 (Unused)
+0011 ---- xxxx ----
+irqh      rxx
+     (D-type) Set interrupt request handler address from rxx data
 
 0101 1101 xxxx ----
 push      rsrc

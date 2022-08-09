@@ -24,7 +24,7 @@ module datapath (
 	
 	input logic [3:0] register_addrpoke, 
 	
-	io_interface hex_io,
+	io_interface key_io,
 	io_interface vga_io,
 	
 	output logic [15:0] current_instruction,
@@ -66,7 +66,7 @@ module datapath (
 		.read_data(mem_rdata),
 		.read_valid(mem_rvalid),
 		
-		.hex_io,
+		.key_io,
 		.vga_io
 	);
 	

@@ -8,7 +8,8 @@ module memory_control (
 	output read_valid,
 	
 	io_interface hex_io, 
-	io_interface vga_io
+	io_interface vga_io,
+	io_interface key_io
 );
 
 	// for now, set read_valid to 1 
@@ -37,26 +38,29 @@ module memory_control (
 	
 	// io!
 	
-	// hex = 16'hFFFF;
+	// key = 16'hFFFF;
 	// vga = 16'hC000;
 	
-	assign hex_io.clock = clock;
-	assign hex_io.waddr = write_address - 16'b1111111111111111;
-	assign hex_io.wdata = write_data;
-	assign hex_io.wenable = write_enable & (write_address == 16'b1111111111111111);
+	assign key_io.clock = clock;
+	assign key_io.waddr = write_address - 16'b1111111111111111;
+	assign key_io.wdata = write_data;
+	assign key_io.wenable = write_enable & (write_address == 16'b1111111111111111);
 	
 	assign vga_io.clock = clock;
 	assign vga_io.waddr = write_address - 16'b1100000000000000;
 	assign vga_io.wdata = write_data;
 	assign vga_io.wenable = write_enable & (write_address[15:14] == 2'b11);
 	
+	
 	always_comb begin: output_select
-		unique case(read_address[15:14])
-			2'b00, 2'b01:
+		unique casez(read_address)
+			16'b0???????????????:
 				read_data = rom_data;
-			2'b10:
+			16'b10??????????????:
 				read_data = ram_data;
-			2'b11:
+			16'hFFFF:
+				read_data = key_io.rdata;
+			16'b11???????????????:
 				read_data = vga_io.rdata;
 		endcase
 	end

@@ -15,3 +15,5 @@ Read documents on the [architecture](spec/arch.md), and the [application binary 
 - [ ] Extend functionality of assembler
 - [ ] Implement a compiler backend for C->`toast` compilation
 - [ ] Add floating point module, maybe a 32-bit variant?
+- [ ] IRQ and handlers (keyboard driver)
+- [ ] Add Register Banking (Maybe...)

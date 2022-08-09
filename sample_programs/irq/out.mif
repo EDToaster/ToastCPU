@@ -1,0 +1,32 @@
+DEPTH = 32768;                -- The size of memory in words
+WIDTH = 16;                   -- The size of data in bits
+ADDRESS_RADIX = HEX;          -- The radix for address values
+DATA_RADIX = HEX;             -- The radix for data values
+CONTENT                       -- start of (address : data pairs)
+BEGIN
+0000 : 2004; -- imov    r0  .start
+0001 : A002; -- jnz     r0
+0002 : C000; -- 0xC000
+0003 : FFFF; -- 0xFFFF
+0004 : 2500; -- imov    r5  0
+0005 : 2002; -- imov    r0  .vga_addr
+0006 : 0000; -- load    r0  r0
+0007 : 2103; -- imov    r1  .key_addr
+0008 : 0110; -- load    r1  r1
+0009 : 2A18; -- imov    r10 .halt
+000A : 2C12; -- imov    r12 .irq
+000B : 2207; -- imov    r2 0b00000111
+000C : 928A; -- ishl    r2 8
+000D : 2330; -- imov    r3 48
+000E : 8232; -- or      r2 r3
+000F : 230F; -- imov    r3 .loop
+0010 : 9504; -- iadd    r5 0
+0011 : A300; -- jmp     r3
+0012 : 64D0; -- pop     r4
+0013 : 9514; -- iadd    r5 1
+0014 : 8656; -- mov     r6 r5
+0015 : 8624; -- add     r6 r2
+0016 : 1060; -- str     r0 r6
+0017 : A400; -- jmp     r4
+0018 : 7000; -- halt
+END;

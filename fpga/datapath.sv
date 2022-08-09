@@ -13,14 +13,16 @@ module datapath (
 	input logic alu_override_imm4,		// override input of alu_b to be imm4 value?
 	input logic alu_set_flags,			// on clock, set status flags?
 	input logic set_pc,					// on clock
-	input logic pc_from_register,		
+	input logic pc_from_register,	
+	input logic pc_from_irq,
 	input logic mem_write,
 	input logic mem_write_is_stack,	// set the write address to stack pointer
 	input logic mem_write_next_pc,	// set the write data to be next PC 
+	input logic mem_write_this_pc,	// for irq
 		
 	input logic set_sp,					// should we set the sp on this cycle?
 	input logic increase_sp,			// should the set_sp be an increase?
-	
+	input logic reset_irq,
 	
 	input logic [3:0] register_addrpoke, 
 	
@@ -33,7 +35,8 @@ module datapath (
 	output logic N_out,
 	output logic [15:0] PC_poke,
 	output logic [15:0] mem_poke,
-	output logic [15:0] register_datapoke
+	output logic [15:0] register_datapoke,
+	output logic irq
 );
 
 
@@ -51,7 +54,7 @@ module datapath (
 	
 	assign mem_raddr = fetch_instruction ? PC : reg_rdata2;	// always reading from pc or r2
 	assign mem_waddr = mem_write_is_stack ? SP : reg_rdata1;
-	assign mem_wdata = mem_write_next_pc ? next_PC : reg_rdata2;
+	assign mem_wdata = mem_write_next_pc ? next_PC : (mem_write_this_pc ? PC : reg_rdata2);
 	
 //	assign do_halt = opcode == 4'b0111;
 	assign Z_out = SR[1];
@@ -70,6 +73,10 @@ module datapath (
 		.vga_io
 	);
 	
+	assign key_io.reset_irq = reset_irq;
+	assign vga_io.reset_irq = reset_irq;
+	assign irq = key_io.irq | vga_io.irq;
+	
 	wire [3:0]  opcode = current_instruction[15:12];
 	wire [3:0]  r1 = current_instruction[11:8], 
 					 r2 = current_instruction[7:4],
@@ -83,7 +90,7 @@ module datapath (
 	
 	
 	// registers
-	wire [7:0] reg_raddr1 = r1, reg_raddr2 = r2;
+	wire [7:0] reg_raddr1 = pc_from_irq ? 4'hC : r1, reg_raddr2 = r2;
 	wire [15:0] reg_rdata1, reg_rdata2;
 	wire [7:0] reg_waddr = r1;		// always will be writing to r1
 	wire [15:0] reg_wdata = mem_to_reg ? mem_rdata : alu_out;

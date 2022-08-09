@@ -1,0 +1,44 @@
+.reset
+    imov    r0  .start
+    jnz     r0
+.vga_addr
+    0xC000
+.key_addr
+    0xFFFF
+.start
+    // r0  = vga_addr
+    // r1  = key_addr
+    // r2  = char display offset
+    // r4  = irq return
+    // r5  = counter
+    // r10 = halt
+    // r12 = irq
+    imov    r5  0
+    imov    r0  .vga_addr
+    load    r0  r0
+    imov    r1  .key_addr
+    load    r1  r1
+    imov    r10 .halt
+    // set the irq
+    imov    r12 .irq
+    // store char offset in r2
+    imov    r2 0b00000111
+    ishl    r2 8
+    imov    r3 48
+    or      r2 r3
+.loop
+    imov    r3 .loop
+    // noop 
+    iadd    r5 0
+    jmp     r3
+.irq
+    // pop return address to r4
+    pop     r4
+    // get value at 0xFFFF into r5
+    iadd    r5 1
+    mov     r6 r5
+    add     r6 r2
+    str     r0 r6
+    jmp     r4
+.halt
+    halt

@@ -5,6 +5,8 @@ module controlpath(
 	input logic Z,
 	input logic N,
 	
+	input logic irq,
+	
 	input logic [15:0] instruction,
 	
 	output logic reg_write,
@@ -14,7 +16,9 @@ module controlpath(
 	output logic alu_override_imm4,		// override input b of alu to be imm4 value?
 	output logic alu_set_flags,		// on clock, set status flags?
 	output logic set_pc,					// on clock
-	output logic pc_from_register,		
+	output logic pc_from_irq,
+	output logic pc_from_register,	
+	output logic reset_irq,				// todo: posedge clock reset IRQ line (currently async)
 	
 	output logic set_sp,
 	output logic increase_sp,
@@ -22,6 +26,7 @@ module controlpath(
 	output logic mem_write,
 	output logic mem_write_is_stack,	// for push, jal instructions
 	output logic mem_write_next_pc,	// for jal instructions
+	output logic mem_write_this_pc,  // for irq, since we want to store return location on stack
 		
 	output logic [9:0] state
 );
@@ -48,6 +53,13 @@ module controlpath(
 		op_jmp_link,
 		op_jmp_link_inc,
 		op_jmp,
+		
+		// irq
+		op_irq_jmp_link,
+		op_irq_jmp_link_inc,
+		op_irq_jmp,
+		op_irq_reset,
+		
 		op_alu,
 		
 		op_halt 					// halt
@@ -112,12 +124,15 @@ module controlpath(
 		alu_override_imm4 = 1'b0;
 		alu_set_flags = 1'b0;
 		set_pc = 1'b0;
-		pc_from_register = 1'b0;	
+		pc_from_register = 1'b0;
+		pc_from_irq = 1'b0;
 		mem_write = 1'b0;
 		mem_write_is_stack = 1'b0;
 		mem_write_next_pc = 1'b0;
+		mem_write_this_pc = 1'b0;
 		set_sp = 1'b0;
 		increase_sp = 1'b0;
+		reset_irq = 1'b0;
 		
 		unique case(curr_state)
 			reset_state:;
@@ -144,7 +159,7 @@ module controlpath(
 				mem_write_is_stack = 1'b1;
 			end
 			
-			op_push_inc, op_jmp_link_inc: begin
+			op_push_inc, op_jmp_link_inc, op_irq_jmp_link_inc: begin
 				set_sp = 1'b1;
 				increase_sp = 1'b1;
 			end
@@ -160,9 +175,25 @@ module controlpath(
 				mem_write_next_pc = 1'b1;
 			end
 			
+			op_irq_jmp_link: begin
+				mem_write = 1'b1;
+				mem_write_is_stack = 1'b1;
+				mem_write_this_pc = 1'b1;
+			end
+			
 			op_jmp: begin
 				pc_from_register = do_jump;
 				set_pc = 1'b1;
+			end
+			
+			op_irq_jmp: begin
+				pc_from_register = 1'b1;
+				pc_from_irq = 1'b1;
+				set_pc = 1'b1;
+			end
+			
+			op_irq_reset: begin
+				reset_irq = 1'b1;
 			end
 			
 			op_alu: begin
@@ -194,7 +225,7 @@ module controlpath(
 	
 	always_comb begin: next_state_logic
 		unique case(curr_state)
-			reset_state: next_state = fetch_set_addr;
+			reset_state: next_state = irq ? op_irq_jmp_link : fetch_set_addr;
 			fetch_set_addr: next_state = fetch_set_instruction;
 			fetch_set_instruction: next_state = op_decode;
 			
@@ -215,6 +246,12 @@ module controlpath(
 			op_jmp_link: next_state = op_jmp_link_inc;
 			op_jmp_link_inc: next_state = op_jmp;
 			op_jmp: next_state = reset_state;
+			
+			op_irq_jmp_link: next_state = op_irq_jmp_link_inc;
+			op_irq_jmp_link_inc: next_state = op_irq_jmp;
+			op_irq_jmp: next_state = op_irq_reset;
+			op_irq_reset: next_state = reset_state;
+			
 			op_alu: next_state = reset_state;
 			
 			op_halt: next_state = op_halt;				// halt

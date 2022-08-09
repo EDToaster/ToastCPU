@@ -38,6 +38,9 @@ module vga_driver(
 		
 		vga_offset_bits = 4
 		;
+		
+	// never assert irq
+	assign io.irq = 1'b0;
 
 	
 	always_ff @(posedge io.clock) begin: set_letter

@@ -3,12 +3,18 @@ interface io_interface;
 	
 	logic [15:0] waddr, raddr, wdata, rdata;
 	logic wenable;
+	
+	// irq
+	logic irq;
+	logic reset_irq;
 endinterface
 
 module main(
 	input logic CLOCK_50,
 	input logic [3:0] KEY,
 	input logic [9:0] SW,
+	input logic PS2_CLK,
+	input logic PS2_DAT,
 	
 	output logic [9:0] LEDR,
 	output logic [6:0] HEX0,
@@ -17,7 +23,7 @@ module main(
 	output logic [6:0] HEX3,
 	output logic [6:0] HEX4,
 	output logic [6:0] HEX5,
-	
+		
 	output logic VGA_CLK,   						//	VGA Clock
 	output logic VGA_HS,							//	VGA H_SYNC
 	output logic VGA_VS,							//	VGA V_SYNC
@@ -47,11 +53,15 @@ module main(
 	
 	logic [15:0] pc, mem, instruction;
 	logic reg_write, mem_to_reg, fetch_instruction, alu_override_imm8, alu_override_imm4, 
-			alu_set_flags, set_pc, pc_from_register, set_sp, increase_sp, mem_write, mem_write_is_stack, mem_write_next_pc;
+			alu_set_flags, set_pc, pc_from_register, pc_from_irq, set_sp, increase_sp, mem_write, mem_write_is_stack, mem_write_next_pc, mem_write_this_pc;
 //	logic do_halt;
 	logic Z, N;
 	
 	logic [15:0] register_datapoke;
+	
+	// irq
+	logic irq;
+	logic reset_irq;
 	
 	
 	datapath (
@@ -66,7 +76,9 @@ module main(
 		.alu_override_imm4,
 		.alu_set_flags,			// on clock, set status flags?
 		.set_pc,					// on clock
-		.pc_from_register,	
+		.pc_from_register,
+		.pc_from_irq,
+		.reset_irq,				// todo: set on clock posedge :(
 	
 		.set_sp,
 		.increase_sp,
@@ -74,9 +86,11 @@ module main(
 		.mem_write,
 		.mem_write_is_stack,
 		.mem_write_next_pc,
+		.mem_write_this_pc,
 		
 		.key_io,
 		.vga_io,
+		.irq,
 		
 		//.do_halt,
 		.Z_out(Z),
@@ -95,6 +109,7 @@ module main(
 		//.do_halt,
 		.Z,
 		.N,
+		.irq,
 	
 		.instruction,
 
@@ -106,7 +121,9 @@ module main(
 		.alu_override_imm4,	
 		.alu_set_flags,			// on clock, set status flags?
 		.set_pc,					// on clock
-		.pc_from_register,		
+		.pc_from_register,	
+		.pc_from_irq,
+		.reset_irq,
 		
 		.set_sp, 
 		.increase_sp,
@@ -114,6 +131,7 @@ module main(
 		.mem_write,
 		.mem_write_is_stack,
 		.mem_write_next_pc,
+		.mem_write_this_pc
 		//.state(LEDR[9:0])
 	);
 	assign LEDR[0] = pc_from_register;
@@ -124,15 +142,17 @@ module main(
 		HEX4, HEX5
 	);
 	
-	//assign LEDR[9] = fetch_instruction;
+	assign LEDR[9] = irq;
+	assign LEDR[8] = reset_irq;
 	//assign LEDR[8] = Z;
-	
-		// hex driver io
 	io_interface key_io();
-//	hex_driver (
-//		.io(hex_io),
-//		.HEX0, .HEX1, .HEX2, .HEX3
-//	);
+	switch_driver(
+		.reset,
+		.CLOCK_50,
+		.key(KEY[3]),
+		.io(key_io)
+	);
+	
 	display_word(
 		register_datapoke,
 		HEX0, HEX1, HEX2, HEX3

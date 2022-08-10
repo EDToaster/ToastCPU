@@ -43,7 +43,7 @@ module main(
 	wire reset = KEY[0];
 
 	// create slower clock
-	wire slow_clock = SW[9] ? KEY[1] : CLOCK_50;
+	wire slow_clock = SW[9] ? counter[14] : CLOCK_50;
 	
 	logic [26:0] counter;
 	always_ff @(posedge CLOCK_50)
@@ -100,7 +100,9 @@ module main(
 		.mem_poke(mem),
 		
 		.register_addrpoke(SW[3:0]),
-		.register_datapoke
+		.register_datapoke,
+		
+		//.HEX0, .HEX1, .HEX2, .HEX3
 	);
 	
 	controlpath (
@@ -146,27 +148,18 @@ module main(
 	assign LEDR[8] = reset_irq;
 	//assign LEDR[8] = Z;
 	io_interface key_io();
-	switch_driver(
-		.reset,
-		.CLOCK_50,
-		.key(KEY[3]),
-		.io(key_io)
-	);
-	
-//	key_driver(
+//	switch_driver(
 //		.reset,
 //		.CLOCK_50,
-//		.io(key_io),
-//		.pc(PS2_CLK),
-//		.pd(PS2_DAT),
-//		.HEX4, .HEX5
-//	);
-
-//	key_driver (
-//		.clk(PS2_CLK), // Clock pin form keyboard
-//		.data(PS2_DAT), //Data pin form keyboard
+//		.key(KEY[3]),
 //		.io(key_io)
 //	);
+
+	key_driver (
+		.clk(PS2_CLK), // Clock pin form keyboard
+		.data(PS2_DAT), //Data pin form keyboard
+		.io(key_io)
+	);
 	
 	display_word(
 		register_datapoke,

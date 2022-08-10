@@ -159,7 +159,13 @@ module controlpath(
 				mem_write_is_stack = 1'b1;
 			end
 			
-			op_push_inc, op_jmp_link_inc, op_irq_jmp_link_inc: begin
+			op_push_inc: begin
+				set_sp = 1'b1;
+				increase_sp = 1'b1;
+				set_pc = 1'b1;
+			end
+			
+			op_jmp_link_inc, op_irq_jmp_link_inc: begin
 				set_sp = 1'b1;
 				increase_sp = 1'b1;
 			end

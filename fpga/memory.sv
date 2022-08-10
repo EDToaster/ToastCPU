@@ -9,7 +9,12 @@ module memory_control (
 	
 	io_interface hex_io, 
 	io_interface vga_io,
-	io_interface key_io
+	io_interface key_io,
+		
+	output logic [6:0] HEX0,
+	output logic [6:0] HEX1,
+	output logic [6:0] HEX2,
+	output logic [6:0] HEX3
 );
 
 	// for now, set read_valid to 1 
@@ -36,6 +41,12 @@ module memory_control (
 		.q(ram_data)
 	);
 	
+
+//	display_word(
+//		ram_data,
+//		HEX0, HEX1, HEX2, HEX3
+//	);
+	
 	// io!
 	
 	// key = 16'hFFFF;
@@ -53,15 +64,34 @@ module memory_control (
 	
 	
 	always_comb begin: output_select
-		unique casez(read_address)
-			16'b0???????????????:
-				read_data = rom_data;
-			16'b10??????????????:
-				read_data = ram_data;
-			16'hFFFF:
-				read_data = key_io.rdata;
-			16'b11???????????????:
-				read_data = vga_io.rdata;
-		endcase
+		if (read_address[15] == 1'b0)
+		begin
+			read_data = rom_data;
+		end
+		else if (read_address[15:14] == 2'b10)
+		begin
+			read_data = ram_data;
+		end
+		else if (read_address[15:14] == 3'b110)
+		begin
+			read_data = vga_io.rdata;
+		end
+		else
+		begin
+			read_data = key_io.rdata;
+		end
+		
+//		unique casez(read_address)
+//			16'b0???????????????:
+//				read_data = rom_data;
+//			16'b10??????????????:
+//				read_data = ram_data;
+//			16'b110??????????????:
+//				read_data = vga_io.rdata;
+//			16'h111??????????????:
+//				read_data = key_io.rdata;
+//			default:
+//				read_data = 16'b0;
+//		endcase
 	end
 endmodule

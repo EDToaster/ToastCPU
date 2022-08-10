@@ -36,7 +36,13 @@ module datapath (
 	output logic [15:0] PC_poke,
 	output logic [15:0] mem_poke,
 	output logic [15:0] register_datapoke,
-	output logic irq
+	output logic irq,
+	
+	output logic [6:0] HEX0,
+	output logic [6:0] HEX1,
+	output logic [6:0] HEX2,
+	output logic [6:0] HEX3
+	
 );
 
 
@@ -94,6 +100,11 @@ module datapath (
 	wire [15:0] reg_rdata1, reg_rdata2;
 	wire [7:0] reg_waddr = r1;		// always will be writing to r1
 	wire [15:0] reg_wdata = mem_to_reg ? mem_rdata : alu_out;
+	
+//	display_word(
+//		mem_rdata,
+//		HEX0, HEX1, HEX2, HEX3
+//	);
 	
 	registers register_file(
 		.clock,

@@ -35,11 +35,13 @@
     // pop return address to r4
     pop     r4
     // get value at 0xFFFF into r5
-    iadd    r5 1
-    iadd    r0 1
+    load    r5 r1
     mov     r6 r5
     add     r6 r2
     str     r0 r6
+    
+    // increment caret
+    iadd    r0 1
     jmp     r4
 .halt
     halt

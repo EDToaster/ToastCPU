@@ -39,7 +39,6 @@ module main(
 	// SW[9]  = clock speed switch
 	// SW[8]  = slow clock increment enable
 
-
 	wire reset = KEY[0];
 
 	// create slower clock
@@ -54,7 +53,7 @@ module main(
 	logic [15:0] pc, mem, instruction;
 	logic reg_write, mem_to_reg, fetch_instruction, alu_override_imm8, alu_override_imm4, 
 			alu_set_flags, set_pc, pc_from_register, pc_from_irq, set_sp, increase_sp, mem_write, mem_write_is_stack, mem_write_next_pc, mem_write_this_pc;
-//	logic do_halt;
+
 	logic Z, N;
 	
 	logic [15:0] register_datapoke;
@@ -62,7 +61,6 @@ module main(
 	// irq
 	logic irq;
 	logic reset_irq;
-	
 	
 	datapath (
 		.clock(slow_clock),
@@ -136,34 +134,16 @@ module main(
 		.mem_write_this_pc
 		//.state(LEDR[9:0])
 	);
-	assign LEDR[0] = pc_from_register;
-	assign LEDR[1] = alu_set_flags;
-	
-	display_byte d_pc(
-		pc[7:0],
-		HEX4, HEX5
-	);
-	
-	assign LEDR[9] = irq;
-	assign LEDR[8] = reset_irq;
-	//assign LEDR[8] = Z;
-	io_interface key_io();
-//	switch_driver(
-//		.reset,
-//		.CLOCK_50,
-//		.key(KEY[3]),
-//		.io(key_io)
-//	);
 
+	/**
+	 * DRIVERS
+     */
+
+	io_interface key_io();
 	key_driver (
-		.clk(PS2_CLK), // Clock pin form keyboard
-		.data(PS2_DAT), //Data pin form keyboard
+		.clk(PS2_CLK),  // Clock pin form keyboard
+		.pd(PS2_DAT), 	//Data pin form keyboard
 		.io(key_io)
-	);
-	
-	display_word(
-		register_datapoke,
-		HEX0, HEX1, HEX2, HEX3
 	);
 
 	io_interface vga_io();
@@ -180,4 +160,23 @@ module main(
 		.VGA_SYNC_N,
 		.VGA_CLK
 	);	
+
+	/**
+	 * DEBUG DISPLAY
+	 */
+	assign LEDR[0] = pc_from_register;
+	assign LEDR[1] = alu_set_flags;
+	
+	assign LEDR[9] = irq;
+	assign LEDR[8] = reset_irq;
+
+	display_byte d_pc(
+		pc[7:0],
+		HEX4, HEX5
+	);
+
+	display_word d_register(
+		register_datapoke,
+		HEX0, HEX1, HEX2, HEX3
+	);
 endmodule

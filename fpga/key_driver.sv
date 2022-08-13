@@ -104,23 +104,27 @@
 // https://students.iitk.ac.in/eclub/assets/tutorials/keyboard.pdf
 module key_driver (
 	input logic clk, // Clock pin form keyboard
-	input logic data, //Data pin form keyboard
+	input logic pd, //Data pin form keyboard
 	input logic reset,
 	output logic [6:0] HEX4,
 	output logic [6:0] HEX5,
 	io_interface io
 );
-
-	reg [7:0] data_curr;
+	
+	
+	reg [7:0] data_curr;		// data[2] contains recent data
 	reg [7:0] data_pre;
+	reg [7:0] data_pre_pre;
+
+
 	reg [3:0] b;
 	reg flag;
 	
 	reg irq;
-	assign io.rdata = {8'b0, led};
+	assign io.rdata = {out_data[15:8] == 8'hE0 ? 8'hE0 : 8'h00, out_data[7:0]};
 	assign io.irq = irq;
 	
-	reg [7:0] led;
+	reg [15:0] out_data;
 	reg [7:0] counter;
 	
 	display_byte disp_counter(
@@ -131,9 +135,10 @@ module key_driver (
 	initial begin
 		b <= 4'h1;
 		flag <= 1'b0;
-		data_curr <= 8'hf0;
-		data_pre <= 8'hf0;
-		led <= 8'hf0;
+		data_curr <= 8'h00;
+		data_pre <= 8'h00;
+		data_pre_pre <= 8'h00;
+		out_data <= 16'h00;
 		counter <= 8'b0;
 		irq <= 1'b0;
 	end
@@ -141,17 +146,17 @@ module key_driver (
 	always @(negedge clk) //Activating at negative edge of clock from keyboard
 	begin
 		case(b)
-			1:; //first bit
-			2:data_curr[0]<=data;
-			3:data_curr[1]<=data;
-			4:data_curr[2]<=data;
-			5:data_curr[3]<=data;
-			6:data_curr[4]<=data;
-			7:data_curr[5]<=data;
-			8:data_curr[6]<=data;
-			9:data_curr[7]<=data;
-			10:flag<=1'b1; //Parity bit
-			11:flag<=1'b0; //Ending bit
+			1:  ; //first bit
+			2:  data_curr[0] <= pd;
+			3:  data_curr[1] <= pd;
+			4:  data_curr[2] <= pd;
+			5:  data_curr[3] <= pd;
+			6:  data_curr[4] <= pd;
+			7:  data_curr[5] <= pd;
+			8:  data_curr[6] <= pd;
+			9:  data_curr[7] <= pd;
+			10: flag <= 1'b1; //Parity bit
+			11: flag <= 1'b0; //Ending bit
 		endcase
 		
 		if(b<=10)
@@ -168,15 +173,19 @@ module key_driver (
 		end
 		else
 		begin		
-			if(data_curr==8'hf0)
+			// we have a make code iff
+			// (!F0 !E0) XX
+			// !F0  	 E0 		 XX
+			if(data_pre != 8'hF0 && data_pre != 8'hE0 && data_curr != 8'hF0 && data_curr != 8'hE0)
 			begin
 				counter <= counter + 1'b1;
-				led <= data_pre;
+				out_data <= { data_pre, data_curr };
 				irq <= 1'b1;
 			end
-			else
-				data_pre <= data_curr;
-			end
+			
+			data_pre_pre = data_pre;
+			data_pre = data_curr;
 		end
+	end
  
 endmodule

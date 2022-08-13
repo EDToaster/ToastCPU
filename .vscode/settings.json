@@ -44,5 +44,9 @@
         "stdexcept": "cpp",
         "streambuf": "cpp",
         "typeinfo": "cpp"
+    },
+    "files.exclude": {
+        "**/*.sv.bak": true,
+        "**/*.v.bak": true
     }
 }

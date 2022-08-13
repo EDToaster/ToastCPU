@@ -24,16 +24,12 @@
     // store char offset in r2
     imov    r2 0b00000111
     ishl    r2 8
-    imov    r3 48
-    or      r2 r3
 .loop
     imov    r3 .loop
     // noop 
     iadd    r5 0
     jmp     r3
 .irq
-    // pop return address to r4
-    pop     r4
     // get value at 0xFFFF into r5
     load    r5 r1
     mov     r6 r5
@@ -42,6 +38,8 @@
     
     // increment caret
     iadd    r0 1
+    // pop return address to r4
+    pop     r4
     jmp     r4
 .halt
     halt

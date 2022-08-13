@@ -48,7 +48,7 @@ module main(
 	logic [26:0] counter;
 	always_ff @(posedge CLOCK_50)
 	begin
-		counter <= counter + SW[8];
+		counter <= counter + SW[8]; 
 	end
 	
 	logic [15:0] pc, mem, instruction;

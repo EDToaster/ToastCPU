@@ -174,9 +174,8 @@ module key_driver (
 		else
 		begin		
 			// we have a make code iff
-			// (!F0 !E0) XX
-			// !F0  	 E0 		 XX
-			if(data_pre != 8'hF0 && data_pre != 8'hE0 && data_curr != 8'hF0 && data_curr != 8'hE0)
+			// !F0 XX
+			if(data_pre != 8'hF0 && data_curr != 8'hF0 && data_curr != 8'hE0)
 			begin
 				counter <= counter + 1'b1;
 				out_data <= { data_pre, data_curr };

@@ -1,0 +1,18 @@
+.reset
+    # setup isr
+    imov r12 .isr
+
+    # jump to main
+    imov r0  .main
+    jmp  r0
+
+.isr # due to dumb limitation, all referenced labels must be within 256 words of memory
+    # r0 is reserved for ISR
+    pop r0
+    jmp r0
+
+.main
+    
+.loop
+    imov r1 .loop
+    jmp  r1

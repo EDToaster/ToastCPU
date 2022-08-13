@@ -50,32 +50,33 @@ module memory_control (
 	// io!
 	
 	// key = 16'hFFFF;
-	// vga = 16'hC000;
+	// vga = 16'h0000;
 	
 	assign key_io.clock = clock;
 	assign key_io.waddr = write_address - 16'b1111111111111111;
-	assign key_io.wdata = write_data;
-	assign key_io.wenable = write_enable & (write_address == 16'b1111111111111111);
+	assign key_io.wdata = write_data;		
+	// never write to key_io
+	assign key_io.wenable = 1'b0;
 	
 	assign vga_io.clock = clock;
-	assign vga_io.waddr = write_address - 16'b1100000000000000;
+	assign vga_io.waddr = write_address;
 	assign vga_io.wdata = write_data;
-	assign vga_io.wenable = write_enable & (write_address[15:14] == 2'b11);
+	// this overlaps with ROM but is fine since we can read from rom and write to VGA at the same address.
+	assign vga_io.wenable = write_enable & (write_address[15] == 2'b0);
 	
 	
 	always_comb begin: output_select
+		// 32k ROM
 		if (read_address[15] == 1'b0)
 		begin
 			read_data = rom_data;
 		end
+		// 16k RAM
 		else if (read_address[15:14] == 2'b10)
 		begin
 			read_data = ram_data;
 		end
-		else if (read_address[15:14] == 3'b110)
-		begin
-			read_data = vga_io.rdata;
-		end
+		// 16k I/O mapped
 		else
 		begin
 			read_data = key_io.rdata;

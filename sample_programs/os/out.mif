@@ -1,0 +1,14 @@
+DEPTH = 32768;                -- The size of memory in words
+WIDTH = 16;                   -- The size of data in bits
+ADDRESS_RADIX = HEX;          -- The radix for address values
+DATA_RADIX = HEX;             -- The radix for data values
+CONTENT                       -- start of (address : data pairs)
+BEGIN
+0000 : 2C03; -- imov r12 .isr
+0001 : 2005; -- imov r0  .main
+0002 : A000; -- jmp  r0
+0003 : 60D0; -- pop r0
+0004 : A000; -- jmp r0
+0005 : 2105; -- imov r1 .loop
+0006 : A100; -- jmp  r1
+END;

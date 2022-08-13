@@ -2,7 +2,7 @@
     imov    r0  .start
     jnz     r0
 .vga_addr
-    0xC000
+    0x0000
 .key_addr
     0xFFFF
 .start

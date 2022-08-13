@@ -6,7 +6,7 @@ CONTENT                       -- start of (address : data pairs)
 BEGIN
 0000 : 2004; -- imov    r0  .start
 0001 : A002; -- jnz     r0
-0002 : C000; -- 0xC000
+0002 : 0000; -- 0x0000
 0003 : FFFF; -- 0xFFFF
 0004 : 2500; -- imov    r5  0
 0005 : 2002; -- imov    r0  .vga_addr
@@ -20,12 +20,12 @@ BEGIN
 000D : 230D; -- imov    r3 .loop
 000E : 9504; -- iadd    r5 0
 000F : A300; -- jmp     r3
-0010 : 64D0; -- pop     r4
-0011 : 0510; -- load    r5 r1
-0012 : 8656; -- mov     r6 r5
-0013 : 8624; -- add     r6 r2
-0014 : 1060; -- str     r0 r6
-0015 : 9014; -- iadd    r0 1
+0010 : 0510; -- load    r5 r1
+0011 : 8656; -- mov     r6 r5
+0012 : 8624; -- add     r6 r2
+0013 : 1060; -- str     r0 r6
+0014 : 9014; -- iadd    r0 1
+0015 : 64D0; -- pop     r4
 0016 : A400; -- jmp     r4
 0017 : 7000; -- halt
 END;

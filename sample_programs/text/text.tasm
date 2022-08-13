@@ -1,9 +1,9 @@
 .reset
     // r12 is the isr addr register
     imov r12 .isr
-    imov r1 .vga_addr
-    load r1 r1
-    imov r0 .main
+    imov r1  .vga_addr
+    load r1  r1
+    imov r0  .main
     jmp  r0 
 
     // r0 -- main addr
@@ -37,8 +37,9 @@
 .main
     jmp  r0
 .vga_addr
-    0xC000
+    0x0000
 .key_addr
+    // should probably assign this a particalar address, instead of whole 16kW space lol
     0xFFFF
 .lut
     0x00    //0x00

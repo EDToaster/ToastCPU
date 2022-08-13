@@ -6,7 +6,15 @@
 Here lies the Application Binary Interface specification of `toast`. We will be discussion general *memory layouts* as well as *procedure calling conventions* which will outline how registers of `toast` should be used. Even though parts of this ABI may be applicable to other cpu architectures as well, it will make certain `toast`-related assumptions.
 
 # Memory Layout
-// todo!
+
+Memory consists of a 64kW addressable space.
+
+```
+R: | 32k ROM | 16k RAM | 16k I/O |
+W: | 32k VGA | 16K RAM | 16k I/O |
+```
+
+Note we use the same addresses for both VGA and ROM, but this is fine because we will never be writing to ROM, and never reading from VGA. This frees up quite a bit of space for memory mapped I/O.
 
 # Register Use
 

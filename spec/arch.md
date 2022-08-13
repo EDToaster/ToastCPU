@@ -147,4 +147,5 @@ halt
 
 # Todo
 - [x] Change all J-type instructions so that the `opcode` is the same, and use last four bits to differentiate between `jz`, `jeq`, etc
-- [ ] Implement hardware interrupts
+- [x] Implement hardware interrupts
+- [ ] Implement `rti`

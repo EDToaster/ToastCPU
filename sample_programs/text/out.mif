@@ -5,9 +5,9 @@ DATA_RADIX = HEX;             -- The radix for data values
 CONTENT                       -- start of (address : data pairs)
 BEGIN
 0000 : 2C05; -- imov r12 .isr
-0001 : 2114; -- imov r1 .vga_addr
-0002 : 0110; -- load r1 r1
-0003 : 2013; -- imov r0 .main
+0001 : 2114; -- imov r1  .vga_addr
+0002 : 0110; -- load r1  r1
+0003 : 2013; -- imov r0  .main
 0004 : A000; -- jmp  r0
 0005 : 2215; -- imov r2 .key_addr
 0006 : 0220; -- load r2 r2
@@ -24,7 +24,7 @@ BEGIN
 0011 : 62D0; -- pop  r2
 0012 : A200; -- jmp  r2
 0013 : A000; -- jmp  r0
-0014 : C000; -- 0xC000
+0014 : 0000; -- 0x0000
 0015 : FFFF; -- 0xFFFF
 0016 : 0000; -- 0x00    //0x00
 0017 : 0000; -- 0x00    //0x01

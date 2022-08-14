@@ -12,11 +12,18 @@ opcodes = {
     "jnz": "1010",
     "jp": "1010",
     "jn": "1010",
+    
     "jmpl": "1010",
     "jzl": "1010",
     "jnzl": "1010",
     "jpl": "1010",
     "jnl": "1010",
+    
+    "jmpr": "1010",
+    "jzr": "1010",
+    "jnzr": "1010",
+    "jpr": "1010",
+    "jnr": "1010",
 
     "push": "0101",
     "pop": "0110",
@@ -55,16 +62,25 @@ imm8_opcodes = [
 ]
 
 jump_opcodes = {
-    "jmp": "00000",
-    "jz": "00001",
-    "jnz": "00010",
-    "jn": "00011",
-    "jp": "00100",
-    "jmpl": "10000",
-    "jzl": "10001",
-    "jnzl": "10010",
-    "jnl": "10011",
-    "jpl": "10100",
+    "jmp": "000000",
+    "jz": "000001",
+    "jnz": "000010",
+    "jn": "000011",
+    "jp": "000100",
+
+    "jmpl": "010000",
+    "jzl": "010001",
+    "jnzl": "010010",
+    "jnl": "010011",
+    "jpl": "010100",
+}
+
+jumpr_opcodes = {
+    "jmpr": "100000",
+    "jzr": "100001",
+    "jnzr": "100010",
+    "jnr": "100011",
+    "jpr": "100100",
 }
 
 
@@ -143,8 +159,11 @@ class Word:
             instr += self.word[2].to_binary(8)
         elif opcode in jump_opcodes:
             instr += self.word[1].to_binary(4)
-            instr += "000"
+            instr += "00"
             instr += jump_opcodes[opcode]
+        elif opcode in jumpr_opcodes:
+            instr += "000000"
+            instr += jumpr_opcodes[opcode]
         elif opcode in no_arg_opcodes:
             instr += "0" * 12
         elif opcode == "push":

@@ -51,8 +51,8 @@ module main(
 	end
 	
 	logic [15:0] pc, mem, instruction;
-	logic reg_write, mem_to_reg, fetch_instruction, alu_override_imm8, alu_override_imm4, 
-			alu_set_flags, set_pc, pc_from_register, pc_from_irq, set_sp, increase_sp, mem_write, mem_write_is_stack, mem_write_next_pc, mem_write_this_pc;
+	logic reg_write, mem_to_reg, mem_read_is_pc, mem_read_is_sp, alu_override_imm8, alu_override_imm4, 
+			alu_set_flags, set_pc, pc_from_register, pc_from_irq, pc_from_mem, set_sp, increase_sp, mem_write, mem_write_is_stack, mem_write_next_pc, mem_write_this_pc;
 
 	logic Z, N;
 	
@@ -69,13 +69,15 @@ module main(
 		// control signals
 		.reg_write,
 		.mem_to_reg, 			// transfer memory to reg? (for load, etc)
-		.fetch_instruction,	// on clock
+		.mem_read_is_pc,	// on clock
+		.mem_read_is_sp,	// on clock
 		.alu_override_imm8,	
 		.alu_override_imm4,
 		.alu_set_flags,			// on clock, set status flags?
 		.set_pc,					// on clock
 		.pc_from_register,
 		.pc_from_irq,
+		.pc_from_mem,
 		.reset_irq,				// todo: set on clock posedge :(
 	
 		.set_sp,
@@ -116,13 +118,15 @@ module main(
 	
 		.reg_write,
 		.mem_to_reg, 			// transfer memory to reg? (for load, etc)
-		.fetch_instruction,	// on clock
+		.mem_read_is_pc,	// on clock
+		.mem_read_is_sp,	// on clock
 		.alu_override_imm8,	
 		.alu_override_imm4,	
 		.alu_set_flags,			// on clock, set status flags?
 		.set_pc,					// on clock
 		.pc_from_register,	
 		.pc_from_irq,
+		.pc_from_mem,
 		.reset_irq,
 		
 		.set_sp, 

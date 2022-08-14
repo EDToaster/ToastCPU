@@ -8,13 +8,15 @@ module datapath (
 	
 	input logic reg_write,
 	input logic mem_to_reg, 			// transfer memory to reg? (for load, etc)
-	input logic fetch_instruction,	// on clock
+	input logic mem_read_is_pc,	// on clock
+	input logic mem_read_is_sp,	// on clock
 	input logic alu_override_imm8,		// override output of alu to be imm16 value?
 	input logic alu_override_imm4,		// override input of alu_b to be imm4 value?
 	input logic alu_set_flags,			// on clock, set status flags?
 	input logic set_pc,					// on clock
 	input logic pc_from_register,	
 	input logic pc_from_irq,
+	input logic pc_from_mem,
 	input logic mem_write,
 	input logic mem_write_is_stack,	// set the write address to stack pointer
 	input logic mem_write_next_pc,	// set the write data to be next PC 
@@ -48,7 +50,7 @@ module datapath (
 
 	// sp/sr/pc
 	logic [15:0] SP, SR, PC;
-	wire [15:0] next_PC = pc_from_register ? reg_rdata1 : PC + 16'h1;
+	wire [15:0] next_PC = pc_from_register ? reg_rdata1 : (pc_from_mem ? mem_rdata : PC + 16'h1);
 	wire [15:0] next_SP = increase_sp ? SP + 16'h1 : SP - 16'h1;
 	
 	assign PC_poke = PC;
@@ -58,7 +60,7 @@ module datapath (
 	wire [15:0] mem_raddr, mem_rdata, mem_waddr, mem_wdata;
 	wire mem_wenable = mem_write, mem_rvalid;
 	
-	assign mem_raddr = fetch_instruction ? PC : reg_rdata2;	// always reading from pc or r2
+	assign mem_raddr = mem_read_is_pc ? PC : (mem_read_is_sp ? SP : reg_rdata2);	// always reading from pc sp or r2
 	assign mem_waddr = mem_write_is_stack ? SP : reg_rdata1;
 	assign mem_wdata = mem_write_next_pc ? next_PC : (mem_write_this_pc ? PC : reg_rdata2);
 	
@@ -169,11 +171,11 @@ module datapath (
 			SR <= 16'h0000;
 			PC <= 16'h0000;
 		end else begin
-//			input fetch_instruction,
+//			input mem_read_is_pc,
 //			input alu_set_flags,			// set status flags?
 //			input set_pc,
 	
-			if (fetch_instruction) begin
+			if (mem_read_is_pc) begin
 				current_instruction <= mem_rdata;
 			end 
 			

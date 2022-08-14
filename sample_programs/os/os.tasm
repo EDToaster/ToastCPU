@@ -1,18 +1,45 @@
 .reset
-    # setup isr
+    # setup isr and jump to main
     imov r12 .isr
 
-    # jump to main
     imov r0  .main
     jmp  r0
 
-.isr # due to dumb limitation, all referenced labels must be within 256 words of memory
-    # r0 is reserved for ISR
+# due to dumb limitation, all referenced labels must be within 256 words of memory
+.isr
+    # r0 is reserved for ISR (sounds dumb but here we are)
     pop r0
     jmp r0
 
 .main
+    imov r1 .welcome_message        # load welcome message addr
+    imov r2 .print_string           # load print_string addr
+    push r1                         # push argument to stack
+    jmpl r2                         # jump and link 
+
+
+    halt
+
+.print_string
+    # will need to use 2 registers -- r2 and r3
     
-.loop
-    imov r1 .loop
-    jmp  r1
+
+.print_char
+
+.welcome_message
+    # Hello from ToastOS!\0
+    0x20
+    0x66
+    0x72
+    0x6f
+    0x6d
+    0x20
+    0x54
+    0x6f
+    0x61
+    0x73
+    0x74
+    0x4f
+    0x53
+    0x21
+    0x00

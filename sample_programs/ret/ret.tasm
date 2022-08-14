@@ -1,0 +1,8 @@
+# Simple program to test ret (pop and jump)
+.reset
+    imov r12 .isr
+.main
+    imov r0 .main
+    jmp  r0
+.isr
+    jmpr

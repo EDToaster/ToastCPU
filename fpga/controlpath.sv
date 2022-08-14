@@ -11,13 +11,15 @@ module controlpath(
 	
 	output logic reg_write,
 	output logic mem_to_reg, 			// transfer memory to reg? (for load, etc)
-	output logic fetch_instruction,	// on clock
+	output logic mem_read_is_pc,	// on clock
+	output logic mem_read_is_sp,
 	output logic alu_override_imm8,	// override output of alu to be imm16 value?
 	output logic alu_override_imm4,		// override input b of alu to be imm4 value?
 	output logic alu_set_flags,		// on clock, set status flags?
 	output logic set_pc,					// on clock
 	output logic pc_from_irq,
 	output logic pc_from_register,	
+	output logic pc_from_mem,
 	output logic reset_irq,				// todo: posedge clock reset IRQ line (currently async)
 	
 	output logic set_sp,
@@ -50,10 +52,18 @@ module controlpath(
 		op_pop_set_addr,
 		op_pop_set_register,
 		
+		// jmpl
 		op_jmp_link,
 		op_jmp_link_inc,
+
+		// jmp
 		op_jmp,
 		
+		// jmpr
+		op_jmp_ret_dec,
+		op_jmp_ret_set_addr,
+		op_jmp_ret_set_pc,
+
 		// irq
 		op_irq_jmp_link,
 		op_irq_jmp_link_inc,
@@ -71,6 +81,7 @@ module controlpath(
 	wire [3:0] jop = instruction[3:0];
 	wire override_b = instruction[3];
 	wire link_jump = instruction[4];
+	wire ret_jump = instruction[5];
 	
 	assign state = {
 		(curr_state == reset_state), 
@@ -119,14 +130,16 @@ module controlpath(
 		// all control flags by default are 0
 		reg_write = 1'b0;
 		mem_to_reg = 1'b0;
-		fetch_instruction = 1'b0;
 		alu_override_imm8 = 1'b0;
 		alu_override_imm4 = 1'b0;
 		alu_set_flags = 1'b0;
 		set_pc = 1'b0;
 		pc_from_register = 1'b0;
 		pc_from_irq = 1'b0;
+		pc_from_mem = 1'b0;
 		mem_write = 1'b0;
+		mem_read_is_pc = 1'b0;
+		mem_read_is_sp = 1'b0;
 		mem_write_is_stack = 1'b0;
 		mem_write_next_pc = 1'b0;
 		mem_write_this_pc = 1'b0;
@@ -138,17 +151,27 @@ module controlpath(
 			reset_state:;
 			
 			fetch_set_addr,
-			fetch_set_instruction: fetch_instruction = 1'b1;
+			fetch_set_instruction: mem_read_is_pc = 1'b1;
 			
 			op_decode:;
 			
 			op_load_set_addr, op_pop_set_addr:;
+			op_jmp_ret_set_addr: begin
+				mem_read_is_sp = 1'b1;
+			end
+
 			op_load_set_register, op_pop_set_register: begin
 				reg_write = 1'b1;
 				mem_to_reg = 1'b1;
 				set_pc = 1'b1;
 			end
 			
+			op_jmp_ret_set_pc: begin
+				mem_read_is_sp = 1'b1;
+				pc_from_mem = 1'b1;
+				set_pc = 1'b1;
+			end
+
 			op_store: begin
 				mem_write = 1'b1;
 				set_pc = 1'b1;
@@ -170,11 +193,11 @@ module controlpath(
 				increase_sp = 1'b1;
 			end
 			
-			op_pop_dec: begin
+			op_pop_dec, op_jmp_ret_dec: begin
 				set_sp = 1'b1;
 				increase_sp = 1'b0;
 			end
-			
+
 			op_jmp_link: begin
 				mem_write = 1'b1;
 				mem_write_is_stack = 1'b1;
@@ -222,7 +245,7 @@ module controlpath(
 			4'b0101: op_decode_state = op_push_store;
 			4'b0110: op_decode_state = op_pop_dec;
 			4'b0010: op_decode_state = op_alu;
-			4'b1010: op_decode_state = (link_jump & do_jump) ? op_jmp_link : op_jmp;
+			4'b1010: op_decode_state = (ret_jump & do_jump) ? op_jmp_ret_dec : ((link_jump & do_jump) ? op_jmp_link : op_jmp); // if do_jump is false, fallback to op_jmp and inc PC
 			4'b0111: op_decode_state = op_halt;
 			4'b1000, 4'b1001: op_decode_state = op_alu;
 			default: op_decode_state = op_halt;
@@ -253,6 +276,10 @@ module controlpath(
 			op_jmp_link_inc: next_state = op_jmp;
 			op_jmp: next_state = reset_state;
 			
+			op_jmp_ret_dec: next_state = op_jmp_ret_set_addr;
+			op_jmp_ret_set_addr: next_state = op_jmp_ret_set_pc;
+			op_jmp_ret_set_pc: next_state = reset_state;
+				
 			op_irq_jmp_link: next_state = op_irq_jmp_link_inc;
 			op_irq_jmp_link_inc: next_state = op_irq_jmp;
 			op_irq_jmp: next_state = op_irq_reset;

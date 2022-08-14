@@ -131,8 +131,8 @@ halt
                  isshr = 1001
                  ishl  = 1010
 
-1010 xxxx ---x xxxx
-(op) rdst    l jop
+1010 xxxx --xx xxxx
+(op) rdst   rl jop
      (J-type) Jump to the destination described by the value of rdst using the following conditions 
               jop : condition
               0000: (jmp) unconditional jump
@@ -141,8 +141,14 @@ halt
               0011: (jn)  jump if negative
               0100: (jp)  jump if positive
 
+              rl: (00, 01, 10) 
+
               l : if the l bit is set and a jump is performed, push 
                   the next instruction's pointer onto the stack.
+
+              r : if the r bit is set and we will perform a jump, pop
+                  the stack and jump to that popped value. When 
+                  the r bit is set, rdst is completely ignored.
 ```
 
 # Todo

@@ -32,8 +32,7 @@
     iadd r1 1
 
     // return from isr
-    pop  r2 
-    jmp  r2
+    jmpr
 .main
     jmp  r0
 .vga_addr

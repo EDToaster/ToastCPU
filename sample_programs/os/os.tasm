@@ -7,9 +7,8 @@
 .reset
     # setup isr and jump to main
     imov r12 .isr
-
-    imov r0  .main
-    jmp  r0
+    call .main
+    halt
 
 # due to dumb limitation, all referenced labels must be within 256 words of memory
 .isr
@@ -17,12 +16,10 @@
 
 .main
     imov r1 .welcome_message        # load message
-    imov r2 .print_string           # load print_string addr
     push r1                         # push argument to stack
-    jmpl r2                         # jump and link 
+    call .print_string
     pop  r1
-
-    halt
+    jmpr
 
 .print_string # (char *)
     # save registers
@@ -49,8 +46,7 @@
 
     push r3
     push r4
-    imov r3 .print_char
-    jmpl r3
+    call .print_char
     pop  r4
     pop  r3
 

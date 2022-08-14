@@ -1,3 +1,5 @@
+from __future__ import annotations
+from cmath import exp
 from dataclasses import dataclass
 from typing import Optional, List, Tuple, Dict
 import re
@@ -48,6 +50,8 @@ opcodes = {
     "isshr": "1001",
     "ishl": "1001",
 }
+
+macros = [ "call" ]
 
 one_4bit_opcodes = ["not", ]
 
@@ -123,6 +127,29 @@ class Opcode:
     opcode: str
 
 @dataclass
+class LabelMask:
+    """
+    Class that represents a certain operation on a label location
+    For example:
+
+        call .label
+
+    will be converted to 
+        imov r0 LabelMask(.label, 0xFF00, 8)
+        ishl r0 4
+        ior  r0 LabelMask(.label, 0x00F0, 4)
+        ishl r0 4
+        ior  r0 LabelMask(.label, 0x000F, 0)
+        jmpl r0
+    """
+    label: Label
+    mask: int
+    shr: int
+
+    def to_number(self, label_locations: Dict[Label, Number]) -> Number:
+        return Number((label_locations[self.label].number & self.mask) >> self.shr)
+
+@dataclass
 class Register:
     number: int
 
@@ -137,28 +164,28 @@ class Number:
         return f"{{:0{bits}b}}".format(self.number)
 
 @dataclass
-class Word:
+class Instruction:
     text: str
     labels: List[Label]
-    word: List
+    words: List
     
     def convert_opcode(self):
-        opcode = self.word[0].opcode
+        opcode = self.words[0].opcode
         instr = opcodes[opcode]
         if opcode in one_4bit_opcodes:
             # assume word[1] is a 4bit reg or number
-            instr += self.word[1].to_binary(4)
+            instr += self.words[1].to_binary(4)
             instr += "0" * 4
             instr += opcodes_suffix[opcode]
         elif opcode in two_4bit_opcodes:
-            instr += self.word[1].to_binary(4)
-            instr += self.word[2].to_binary(4)
+            instr += self.words[1].to_binary(4)
+            instr += self.words[2].to_binary(4)
             instr += opcodes_suffix[opcode]
         elif opcode in imm8_opcodes:
-            instr += self.word[1].to_binary(4)
-            instr += self.word[2].to_binary(8)
+            instr += self.words[1].to_binary(4)
+            instr += self.words[2].to_binary(8)
         elif opcode in jump_opcodes:
-            instr += self.word[1].to_binary(4)
+            instr += self.words[1].to_binary(4)
             instr += "00"
             instr += jump_opcodes[opcode]
         elif opcode in jumpr_opcodes:
@@ -168,19 +195,51 @@ class Word:
             instr += "0" * 12
         elif opcode == "push":
             instr += "1101"
-            instr += self.word[1].to_binary(4)
+            instr += self.words[1].to_binary(4)
             instr += "0" * 4
         elif opcode == "pop":
-            instr += self.word[1].to_binary(4)
+            instr += self.words[1].to_binary(4)
             instr += "11010000"
 
         return instr
 
     def to_binary(self) -> str:
-        if isinstance(self.word[0], Opcode):
+        if isinstance(self.words[0], Opcode):
             return self.convert_opcode()
-        if isinstance(self.word[0], Number):
-            return self.word[0].to_binary(16)
+        if isinstance(self.words[0], Number):
+            return self.words[0].to_binary(16)
+
+    def expand_and_convert_mask(self) -> List[Instruction]:
+        if isinstance(self.words[0], Opcode):
+            opcode = self.words[0].opcode
+            if opcode == "call":
+                """        
+                imov r0 LabelMask(.label, 0xFF00, 8)
+                ishl r0 4
+                ior  r0 LabelMask(.label, 0x00F0, 4)
+                ishl r0 4
+                ior  r0 LabelMask(.label, 0x000F, 0)
+                jmpl r0
+                """
+                label = self.words[1]
+                if not isinstance(label, Label):
+                    raise "call macro is supposed to have one argument that is a label"
+                return [
+                    Instruction(self.text, self.labels, [Opcode("imov"), Register(0), LabelMask(label, 0xFF00, 8)]),
+                    Instruction("", [], [Opcode("ishl"), Register(0), Number(4)]),
+                    Instruction("", [], [Opcode("ior"), Register(0), LabelMask(label, 0x00F0, 4)]),
+                    Instruction("", [], [Opcode("ishl"), Register(0), Number(4)]),
+                    Instruction("", [], [Opcode("ior"), Register(0), LabelMask(label, 0x000F, 0)]),
+                    Instruction("", [], [Opcode("jmpl"), Register(0)]),
+                ]
+            else:
+                return [
+                    Instruction(self.text, self.labels, [(LabelMask(l, 0xFFFF, 0) if isinstance(l, Label) else l) for l in self.words])
+                ]
+        if isinstance(self.words[0], Number):
+            return [
+                self
+            ]
 
 class Program:
     def __init__(self):
@@ -195,6 +254,10 @@ class Program:
     
     def parse_opcode(self, token) -> Optional[Opcode]:
         if token in opcodes:
+            return Opcode(token)
+
+    def parse_macro(self, token) -> Optional[Opcode]:
+        if token in macros:
             return Opcode(token)
 
     def parse_register(self, token) -> Optional[Register]:
@@ -219,6 +282,10 @@ class Program:
         if opcode is not None:
             return opcode
 
+        macro = self.parse_macro(token)
+        if macro is not None:
+            return macro
+
         register = self.parse_register(token)
         if register is not None:
             return register
@@ -238,30 +305,45 @@ class Program:
             raw_format.append((line.strip(), [r for r in raw if r is not None]))
 
         # add labels to words
-        labeled = []
-        current_labels = []
+        labeled_instructions: List[Instruction] = []
+        current_labels_for_line = []
         for (text, line) in raw_format:
             if len(line) < 1:
                 continue
 
             if isinstance(line[0], Label):
-                current_labels.append(line[0])
+                current_labels_for_line.append(line[0])
             else:
-                labeled.append(Word(text, current_labels, line))
-                current_labels = []
+                labeled_instructions.append(Instruction(text, current_labels_for_line, line))
+                current_labels_for_line = []
+
+        # do macro expansion -- also convert label (in tokens, not current labels for line) to label masks
+        expanded_instructions = []
+        for instruction in labeled_instructions:
+            expanded_instructions += instruction.expand_and_convert_mask()
+            
+        
+        print()
+        print()
+        print()
+        [print (line) for line in expanded_instructions]
 
         # find label locations
         label_locations: Dict[Label, Number] = {}
-        for i, line in enumerate(labeled):
+        for i, line in enumerate(expanded_instructions):
             for label in line.labels:
+                print (f"{label} at {i}")
                 label_locations[label] = Number(i)
         
         # replace labels with numbers
         labels_replaced = []
-        for line in labeled:
-            word = Word(line.text, line.labels, [(label_locations[l] if isinstance(l, Label) else l) for l in line.word])
+        for line in expanded_instructions:
+            word = Instruction(line.text, line.labels, [(l.to_number(label_locations) if isinstance(l, LabelMask) else l) for l in line.words])
             labels_replaced.append(word)
         
+        print()
+        print()
+        print()
         [print (line) for line in labels_replaced]
 
         return [(line.text, line.to_binary()) for line in labels_replaced]

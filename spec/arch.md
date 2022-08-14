@@ -86,7 +86,7 @@ str  rx1  rx2
 imov rxx  imm8
      (I-type) Move imm8 (sign extended to 16 bits) into register rxx
 
-0011 (Unused)
+0011 (Maybe an imovh instruction?)
 
 0101 1101 xxxx ----
 push      rsrc

@@ -18,4 +18,5 @@ Read documents on the [architecture](spec/arch.md), and the [application binary 
 - [ ] Add floating point module, maybe a 32-bit variant?
 - [x] IRQ and handlers (keyboard driver testing TBD...)
 - [ ] Implement a `rti` instruction that allows for more interrupts to occur. Currently, interrupts will nest themselves and cause a ton of issues.
+    - [ ] `rti` will also need to restore the status register
 - [ ] Add Register Banking (Maybe...)

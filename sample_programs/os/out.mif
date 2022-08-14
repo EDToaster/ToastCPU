@@ -5,10 +5,77 @@ DATA_RADIX = HEX;             -- The radix for data values
 CONTENT                       -- start of (address : data pairs)
 BEGIN
 0000 : 2C03; -- imov r12 .isr
-0001 : 2005; -- imov r0  .main
+0001 : 2004; -- imov r0  .main
 0002 : A000; -- jmp  r0
-0003 : 60D0; -- pop r0
-0004 : A000; -- jmp r0
-0005 : 2105; -- imov r1 .loop
-0006 : A100; -- jmp  r1
+0003 : A020; -- jmpr
+0004 : 2136; -- imov r1 .welcome_message        # load message
+0005 : 220A; -- imov r2 .print_string           # load print_string addr
+0006 : 5D10; -- push r1                         # push argument to stack
+0007 : A210; -- jmpl r2                         # jump and link
+0008 : 61D0; -- pop  r1
+0009 : 7000; -- halt
+000A : 5D20; -- push r2 # message pointer
+000B : 5D30; -- push r3 # char to print
+000C : 5D40; -- push r4 # VGA pointer
+000D : 5D50; -- push r5 # jmp loc
+000E : 2400; -- imov r4 0
+000F : 82D6; -- mov  r2 r13
+0010 : 9265; -- isub r2 6
+0011 : 0220; -- load r2 r2 # r2 is now the argument/pointer
+0012 : 2520; -- imov r5 .print_string_exit
+0013 : 0320; -- load r3 r2
+0014 : 9304; -- iadd r3 0 # load doesn't do arith
+0015 : A501; -- jz   r5
+0016 : 5D30; -- push r3
+0017 : 5D40; -- push r4
+0018 : 2325; -- imov r3 .print_char
+0019 : A310; -- jmpl r3
+001A : 64D0; -- pop  r4
+001B : 63D0; -- pop  r3
+001C : 9214; -- iadd r2 1
+001D : 9414; -- iadd r4 1
+001E : 2512; -- imov r5 .print_string_loop
+001F : A500; -- jmp  r5
+0020 : 65D0; -- pop  r5
+0021 : 64D0; -- pop  r4
+0022 : 63D0; -- pop  r3
+0023 : 62D0; -- pop  r2
+0024 : A020; -- jmpr
+0025 : 5D20; -- push r2
+0026 : 5D30; -- push r3
+0027 : 5D40; -- push r4
+0028 : 82D6; -- mov  r2 r13
+0029 : 9265; -- isub r2 6
+002A : 0220; -- load r2 r2 # r2 is now char
+002B : 84D6; -- mov  r4 r13
+002C : 9455; -- isub r4 5
+002D : 0440; -- load r4 r4 # r4 is now word *
+002E : 2338; -- imov r3 0b00111000
+002F : 938A; -- ishl r3 8
+0030 : 8232; -- or  r2 r3
+0031 : 1420; -- str  r4 r2
+0032 : 64D0; -- pop  r4
+0033 : 63D0; -- pop  r3
+0034 : 62D0; -- pop  r2
+0035 : A020; -- jmpr
+0036 : 0048; -- 0x48
+0037 : 0065; -- 0x65
+0038 : 006C; -- 0x6C
+0039 : 006C; -- 0x6C
+003A : 006F; -- 0x6F
+003B : 0020; -- 0x20
+003C : 0066; -- 0x66
+003D : 0072; -- 0x72
+003E : 006F; -- 0x6f
+003F : 006D; -- 0x6d
+0040 : 0020; -- 0x20
+0041 : 0054; -- 0x54
+0042 : 006F; -- 0x6f
+0043 : 0061; -- 0x61
+0044 : 0073; -- 0x73
+0045 : 0074; -- 0x74
+0046 : 004F; -- 0x4f
+0047 : 0053; -- 0x53
+0048 : 0021; -- 0x21
+0049 : 0000; -- 0x00
 END;

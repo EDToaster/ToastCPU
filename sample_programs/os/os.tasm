@@ -1,3 +1,9 @@
+# Some useful stuff
+# r12 - ISR
+# r13 - SP
+# r14 - SR
+# r15 - PC
+
 .reset
     # setup isr and jump to main
     imov r12 .isr
@@ -7,27 +13,98 @@
 
 # due to dumb limitation, all referenced labels must be within 256 words of memory
 .isr
-    # r0 is reserved for ISR (sounds dumb but here we are)
-    pop r0
-    jmp r0
+    jmpr
 
 .main
-    imov r1 .welcome_message        # load welcome message addr
+    imov r1 .welcome_message        # load message
     imov r2 .print_string           # load print_string addr
     push r1                         # push argument to stack
     jmpl r2                         # jump and link 
-
+    pop  r1
 
     halt
 
-.print_string
-    # will need to use 2 registers -- r2 and r3
-    
+.print_string # (char *)
+    # save registers
+    push r2 # message pointer
+    push r3 # char to print
+    push r4 # VGA pointer
+    push r5 # jmp loc
 
-.print_char
+    # address counter
+    imov r4 0
+
+    # get argument into r2
+    mov  r2 r13
+    isub r2 6
+    load r2 r2 # r2 is now the argument/pointer
+
+    # loop through each char of the string
+.print_string_loop
+    # load exit point
+    imov r5 .print_string_exit
+    load r3 r2
+    iadd r3 0 # load doesn't do arith
+    jz   r5
+
+    push r3
+    push r4
+    imov r3 .print_char
+    jmpl r3
+    pop  r4
+    pop  r3
+
+    # increment vga and text loc
+    iadd r2 1
+    iadd r4 1
+
+    imov r5 .print_string_loop
+    jmp  r5
+
+.print_string_exit
+    # restore registers and return
+    pop  r5
+    pop  r4
+    pop  r3
+    pop  r2
+    jmpr
+
+.print_char # (word char_to_print, word *print_loc)
+    # save registers
+    push r2
+    push r3
+    push r4
+
+    # get argument into r2
+    mov  r2 r13
+    isub r2 6
+    load r2 r2 # r2 is now char
+
+    # get argument into r2
+    mov  r4 r13
+    isub r4 5
+    load r4 r4 # r4 is now word *
+
+    imov r3 0b00111000
+    ishl r3 8
+    or  r2 r3
+
+    # vga addr
+    str  r4 r2
+
+    # restore registers and return
+    pop  r4
+    pop  r3
+    pop  r2
+    jmpr
 
 .welcome_message
     # Hello from ToastOS!\0
+    0x48
+    0x65
+    0x6C
+    0x6C
+    0x6F
     0x20
     0x66
     0x72

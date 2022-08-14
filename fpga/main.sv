@@ -42,12 +42,12 @@ module main(
 	wire reset = KEY[0];
 
 	// create slower clock
-	wire slow_clock = SW[9] ? counter[14] : CLOCK_50;
+	wire slow_clock = SW[9] ? (SW[8] ? counter[14] : KEY[1]) : CLOCK_50;
 	
 	logic [26:0] counter;
 	always_ff @(posedge CLOCK_50)
 	begin
-		counter <= counter + SW[8]; 
+		counter <= counter + 1'b1;
 	end
 	
 	logic [15:0] pc, mem, instruction;

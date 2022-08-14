@@ -1,0 +1,4 @@
+# test some load instructions
+    imov r0 0
+    load r0 r0
+    halt

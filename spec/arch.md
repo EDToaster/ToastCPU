@@ -64,7 +64,7 @@ There are 5 types of instructions (x denotes set bit, - denotes "I don't care wh
 | :--- | :----------------------------------------------------- |
 | D    | <pre>xxxx xxxx xxxx ----<br>op   rx1  rx2       </pre> |
 | I    | <pre>xxxx xxxx xxxxxxxx <br>op   rx1  imm8      </pre> |
-| J    | <pre>xxxx xxxx x -------<br>op   rdst n         </pre> |
+| J    | <pre>xxxx xxxx -- xx xxxx<br>op   rdst    rl jop</pre> |
 | ALU  | <pre>xxxx xxxx xxxx xxxx<br>op   rx1  rx2  aluop</pre> |
 | HALT | <pre>0111 ---- ---- ----<br>halt                </pre> |
 

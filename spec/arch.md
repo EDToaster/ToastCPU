@@ -67,6 +67,7 @@ There are 5 types of instructions (x denotes set bit, - denotes "I don't care wh
 | J    | <pre>xxxx xxxx -- xx xxxx<br>op   rdst    rl jop</pre> |
 | ALU  | <pre>xxxx xxxx xxxx xxxx<br>op   rx1  rx2  aluop</pre> |
 | HALT | <pre>0111 ---- ---- ----<br>halt                </pre> |
+| RTI  | <pre>1100 ---- ---- ----<br>rti                 </pre> |
 
 However, for the negate operation (ALU-type), `rx2` is always 0. 
 For iALU ops, rx2 is an imm4 value.
@@ -149,6 +150,15 @@ halt
               r : if the r bit is set and we will perform a jump, pop
                   the stack and jump to that popped value. When 
                   the r bit is set, rdst is completely ignored.
+
+1011 (unused)
+
+1100 ---- ---- ----
+rti
+     (RTI-type) Return from interrupt
+                Pops the top of stack into status register, then pops the top
+                of stack into program counter, executing a jump. `rt` will also
+                signal to the CPU to start accepting interrupts again.
 ```
 
 # Todo

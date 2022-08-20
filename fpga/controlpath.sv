@@ -1,3 +1,5 @@
+`include "types/control_signals_imports.svh"
+
 module controlpath(
 	input logic clock,
 	input logic reset, // reset low
@@ -12,7 +14,8 @@ module controlpath(
 	output logic reg_write,
 	output logic mem_to_reg, 			// transfer memory to reg? (for load, etc)
 	output logic mem_read_is_pc,	// on clock
-	output logic mem_read_is_sp,
+	output logic mem_read_is_sp,	// on clock
+
 	output logic alu_override_imm8,	// override output of alu to be imm16 value?
 	output logic alu_override_imm4,		// override input b of alu to be imm4 value?
 	output logic alu_set_flags,		// on clock, set status flags?
@@ -20,15 +23,16 @@ module controlpath(
 	output logic pc_from_irq,
 	output logic pc_from_register,	
 	output logic pc_from_mem,
+	output logic sr_from_mem,
 	output logic reset_irq,				// todo: posedge clock reset IRQ line (currently async)
 	
 	output logic set_sp,
 	output logic increase_sp,
 	
 	output logic mem_write,
-	output logic mem_write_is_stack,	// for push, jal instructions
-	output logic mem_write_next_pc,	// for jal instructions
-	output logic mem_write_this_pc,  // for irq, since we want to store return location on stack
+	
+	output mem_write_addr_source_t::t mem_write_addr_source,
+	output mem_write_data_source_t::t mem_write_data_source,
 		
 	output logic [9:0] state
 );
@@ -65,10 +69,13 @@ module controlpath(
 		op_jmp_ret_set_pc,
 
 		// irq
-		op_irq_jmp_link,
+		op_irq_jmp_link,		// 
 		op_irq_jmp_link_inc,
 		op_irq_jmp,
 		op_irq_reset,
+
+
+		// rti
 		
 		op_alu,
 		
@@ -137,12 +144,14 @@ module controlpath(
 		pc_from_register = 1'b0;
 		pc_from_irq = 1'b0;
 		pc_from_mem = 1'b0;
+		sr_from_mem = 1'b0;
 		mem_write = 1'b0;
 		mem_read_is_pc = 1'b0;
 		mem_read_is_sp = 1'b0;
-		mem_write_is_stack = 1'b0;
-		mem_write_next_pc = 1'b0;
-		mem_write_this_pc = 1'b0;
+		
+		mem_write_addr_source = mem_write_addr_source_t::register_data;
+		mem_write_data_source = mem_write_data_source_t::register_data;
+
 		set_sp = 1'b0;
 		increase_sp = 1'b0;
 		reset_irq = 1'b0;
@@ -179,7 +188,7 @@ module controlpath(
 			
 			op_push_store: begin
 				mem_write = 1'b1;
-				mem_write_is_stack = 1'b1;
+				mem_write_addr_source = mem_write_addr_source_t::sp;
 			end
 			
 			op_push_inc: begin
@@ -200,14 +209,14 @@ module controlpath(
 
 			op_jmp_link: begin
 				mem_write = 1'b1;
-				mem_write_is_stack = 1'b1;
-				mem_write_next_pc = 1'b1;
+				mem_write_addr_source = mem_write_addr_source_t::sp;
+				mem_write_data_source = mem_write_data_source_t::next_pc;
 			end
 			
 			op_irq_jmp_link: begin
 				mem_write = 1'b1;
-				mem_write_is_stack = 1'b1;
-				mem_write_this_pc = 1'b1;
+				mem_write_addr_source = mem_write_addr_source_t::sp;
+				mem_write_data_source = mem_write_data_source_t::this_pc;
 			end
 			
 			op_jmp: begin

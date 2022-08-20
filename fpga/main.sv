@@ -1,13 +1,4 @@
-interface io_interface;
-	logic clock;
-	
-	logic [15:0] waddr, raddr, wdata, rdata;
-	logic wenable;
-	
-	// irq
-	logic irq;
-	logic reset_irq;
-endinterface
+`include "types/control_signals_imports.svh"
 
 module main(
 	input logic CLOCK_50,
@@ -52,7 +43,10 @@ module main(
 	
 	logic [15:0] pc, mem, instruction;
 	logic reg_write, mem_to_reg, mem_read_is_pc, mem_read_is_sp, alu_override_imm8, alu_override_imm4, 
-			alu_set_flags, set_pc, pc_from_register, pc_from_irq, pc_from_mem, set_sp, increase_sp, mem_write, mem_write_is_stack, mem_write_next_pc, mem_write_this_pc;
+			alu_set_flags, set_pc, pc_from_register, pc_from_irq, pc_from_mem, sr_from_mem, set_sp, increase_sp, mem_write;
+
+    mem_write_addr_source_t::t mem_write_addr_source;
+    mem_write_data_source_t::t mem_write_data_source;
 
 	logic Z, N;
 	
@@ -78,15 +72,15 @@ module main(
 		.pc_from_register,
 		.pc_from_irq,
 		.pc_from_mem,
+		.sr_from_mem,
 		.reset_irq,				// todo: set on clock posedge :(
 	
 		.set_sp,
 		.increase_sp,
 	
 		.mem_write,
-		.mem_write_is_stack,
-		.mem_write_next_pc,
-		.mem_write_this_pc,
+        .mem_write_addr_source,
+		.mem_write_data_source,
 		
 		.key_io,
 		.vga_io,
@@ -127,15 +121,15 @@ module main(
 		.pc_from_register,	
 		.pc_from_irq,
 		.pc_from_mem,
+		.sr_from_mem,
 		.reset_irq,
 		
 		.set_sp, 
 		.increase_sp,
 		
 		.mem_write,
-		.mem_write_is_stack,
-		.mem_write_next_pc,
-		.mem_write_this_pc
+        .mem_write_addr_source,
+		.mem_write_data_source
 		//.state(LEDR[9:0])
 	);
 

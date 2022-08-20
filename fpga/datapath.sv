@@ -1,4 +1,4 @@
-
+`include "types/control_signals_imports.svh"
 
 // control signals for the datapath
 // are borrowed from the MIPS standard
@@ -8,8 +8,8 @@ module datapath (
 	
 	input logic reg_write,
 	input logic mem_to_reg, 			// transfer memory to reg? (for load, etc)
-	input logic mem_read_is_pc,	// on clock
-	input logic mem_read_is_sp,	// on clock
+	input logic mem_read_is_pc,			// set the read address 
+	input logic mem_read_is_sp,			// set the read address 
 	input logic alu_override_imm8,		// override output of alu to be imm16 value?
 	input logic alu_override_imm4,		// override input of alu_b to be imm4 value?
 	input logic alu_set_flags,			// on clock, set status flags?
@@ -17,10 +17,11 @@ module datapath (
 	input logic pc_from_register,	
 	input logic pc_from_irq,
 	input logic pc_from_mem,
+	input logic sr_from_mem,
 	input logic mem_write,
-	input logic mem_write_is_stack,	// set the write address to stack pointer
-	input logic mem_write_next_pc,	// set the write data to be next PC 
-	input logic mem_write_this_pc,	// for irq
+	
+	input mem_write_addr_source_t::t mem_write_addr_source,
+	input mem_write_data_source_t::t mem_write_data_source,	// set the memory write data to this source
 		
 	input logic set_sp,					// should we set the sp on this cycle?
 	input logic increase_sp,			// should the set_sp be an increase?
@@ -46,8 +47,6 @@ module datapath (
 	output logic [6:0] HEX3
 	
 );
-
-
 	// sp/sr/pc
 	logic [15:0] SP, SR, PC;
 	wire [15:0] next_PC = pc_from_register ? reg_rdata1 : (pc_from_mem ? mem_rdata : PC + 16'h1);
@@ -61,8 +60,22 @@ module datapath (
 	wire mem_wenable = mem_write, mem_rvalid;
 	
 	assign mem_raddr = mem_read_is_pc ? PC : (mem_read_is_sp ? SP : reg_rdata2);	// always reading from pc sp or r2
-	assign mem_waddr = mem_write_is_stack ? SP : reg_rdata1;
-	assign mem_wdata = mem_write_next_pc ? next_PC : (mem_write_this_pc ? PC : reg_rdata2);
+
+	always_comb begin: mem_waddr_select
+		unique case(mem_write_addr_source)
+			mem_write_addr_source_t::register_data 	: mem_waddr = reg_rdata1;
+			mem_write_addr_source_t::sp             : mem_waddr = SP;
+		endcase
+	end
+
+	always_comb begin: mem_wdata_select
+		unique case(mem_write_data_source) 
+			mem_write_data_source_t::register_data	: mem_wdata = reg_rdata2; 
+			mem_write_data_source_t::next_pc		: mem_wdata = next_PC;
+			mem_write_data_source_t::this_pc		: mem_wdata = PC;
+			mem_write_data_source_t::sr				: mem_wdata = SR;
+		endcase
+	end
 	
 //	assign do_halt = opcode == 4'b0111;
 	assign Z_out = SR[1];
@@ -171,10 +184,6 @@ module datapath (
 			SR <= 16'h0000;
 			PC <= 16'h0000;
 		end else begin
-//			input mem_read_is_pc,
-//			input alu_set_flags,			// set status flags?
-//			input set_pc,
-	
 			if (mem_read_is_pc) begin
 				current_instruction <= mem_rdata;
 			end 
@@ -182,6 +191,10 @@ module datapath (
 			if (alu_set_flags) begin
 				if (set_VC) SR[4:3] <= {V, C};
 				SR[2:0] <= {N, Z, X};
+			end
+
+			if (sr_from_mem) begin
+				SR <= mem_rdata;
 			end
 			
 			if (set_pc) begin

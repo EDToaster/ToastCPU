@@ -313,6 +313,8 @@ set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
 set_global_assignment -name FITTER_EFFORT "AUTO FIT"
 
 set_global_assignment -name NUM_PARALLEL_PROCESSORS ALL
+set_global_assignment -name SYSTEMVERILOG_FILE types/io.sv
+set_global_assignment -name SYSTEMVERILOG_FILE types/control_signals.sv
 set_global_assignment -name QIP_FILE virtual_16/synthesis/virtual_16.qip
 set_global_assignment -name SYSTEMVERILOG_FILE switch_driver.sv
 set_global_assignment -name SYSTEMVERILOG_FILE key_driver.sv

@@ -27,6 +27,8 @@ opcodes = {
     "jpr": "1010",
     "jnr": "1010",
 
+    "rti": "1100",
+
     "push": "0101",
     "pop": "0110",
     "halt": "0111",
@@ -89,7 +91,7 @@ jumpr_opcodes = {
 
 
 no_arg_opcodes = [
-    "halt"
+    "halt", "rti"
 ]
 
 opcodes_suffix = {

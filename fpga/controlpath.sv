@@ -69,13 +69,17 @@ module controlpath(
 		op_jmp_ret_set_pc,
 
 		// irq
-		op_irq_jmp_link,		// 
-		op_irq_jmp_link_inc,
-		op_irq_jmp,
-		op_irq_reset,
-
+		op_irq_jmp_status,		// write SR to stack
+		op_irq_jmp_status_inc,	// inc stack
+		op_irq_jmp_link,		// write PC to stack
+		op_irq_jmp_link_inc,	// inc stack
+		op_irq_jmp,				// set PC from irq register
+		op_irq_reset,			// reset irq flag
 
 		// rti
+		op_rti_dec,				// decrement SP	
+		op_rti_set_addr,		// set mem addr to SP
+		op_rti_set_sr,			// write stack to SR
 		
 		op_alu,
 		
@@ -165,7 +169,7 @@ module controlpath(
 			op_decode:;
 			
 			op_load_set_addr, op_pop_set_addr:;
-			op_jmp_ret_set_addr: begin
+			op_jmp_ret_set_addr, op_rti_set_addr: begin
 				mem_read_is_sp = 1'b1;
 			end
 
@@ -175,6 +179,11 @@ module controlpath(
 				set_pc = 1'b1;
 			end
 			
+			op_rti_set_sr: begin
+				mem_read_is_sp = 1'b1;
+				sr_from_mem = 1'b1;
+			end
+
 			op_jmp_ret_set_pc: begin
 				mem_read_is_sp = 1'b1;
 				pc_from_mem = 1'b1;
@@ -197,12 +206,12 @@ module controlpath(
 				set_pc = 1'b1;
 			end
 			
-			op_jmp_link_inc, op_irq_jmp_link_inc: begin
+			op_jmp_link_inc, op_irq_jmp_link_inc, op_irq_jmp_status_inc: begin
 				set_sp = 1'b1;
 				increase_sp = 1'b1;
 			end
 			
-			op_pop_dec, op_jmp_ret_dec: begin
+			op_pop_dec, op_jmp_ret_dec, op_rti_dec: begin
 				set_sp = 1'b1;
 				increase_sp = 1'b0;
 			end
@@ -213,6 +222,12 @@ module controlpath(
 				mem_write_data_source = mem_write_data_source_t::next_pc;
 			end
 			
+			op_irq_jmp_status: begin
+				mem_write = 1'b1;
+				mem_write_addr_source = mem_write_addr_source_t::sp;
+				mem_write_data_source = mem_write_data_source_t::sr;
+			end
+
 			op_irq_jmp_link: begin
 				mem_write = 1'b1;
 				mem_write_addr_source = mem_write_addr_source_t::sp;
@@ -242,7 +257,7 @@ module controlpath(
 				alu_override_imm4 = opcode == 4'b1001;
 			end
 			
-			op_halt:; 					// halt
+			op_halt:;
 		endcase
 	end
 	
@@ -255,6 +270,7 @@ module controlpath(
 			4'b0110: op_decode_state = op_pop_dec;
 			4'b0010: op_decode_state = op_alu;
 			4'b1010: op_decode_state = (ret_jump & do_jump) ? op_jmp_ret_dec : ((link_jump & do_jump) ? op_jmp_link : op_jmp); // if do_jump is false, fallback to op_jmp and inc PC
+			4'b1100: op_decode_state = op_rti_dec;
 			4'b0111: op_decode_state = op_halt;
 			4'b1000, 4'b1001: op_decode_state = op_alu;
 			default: op_decode_state = op_halt;
@@ -263,40 +279,46 @@ module controlpath(
 	
 	always_comb begin: next_state_logic
 		unique case(curr_state)
-			reset_state: next_state = irq ? op_irq_jmp_link : fetch_set_addr;
-			fetch_set_addr: next_state = fetch_set_instruction;
-			fetch_set_instruction: next_state = op_decode;
+			reset_state					: next_state = irq ? op_irq_jmp_status : fetch_set_addr;
+			fetch_set_addr				: next_state = fetch_set_instruction;
+			fetch_set_instruction		: next_state = op_decode;
 			
-			op_decode: next_state = op_decode_state;
+			op_decode					: next_state = op_decode_state;
 			
-			op_load_set_addr: next_state = op_load_set_register;
-			op_load_set_register: next_state = reset_state;
+			op_load_set_addr			: next_state = op_load_set_register;
+			op_load_set_register		: next_state = reset_state;
 			
-			op_store: next_state = reset_state;
+			op_store					: next_state = reset_state;
 			
-			op_push_store: next_state = op_push_inc;
-			op_push_inc: next_state = reset_state;
+			op_push_store				: next_state = op_push_inc;
+			op_push_inc					: next_state = reset_state;
 			
-			op_pop_dec: next_state = op_pop_set_addr;
-			op_pop_set_addr: next_state = op_pop_set_register;
-			op_pop_set_register: next_state = reset_state;
+			op_pop_dec					: next_state = op_pop_set_addr;
+			op_pop_set_addr				: next_state = op_pop_set_register;
+			op_pop_set_register			: next_state = reset_state;
 			
-			op_jmp_link: next_state = op_jmp_link_inc;
-			op_jmp_link_inc: next_state = op_jmp;
-			op_jmp: next_state = reset_state;
+			op_jmp_link					: next_state = op_jmp_link_inc;
+			op_jmp_link_inc				: next_state = op_jmp;
+			op_jmp						: next_state = reset_state;
 			
-			op_jmp_ret_dec: next_state = op_jmp_ret_set_addr;
-			op_jmp_ret_set_addr: next_state = op_jmp_ret_set_pc;
-			op_jmp_ret_set_pc: next_state = reset_state;
+			op_jmp_ret_dec				: next_state = op_jmp_ret_set_addr;
+			op_jmp_ret_set_addr			: next_state = op_jmp_ret_set_pc;
+			op_jmp_ret_set_pc			: next_state = reset_state;
 				
-			op_irq_jmp_link: next_state = op_irq_jmp_link_inc;
-			op_irq_jmp_link_inc: next_state = op_irq_jmp;
-			op_irq_jmp: next_state = op_irq_reset;
-			op_irq_reset: next_state = reset_state;
+			op_irq_jmp_status			: next_state = op_irq_jmp_status_inc;
+			op_irq_jmp_status_inc		: next_state = op_irq_jmp_link;
+			op_irq_jmp_link				: next_state = op_irq_jmp_link_inc;
+			op_irq_jmp_link_inc			: next_state = op_irq_jmp;
+			op_irq_jmp					: next_state = op_irq_reset;
+			op_irq_reset				: next_state = reset_state;
 			
-			op_alu: next_state = reset_state;
+			op_rti_dec					: next_state = op_rti_set_addr;
+			op_rti_set_addr				: next_state = op_rti_set_sr;
+			op_rti_set_sr				: next_state = op_jmp_ret_dec;
 			
-			op_halt: next_state = op_halt;				// halt
+			op_alu						: next_state = reset_state;
+			
+			op_halt						: next_state = op_halt;				// halt
 		endcase
 	end
 

@@ -1,6 +1,6 @@
 module read_register(
 	input [3:0] addr,
-	input [15:0] bank[256][8],
+	input [15:0] banked[8],	// banked in the future?
 	input [15:0] scratch[4],
 	input [15:0] ISR, SP, SR, PC,
 	
@@ -16,7 +16,7 @@ module read_register(
 			4'h4, 
 			4'h5, 
 			4'h6, 
-			4'h7:	data = bank[SR[15:8]][addr[2:0]];
+			4'h7: data = banked[addr[2:0]];
 			4'h8,
 			4'h9, 
 			4'hA, 
@@ -48,7 +48,7 @@ module registers (
 	input [15:0] SP, SR, PC
 );
 	
-	reg [15:0] bank[256][8];
+	reg [15:0] banked[8];
 	
 	reg [15:0] ISR;
 	
@@ -56,7 +56,7 @@ module registers (
 	
 	read_register read1(
 		read_addr1,
-		bank,
+		banked,
 		scratch,
 		ISR, SP, SR, PC,
 		read_data1
@@ -64,7 +64,7 @@ module registers (
 	
 	read_register read2(
 		read_addr2,
-		bank,
+		banked,
 		scratch,
 		ISR, SP, SR, PC,
 		read_data2
@@ -72,7 +72,7 @@ module registers (
 	
 	read_register readpoke(
 		read_addrpoke,
-		bank,
+		banked,
 		scratch,
 		ISR, SP, SR, PC,
 		read_datapoke
@@ -88,7 +88,7 @@ module registers (
 				4'h4, 
 				4'h5, 
 				4'h6, 
-				4'h7:	bank[SR[15:8]][write_addr[2:0]][15:0] <= write_data;
+				4'h7: banked[write_addr[2:0]][15:0] <= write_data;
 				4'h8,
 				4'h9, 
 				4'hA, 

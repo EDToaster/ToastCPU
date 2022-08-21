@@ -69,10 +69,10 @@ module controlpath(
 		op_jmp_ret_set_pc,
 
 		// irq
-		op_irq_jmp_status,		// write SR to stack
-		op_irq_jmp_status_inc,	// inc stack
 		op_irq_jmp_link,		// write PC to stack
 		op_irq_jmp_link_inc,	// inc stack
+		op_irq_jmp_status,		// write SR to stack
+		op_irq_jmp_status_inc,	// inc stack
 		op_irq_jmp,				// set PC from irq register
 		op_irq_reset,			// reset irq flag
 
@@ -279,7 +279,7 @@ module controlpath(
 	
 	always_comb begin: next_state_logic
 		unique case(curr_state)
-			reset_state					: next_state = irq ? op_irq_jmp_status : fetch_set_addr;
+			reset_state					: next_state = irq ? op_irq_jmp_link : fetch_set_addr;
 			fetch_set_addr				: next_state = fetch_set_instruction;
 			fetch_set_instruction		: next_state = op_decode;
 			
@@ -305,10 +305,10 @@ module controlpath(
 			op_jmp_ret_set_addr			: next_state = op_jmp_ret_set_pc;
 			op_jmp_ret_set_pc			: next_state = reset_state;
 				
-			op_irq_jmp_status			: next_state = op_irq_jmp_status_inc;
-			op_irq_jmp_status_inc		: next_state = op_irq_jmp_link;
 			op_irq_jmp_link				: next_state = op_irq_jmp_link_inc;
-			op_irq_jmp_link_inc			: next_state = op_irq_jmp;
+			op_irq_jmp_link_inc			: next_state = op_irq_jmp_status;
+			op_irq_jmp_status			: next_state = op_irq_jmp_status_inc;
+			op_irq_jmp_status_inc		: next_state = op_irq_jmp;
 			op_irq_jmp					: next_state = op_irq_reset;
 			op_irq_reset				: next_state = reset_state;
 			

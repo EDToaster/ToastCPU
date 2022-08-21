@@ -1,0 +1,33 @@
+# Show the 100x60 text mode 
+.reset
+    imov r12 .isr
+    call .main
+.isr
+    rti # noop
+.main
+    # r0 = size
+    imov r0 .size
+    load r0 r0
+
+    imov r1 0
+
+    imov r2 .loop
+    imov r3 .halt
+    
+
+    imov r8 0b00000111
+    ishl r8 8
+    imov r9 0x2a
+    add  r8 r9
+
+.loop
+    str  r1 r8
+    iadd r1 1
+    
+    isub r0 1
+    jz   r3
+    jmp  r2
+.halt
+    halt
+.size
+    6000

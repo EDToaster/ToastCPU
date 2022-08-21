@@ -28,40 +28,40 @@ module segment(
 endmodule
 
 module display_byte(
-	input [7:0] byte,
-	output [6:0] h0,
-	output [6:0] h1
+    input [7:0] byte,
+    output [6:0] h0,
+    output [6:0] h1
 );
 
-	segment d0(
-		byte[3:0],
-		h0
-	);
-	
-	segment d1(
-		byte[7:4],
-		h1
-	);
-	
+    segment d0(
+        byte[3:0],
+        h0
+    );
+    
+    segment d1(
+        byte[7:4],
+        h1
+    );
+    
 endmodule
 
 module display_word(
-	input [15:0] word,
-	output [6:0] h0,
-	output [6:0] h1,
-	output [6:0] h2,
-	output [6:0] h3
+    input [15:0] word,
+    output [6:0] h0,
+    output [6:0] h1,
+    output [6:0] h2,
+    output [6:0] h3
 );
-	display_byte d0(
-		word[7:0],
-		h0,
-		h1
-	);
-	
-	display_byte d1(
-		word[15:8],
-		h2,
-		h3
-	);
-	
+    display_byte d0(
+        word[7:0],
+        h0,
+        h1
+    );
+    
+    display_byte d1(
+        word[15:8],
+        h2,
+        h3
+    );
+    
 endmodule

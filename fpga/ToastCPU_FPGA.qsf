@@ -313,22 +313,22 @@ set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
 set_global_assignment -name FITTER_EFFORT "AUTO FIT"
 
 set_global_assignment -name NUM_PARALLEL_PROCESSORS ALL
-set_global_assignment -name SYSTEMVERILOG_FILE types/io.sv
-set_global_assignment -name SYSTEMVERILOG_FILE types/control_signals.sv
-set_global_assignment -name QIP_FILE virtual_16/synthesis/virtual_16.qip
-set_global_assignment -name SYSTEMVERILOG_FILE switch_driver.sv
-set_global_assignment -name SYSTEMVERILOG_FILE key_driver.sv
-set_global_assignment -name QIP_FILE vga_clk/synthesis/vga_clk.qip
-set_global_assignment -name MIF_FILE ../sample_programs/test.mif
-set_global_assignment -name SYSTEMVERILOG_FILE vga_driver.sv
-set_global_assignment -name SYSTEMVERILOG_FILE hex_driver.sv
-set_global_assignment -name SYSTEMVERILOG_FILE memory.sv
-set_global_assignment -name SYSTEMVERILOG_FILE registers.sv
-set_global_assignment -name SYSTEMVERILOG_FILE datapath.sv
-set_global_assignment -name SYSTEMVERILOG_FILE controlpath.sv
-set_global_assignment -name SYSTEMVERILOG_FILE alu.sv
-set_global_assignment -name SYSTEMVERILOG_FILE main.sv
-set_global_assignment -name VERILOG_FILE segment.v
-set_global_assignment -name QIP_FILE ram.qip
-set_global_assignment -name QIP_FILE rom.qip
+set_global_assignment -name QIP_FILE ips/ram/ram.qip
+set_global_assignment -name SYSTEMVERILOG_FILE src/types/io.sv
+set_global_assignment -name SYSTEMVERILOG_FILE src/types/control_signals.sv
+set_global_assignment -name SYSTEMVERILOG_FILE src/drivers/vga_driver.sv
+set_global_assignment -name SYSTEMVERILOG_FILE src/drivers/switch_driver.sv
+set_global_assignment -name SYSTEMVERILOG_FILE src/drivers/key_driver.sv
+set_global_assignment -name SYSTEMVERILOG_FILE src/drivers/hex_driver.sv
+set_global_assignment -name VERILOG_FILE src/segment.v
+set_global_assignment -name SYSTEMVERILOG_FILE src/registers.sv
+set_global_assignment -name SYSTEMVERILOG_FILE src/memory.sv
+set_global_assignment -name SYSTEMVERILOG_FILE src/main.sv
+set_global_assignment -name SYSTEMVERILOG_FILE src/datapath.sv
+set_global_assignment -name SYSTEMVERILOG_FILE src/controlpath.sv
+set_global_assignment -name SYSTEMVERILOG_FILE src/alu.sv
+set_global_assignment -name QIP_FILE ips/vga_ram/vga_ram.qip
+set_global_assignment -name QIP_FILE ips/virtual_16/synthesis/virtual_16.qip
+set_global_assignment -name QIP_FILE ips/vga_clk/synthesis/vga_clk.qip
+set_global_assignment -name QIP_FILE ips/rom/rom.qip
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

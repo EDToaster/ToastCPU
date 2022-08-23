@@ -120,6 +120,13 @@ opcodes_suffix = {
     "ishl": "1010",
 }
 
+named_registers = {
+    "isr": 12,
+    "sp": 13,
+    "sr": 14,
+    "pc": 15,
+}
+
 @dataclass(unsafe_hash=True)
 class Label:
     name: str
@@ -265,7 +272,12 @@ class Program:
     def parse_register(self, token) -> Optional[Register]:
         x = re.search("^\\[?r([0-9]|1[0-5])\\]?$", token)
         if x is not None:
-            return Register(int(x.group(1)))
+            num = int(x.group(1))
+            if num == 0:
+                raise "r0 is reserved for the assembler"
+            return Register(num)
+        elif token in named_registers:
+            return Register(named_registers[token])
         else:
             return None
 

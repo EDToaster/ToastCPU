@@ -1,7 +1,7 @@
 module switch_driver(
 	input logic reset,
 	input logic CLOCK_50,
-   input key,
+   	input key,
 	io_interface io
 ); 
 	 reg [3:0] prev_key;

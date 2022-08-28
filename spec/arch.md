@@ -157,7 +157,7 @@ halt
 rti
      (RTI-type) Return from interrupt
                 Pops the top of stack into status register, then pops the top
-                of stack into program counter, executing a jump. `rt` will also
+                of stack into program counter, executing a jump. `rti` will also
                 signal to the CPU to start accepting interrupts again.
 ```
 

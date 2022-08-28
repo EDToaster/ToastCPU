@@ -1,9 +1,11 @@
 use std::env;
-use std::fmt::Debug;
-use std::ops::Index;
-use std::ops::IndexMut;
-use std::process;
 use std::fs;
+use std::io::stdout;
+use std::ops::{Index, IndexMut};
+use std::process;
+
+use crossterm::terminal::ClearType;
+use crossterm::{cursor::MoveTo, execute, style::Print, terminal::Clear};
 
 use regex::Regex;
 
@@ -25,11 +27,11 @@ const JMP: u16 = 10;
 const RTI: u16 = 12;
 
 enum StatusRegisterFlag {
-    X, 
-    Z, 
-    N, 
-    C, 
-    V   
+    X,
+    Z,
+    N,
+    C,
+    V,
 }
 impl StatusRegisterFlag {
     fn mask(&self) -> u16 {
@@ -44,9 +46,9 @@ impl StatusRegisterFlag {
 }
 
 /**
-    if (set_VC) SR[4:3] <= {V, C};
-    SR[2:0] <= {N, Z, X};
- */
+   if (set_VC) SR[4:3] <= {V, C};
+   SR[2:0] <= {N, Z, X};
+*/
 struct StatusRegister {
     sr: u16,
 }
@@ -87,7 +89,7 @@ impl Index<u16> for Registers {
             13 => &self.sp,
             14 => &self.sr.sr,
             15 => &self.pc,
-            _ => panic!("Register index {index} is out of bounds!")
+            _ => panic!("Register index {index} is out of bounds!"),
         }
     }
 }
@@ -100,7 +102,7 @@ impl IndexMut<u16> for Registers {
             13 => &mut self.sp,
             14 => &mut self.sr.sr,
             15 => &mut self.pc,
-            _ => panic!("Register index {index} is out of bounds!")
+            _ => panic!("Register index {index} is out of bounds!"),
         }
     }
 }
@@ -122,7 +124,16 @@ impl Memory<'_> {
 
     fn mem_write(&mut self, addr: u16, val: u16) {
         match addr {
-            0..=0x7FFF => self.vga[addr as usize] = val,
+            0..=0x7FFF => {
+                execute!(
+                    stdout(),
+                    MoveTo(addr % 100, addr / 100),
+                    Print(format!("{}", (val & 0x00FF) as u8 as char)),
+                )
+                .expect("Something went wrong when writing to terminal");
+
+                self.vga[addr as usize] = val
+            }
             0x8000..=0xBFFF => self.ram[(addr - 0x8000) as usize] = val,
             _ => todo!("Memory location {addr:#06x}={val:#06x}"),
         }
@@ -141,7 +152,7 @@ fn parse_program(prog: &String) -> Vec<u16> {
      *  BEGIN
      *  0000 : 2C08; -- imov r12 .isr
      */
-    
+
     // assume we are using HEX with depth of 32k and width of 16
 
     let line_matcher = Regex::new(r"^([0-9a-fA-F]{4}) : ([0-9a-fA-F]{4});.*$").unwrap();
@@ -153,8 +164,14 @@ fn parse_program(prog: &String) -> Vec<u16> {
         }
 
         let caps = cap_opt.unwrap();
-        let addr = caps.get(1).map(|m| u16::from_str_radix(m.as_str(), 16).unwrap()).unwrap();
-        let val = caps.get(2).map(|m| u16::from_str_radix(m.as_str(), 16).unwrap()).unwrap();
+        let addr = caps
+            .get(1)
+            .map(|m| u16::from_str_radix(m.as_str(), 16).unwrap())
+            .unwrap();
+        let val = caps
+            .get(2)
+            .map(|m| u16::from_str_radix(m.as_str(), 16).unwrap())
+            .unwrap();
 
         program[usize::from(addr)] = val;
     }
@@ -167,42 +184,44 @@ fn bit(n: i32, bit: u8) -> bool {
 }
 
 fn alu(op: u16, a: i32, b: i32, sr: &mut StatusRegister) -> u16 {
-        let agg: i32 = match op {
-            0x0 => !a,
-            0x1 => a & b,
-            0x2 => a | b,
-            0x3 => a ^ b,
-            0x4 => a + b,
-            0x5 => a - b,
-            0x6 => b,
-            0x8 => ((a as u16) >> b) as i32,
-            0x9 => a >> b,
-            0xA => a << b,
-            _ => panic!("Invalid alu operation {op}")
-        };
+    let agg: i32 = match op {
+        0x0 => !a,
+        0x1 => a & b,
+        0x2 => a | b,
+        0x3 => a ^ b,
+        0x4 => a + b,
+        0x5 => a - b,
+        0x6 => b,
+        0x8 => ((a as u16) >> b) as i32,
+        0x9 => a >> b,
+        0xA => a << b,
+        _ => panic!("Invalid alu operation {op}"),
+    };
 
+    sr.set(StatusRegisterFlag::N, agg & 0x8000 != 0);
+    sr.set(StatusRegisterFlag::Z, agg == 0);
+    sr.set(StatusRegisterFlag::X, agg == 0xFFFF);
 
-        sr.set(StatusRegisterFlag::N, agg & 0x8000 != 0);
-        sr.set(StatusRegisterFlag::Z, agg == 0);
-        sr.set(StatusRegisterFlag::X, agg == 0xFFFF);
-
-        match op {
-            0x4 => {
-                sr.set(StatusRegisterFlag::V, (bit(a, 15) == bit(b, 15)) && 
-                    (bit(a, 15) ^ bit(agg, 15)));
-                sr.set(StatusRegisterFlag::C, bit(agg, 16));
-            }
-            0x5 => {
-                sr.set(StatusRegisterFlag::V, (bit(a, 15) ^ bit(b, 15)) && 
-                (bit(a, 15) != bit(agg, 15)));
-                sr.set(StatusRegisterFlag::C, bit(agg, 16));
-            },
-            _ => ()
+    match op {
+        0x4 => {
+            sr.set(
+                StatusRegisterFlag::V,
+                (bit(a, 15) == bit(b, 15)) && (bit(a, 15) ^ bit(agg, 15)),
+            );
+            sr.set(StatusRegisterFlag::C, bit(agg, 16));
         }
+        0x5 => {
+            sr.set(
+                StatusRegisterFlag::V,
+                (bit(a, 15) ^ bit(b, 15)) && (bit(a, 15) != bit(agg, 15)),
+            );
+            sr.set(StatusRegisterFlag::C, bit(agg, 16));
+        }
+        _ => (),
+    }
 
-        let ret = (agg & 0xFFFF) as u16;
-        println!("{a:#010x} {op} {b:#010x} = {ret:#06x}");
-        ret
+    let ret = (agg & 0xFFFF) as u16;
+    ret
 }
 
 #[allow(unused_variables)]
@@ -217,8 +236,7 @@ fn main() {
     let mif_file = &args[1];
 
     print!("Reading file {mif_file} from memory as rom ... ");
-    let prog_string = fs::read_to_string(mif_file)
-        .expect("Should have been able to read the file");
+    let prog_string = fs::read_to_string(mif_file).expect("Should have been able to read the file");
 
     let bytes = prog_string.len();
     println!("read {} bytes from file", bytes);
@@ -233,17 +251,28 @@ fn main() {
     let mut ram: Vec<u16> = vec![0; RAM_SIZE];
     let mut vga: Vec<u16> = vec![0; VGA_SIZE];
 
-    let mut mem: Memory = Memory { rom: &mut rom, ram: &mut ram, vga: &mut vga };
+    let mut mem: Memory = Memory {
+        rom: &mut rom,
+        ram: &mut ram,
+        vga: &mut vga,
+    };
 
     // INIT REGISTERS
-    let mut registers: Registers = Registers { general: [0; 12], isr: 0, sp: 0x8000, sr: StatusRegister { sr: 0 }, pc: 0x0000 };
+    let mut registers: Registers = Registers {
+        general: [0; 12],
+        isr: 0,
+        sp: 0x8000,
+        sr: StatusRegister { sr: 0 },
+        pc: 0x0000,
+    };
 
     let mut halt: bool = false;
     println!("initialized!");
 
+    execute!(stdout(), Clear(ClearType::All),).expect("Something went wrong");
+
     while !halt {
         let pc = registers.pc;
-        println!("{pc:#06x}");
         let inst: u16 = mem.mem_read(registers.pc);
         let opcode: u16 = (inst & 0xF000) >> 12;
 
@@ -258,41 +287,44 @@ fn main() {
         match opcode {
             LOAD => {
                 registers[r1] = mem.mem_read(registers[r2]);
-            },
+            }
             STR => {
                 mem.mem_write(registers[r1], registers[r2]);
-            },
+            }
             IMOV => {
-                println!("r{r1}={imov_imm8:#06x}");
                 registers[r1] = imov_imm8;
-            },
+            }
             PUSH => {
                 mem.mem_write(registers[r1], registers[r2]);
                 registers.sp += 1;
-            },
+            }
             POP => {
                 registers.sp -= 1;
                 registers[r1] = mem.mem_read(registers[r2]);
-            },
+            }
             HALT => {
                 halt = true;
-            },
+            }
             ALU => {
-                let agg = alu(alu_op, 
-                    registers[r1] as i32, 
-                    registers[r2] as i32, 
-                    &mut registers.sr);
-                
+                let agg = alu(
+                    alu_op,
+                    registers[r1] as i32,
+                    registers[r2] as i32,
+                    &mut registers.sr,
+                );
+
                 registers[r1] = agg;
-            },
+            }
             IALU => {
-                let agg = alu(alu_op, 
-                    registers[r1] as i32, 
-                    alu_imm4 as i32, 
-                    &mut registers.sr);
-                
+                let agg = alu(
+                    alu_op,
+                    registers[r1] as i32,
+                    alu_imm4 as i32,
+                    &mut registers.sr,
+                );
+
                 registers[r1] = agg;
-            },
+            }
             JMP => {
                 let l: bool = r2 & 1 != 0;
                 let r: bool = r2 & 2 != 0;
@@ -302,8 +334,10 @@ fn main() {
                     1 => registers.sr.get(StatusRegisterFlag::Z),
                     2 => !registers.sr.get(StatusRegisterFlag::Z),
                     3 => registers.sr.get(StatusRegisterFlag::N),
-                    4 => !registers.sr.get(StatusRegisterFlag::Z) && 
-                         !registers.sr.get(StatusRegisterFlag::N),
+                    4 => {
+                        !registers.sr.get(StatusRegisterFlag::Z)
+                            && !registers.sr.get(StatusRegisterFlag::N)
+                    }
                     _ => false,
                 };
 
@@ -321,7 +355,7 @@ fn main() {
                     }
                     registers.pc -= 1;
                 }
-            },
+            }
             RTI => {
                 registers.sp -= 1;
                 registers.sr.sr = mem.mem_read(registers.sp);
@@ -330,7 +364,7 @@ fn main() {
 
                 registers.pc -= 1;
             }
-            _ => ()
+            _ => (),
         }
         registers.pc += 1;
     }

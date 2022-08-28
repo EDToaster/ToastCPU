@@ -1,0 +1,8 @@
+.reset
+    imov r12 .isr
+    call .main
+    halt
+.isr
+    rti
+.main
+    jmpr

@@ -12,7 +12,7 @@
 
 # due to dumb limitation, all referenced labels must be within 256 words of memory
 .isr
-    jmpr
+    rti
 
 .main
     imov r1 .welcome_message        # load message

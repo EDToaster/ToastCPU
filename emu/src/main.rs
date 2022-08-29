@@ -1,11 +1,14 @@
 mod key;
 mod vga;
+mod devices;
 
+use std::cell::RefCell;
 use std::env;
 use std::fs;
 use std::io::stdout;
 use std::ops::{Index, IndexMut};
 use std::process;
+use std::rc::Rc;
 use std::sync::{Arc, Mutex};
 use std::thread;
 
@@ -17,6 +20,7 @@ use crossterm::{
 use regex::Regex;
 use vga::VGA;
 
+use crate::devices::Devices;
 use crate::key::Key;
 
 const ROM_SIZE: usize = 0x8000;
@@ -112,36 +116,6 @@ impl IndexMut<u16> for Registers {
             15 => &mut self.pc,
             _ => panic!("Register index {index} is out of bounds!"),
         }
-    }
-}
-
-pub struct Devices {
-    rom: Vec<u16>,
-    vga: VGA,
-    ram: Vec<u16>,
-    key: u16,
-}
-
-impl Devices {
-    fn mem_read(&self, addr: u16) -> u16 {
-        match addr {
-            0..=0x7FFF => self.rom[addr as usize] as u16,
-            0x8000..=0xBFFF => self.ram[(addr - 0x8000) as usize] as u16,
-            0xFFFF => self.key,
-            _ => todo!("Memory location {addr:#06x}"),
-        }
-    }
-
-    fn mem_write(&mut self, addr: u16, val: u16) {
-        match addr {
-            0..=0x7FFF => self.vga.put_char(addr.into(), val),
-            0x8000..=0xBFFF => self.ram[(addr - 0x8000) as usize] = val,
-            _ => todo!("Memory location {addr:#06x}={val:#06x}"),
-        }
-    }
-
-    fn key_write(&mut self, key: u16) {
-        self.key = key;
     }
 }
 
@@ -248,16 +222,13 @@ fn main() {
 
     // INIT ROM
     print!("Parsing {} bytes to instructions ... ", bytes);
-    let rom: Vec<u16> = parse_program(&prog_string);
+    let rom: Rc<Vec<u16>> = Rc::new(parse_program(&prog_string));
     println!("rom is sized {}", rom.len());
 
-    let irq_arc = Arc::new(Mutex::new(false));
-    let mem_arc = Arc::new(Mutex::new(Devices {
-        rom,
-        ram: vec![0; RAM_SIZE],
-        vga: VGA::new(VGA_WIDTH, VGA_HEIGHT, stdout()),
-        key: 0,
-    }));
+    let ram: Rc<RefCell<Vec<u16>>> = Rc::new(RefCell::new(vec![0; RAM_SIZE]));
+    let vga: Arc<Mutex<VGA>> = Arc::new(Mutex::new(VGA::new(VGA_WIDTH, VGA_HEIGHT, stdout())));
+    let key: Arc<Mutex<u16>> = Arc::new(Mutex::new(0));
+    let irq: Arc<Mutex<bool>> = Arc::new(Mutex::new(false));
 
     // INIT REGISTERS
     let mut registers: Registers = Registers {
@@ -273,24 +244,24 @@ fn main() {
     execute!(stdout(), Clear(ClearType::All),).expect("Something went wrong");
 
     // start keyboard thread
-    let mut key: Key = Key::new(Arc::clone(&irq_arc), Arc::clone(&mem_arc));
-    let key_handler = thread::spawn(move || key.handle());
+    let mut key_handler_arg =  Key::new(Arc::clone(&irq), Arc::clone(&key));
+    let key_handler = thread::spawn(move || 
+       key_handler_arg.handle());
 
     // main thread
-    let irq = Arc::clone(&irq_arc);
-    let mem = Arc::clone(&mem_arc);
+    let mut mem = Devices::new(rom, vga, ram, key);
     while !halt {
         if *irq.lock().unwrap() {
             *irq.lock().unwrap() = false;
-            mem.lock().unwrap().mem_write(registers.sp, registers.pc);
+            mem.write(registers.sp, registers.pc);
             registers.sp += 1;
-            mem.lock().unwrap().mem_write(registers.sp, registers.sr.sr);
+            mem.write(registers.sp, registers.sr.sr);
             registers.sp += 1;
             registers.pc = registers.isr;
             continue;
         }
 
-        let inst: u16 = mem.lock().unwrap().mem_read(registers.pc);
+        let inst: u16 = mem.read(registers.pc);
         let opcode: u16 = (inst & 0xF000) >> 12;
 
         let r1: u16 = (inst & 0x0F00) >> 8;
@@ -303,21 +274,21 @@ fn main() {
 
         match opcode {
             LOAD => {
-                registers[r1] = mem.lock().unwrap().mem_read(registers[r2]);
+                registers[r1] = mem.read(registers[r2]);
             }
             STR => {
-                mem.lock().unwrap().mem_write(registers[r1], registers[r2]);
+                mem.write(registers[r1], registers[r2]);
             }
             IMOV => {
                 registers[r1] = imov_imm8;
             }
             PUSH => {
-                mem.lock().unwrap().mem_write(registers[r1], registers[r2]);
+                mem.write(registers[r1], registers[r2]);
                 registers.sp += 1;
             }
             POP => {
                 registers.sp -= 1;
-                registers[r1] = mem.lock().unwrap().mem_read(registers[r2]);
+                registers[r1] = mem.read(registers[r2]);
             }
             HALT => {
                 halt = true;
@@ -361,11 +332,9 @@ fn main() {
                 if do_jump {
                     if r {
                         registers.sp -= 1;
-                        registers.pc = mem.lock().unwrap().mem_read(registers.sp);
+                        registers.pc = mem.read(registers.sp);
                     } else if l {
-                        mem.lock()
-                            .unwrap()
-                            .mem_write(registers.sp, registers.pc + 1);
+                        mem.write(registers.sp, registers.pc + 1);
                         registers.sp += 1;
 
                         registers.pc = registers[r1];
@@ -377,9 +346,9 @@ fn main() {
             }
             RTI => {
                 registers.sp -= 1;
-                registers.sr.sr = mem.lock().unwrap().mem_read(registers.sp);
+                registers.sr.sr = mem.read(registers.sp);
                 registers.sp -= 1;
-                registers.pc = mem.lock().unwrap().mem_read(registers.sp);
+                registers.pc = mem.read(registers.sp);
 
                 registers.pc -= 1;
             }

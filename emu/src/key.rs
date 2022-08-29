@@ -11,17 +11,15 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode},
 };
 
-use crate::Devices;
-
 pub struct Key {
     irq: Arc<Mutex<bool>>,
-    mem: Arc<Mutex<Devices>>,
+    key: Arc<Mutex<u16>>,
 }
 
 impl Key {
-    pub fn new(irq: Arc<Mutex<bool>>, mem: Arc<Mutex<Devices>>) -> Key {
+    pub fn new(irq: Arc<Mutex<bool>>, key: Arc<Mutex<u16>>) -> Key {
         enable_raw_mode().unwrap();
-        Key { irq, mem }
+        Key { irq, key }
     }
 
     pub fn handle(&mut self) {
@@ -34,7 +32,7 @@ impl Key {
                 }) => {
                     if c >= 'a' && c <= 'z' {
                         *self.irq.lock().unwrap() = true;
-                        self.mem.lock().unwrap().key_write(c as u16);
+                        *self.key.lock().unwrap() = c as u16;
                         // TODO: key_write should take in ps2 code instead
                     }
                 }

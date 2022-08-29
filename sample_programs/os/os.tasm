@@ -95,24 +95,6 @@
     jmpr
 
 .welcome_message
-    # Hello from ToastOS!\0
-    0x48
-    0x65
-    0x6C
-    0x6C
-    0x6F
-    0x20
-    0x66
-    0x72
-    0x6f
-    0x6d
-    0x20
-    0x54
-    0x6f
-    0x61
-    0x73
-    0x74
-    0x4f
-    0x53
-    0x21
-    0x00
+    "Hello from ToastOS!                                                                                 "
+    "> "
+    0

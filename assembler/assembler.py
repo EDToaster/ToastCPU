@@ -313,10 +313,16 @@ class Program:
     def parse(self, lines: List[str]) -> List[str]:
         raw_format = []
         for line in lines:
+            stripped_line = line.strip()
+            if stripped_line.startswith("\"") and stripped_line.endswith("\""):
+                raw_string = stripped_line[1:-1]
+                raw_format += [(c, [Number(ord(c))]) for c in raw_string]
+                continue
+
             raw = [self.parse_token(tok.strip()) for tok in line.split()]
             if len(raw) < 1 or raw[0] is None:
                 continue
-            raw_format.append((line.strip(), [r for r in raw if r is not None]))
+            raw_format.append((stripped_line, [r for r in raw if r is not None]))
 
         # add labels to words
         labeled_instructions: List[Instruction] = []

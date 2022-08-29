@@ -1,23 +1,22 @@
 use std::env;
 use std::fs;
 use std::io::stdout;
-use std::ops::RangeBounds;
 use std::ops::{Index, IndexMut};
 use std::process;
 use std::process::exit;
 use std::sync::Arc;
 use std::sync::Mutex;
 use std::thread;
-use std::time::Duration;
 
 use crossterm::event::KeyCode;
 use crossterm::event::KeyModifiers;
-use crossterm::event::poll;
 use crossterm::event::read;
 use crossterm::event::{Event, KeyEvent};
+use crossterm::style::Colors;
+use crossterm::style::ResetColor;
 use crossterm::terminal::ClearType;
 use crossterm::terminal::enable_raw_mode;
-use crossterm::{cursor::MoveTo, execute, style::Print, terminal::Clear};
+use crossterm::{cursor::MoveTo, execute, style::Print, style::SetColors, terminal::Clear, style::Color };
 
 use regex::Regex;
 
@@ -37,6 +36,17 @@ const ALU: u16 = 8;
 const IALU: u16 = 9;
 const JMP: u16 = 10;
 const RTI: u16 = 12;
+
+const COLORS: [Color; 8] = [
+    Color::Rgb { r: 0, g: 0, b: 0 },
+    Color::Rgb { r: 0, g: 0, b: 255 },
+    Color::Rgb { r: 0, g: 255, b: 0 },
+    Color::Rgb { r: 0, g: 255, b: 255 },
+    Color::Rgb { r: 255, g: 0, b: 0 },
+    Color::Rgb { r: 255, g: 0, b: 255 },
+    Color::Rgb { r: 255, g: 255, b: 0 },
+    Color::Rgb { r: 255, g: 255, b: 255 },
+];
 
 enum StatusRegisterFlag {
     X,
@@ -139,8 +149,12 @@ impl Memory {
     fn mem_write(&mut self, addr: u16, val: u16) {
         match addr {
             0..=0x7FFF => {
+                let bg = (val & (0b0000011100000000)) >> 8;
+                let fg = (val & (0b0011100000000000)) >> 11;
+
                 execute!(
                     stdout(),
+                    SetColors(Colors::new(COLORS[fg as usize], COLORS[bg as usize])),
                     MoveTo(addr % 100, addr / 100),
                     Print(format!("{}", (val & 0x00FF) as u8 as char)),
                 )
@@ -304,12 +318,18 @@ fn main() {
                     if c >= 'a' && c <= 'z' {
                         *irq_key.lock().unwrap() = true;
                         mem_key.lock().unwrap().key_write(c as u16);
+                        // TODO: key_write should take in ps2 code instead
                     }
                 },
                 Event::Key(KeyEvent {
                     code: KeyCode::Char('c'),
                     modifiers: KeyModifiers::CONTROL,
                 }) => {
+                    execute!(
+                        stdout(),
+                        ResetColor,
+                    ).expect("Something went wrong!");
+
                     exit(0);
                 },
                 _ => (),

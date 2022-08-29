@@ -21,4 +21,4 @@ Read documents on the [architecture](spec/arch.md), and the [application binary 
     - [x] `rti` will also need to restore the status register
     - [ ] `rti` will also stop other interrupts from occuring
 - [ ] Implement better multi-interrupt support.
-- [ ] Add Register Banking (Maybe...)
+- [ ] ~Add Register Banking (Maybe...)~

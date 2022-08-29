@@ -1,30 +1,28 @@
+mod key;
+mod vga;
+
 use std::env;
 use std::fs;
 use std::io::stdout;
 use std::ops::{Index, IndexMut};
 use std::process;
-use std::process::exit;
-use std::sync::Arc;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 use std::thread;
 
-use crossterm::event::KeyCode;
-use crossterm::event::KeyModifiers;
-use crossterm::event::read;
-use crossterm::event::{Event, KeyEvent};
-use crossterm::style::Colors;
-use crossterm::style::ResetColor;
-use crossterm::terminal::ClearType;
-use crossterm::terminal::enable_raw_mode;
-use crossterm::{cursor::MoveTo, execute, style::Print, style::SetColors, terminal::Clear, style::Color };
+use crossterm::{
+    execute,
+    terminal::{Clear, ClearType},
+};
 
 use regex::Regex;
+use vga::VGA;
+
+use crate::key::Key;
 
 const ROM_SIZE: usize = 0x8000;
 const RAM_SIZE: usize = 0x4000;
 const VGA_WIDTH: usize = 100;
 const VGA_HEIGHT: usize = 60;
-const VGA_SIZE: usize = VGA_WIDTH * VGA_HEIGHT;
 
 const LOAD: u16 = 0;
 const STR: u16 = 1;
@@ -36,17 +34,6 @@ const ALU: u16 = 8;
 const IALU: u16 = 9;
 const JMP: u16 = 10;
 const RTI: u16 = 12;
-
-const COLORS: [Color; 8] = [
-    Color::Rgb { r: 0, g: 0, b: 0 },
-    Color::Rgb { r: 0, g: 0, b: 255 },
-    Color::Rgb { r: 0, g: 255, b: 0 },
-    Color::Rgb { r: 0, g: 255, b: 255 },
-    Color::Rgb { r: 255, g: 0, b: 0 },
-    Color::Rgb { r: 255, g: 0, b: 255 },
-    Color::Rgb { r: 255, g: 255, b: 0 },
-    Color::Rgb { r: 255, g: 255, b: 255 },
-];
 
 enum StatusRegisterFlag {
     X,
@@ -88,7 +75,6 @@ impl StatusRegister {
         }
     }
 }
-
 struct Registers {
     general: [u16; 12],
     // # r12 - ISR
@@ -129,14 +115,14 @@ impl IndexMut<u16> for Registers {
     }
 }
 
-struct Memory {
+pub struct Devices {
     rom: Vec<u16>,
-    vga: Vec<u16>,
+    vga: VGA,
     ram: Vec<u16>,
     key: u16,
 }
 
-impl Memory {
+impl Devices {
     fn mem_read(&self, addr: u16) -> u16 {
         match addr {
             0..=0x7FFF => self.rom[addr as usize] as u16,
@@ -148,20 +134,7 @@ impl Memory {
 
     fn mem_write(&mut self, addr: u16, val: u16) {
         match addr {
-            0..=0x7FFF => {
-                let bg = (val & (0b0000011100000000)) >> 8;
-                let fg = (val & (0b0011100000000000)) >> 11;
-
-                execute!(
-                    stdout(),
-                    SetColors(Colors::new(COLORS[fg as usize], COLORS[bg as usize])),
-                    MoveTo(addr % 100, addr / 100),
-                    Print(format!("{}", (val & 0x00FF) as u8 as char)),
-                )
-                .expect("Something went wrong when writing to terminal");
-
-                self.vga[addr as usize] = val
-            }
+            0..=0x7FFF => self.vga.put_char(addr.into(), val),
             0x8000..=0xBFFF => self.ram[(addr - 0x8000) as usize] = val,
             _ => todo!("Memory location {addr:#06x}={val:#06x}"),
         }
@@ -277,13 +250,12 @@ fn main() {
     print!("Parsing {} bytes to instructions ... ", bytes);
     let rom: Vec<u16> = parse_program(&prog_string);
     println!("rom is sized {}", rom.len());
-    
-    let irq_arc = Arc::new(Mutex::new(false));
 
-    let mem_arc = Arc::new(Mutex::new(Memory {
+    let irq_arc = Arc::new(Mutex::new(false));
+    let mem_arc = Arc::new(Mutex::new(Devices {
         rom,
         ram: vec![0; RAM_SIZE],
-        vga: vec![0; VGA_SIZE],
+        vga: VGA::new(VGA_WIDTH, VGA_HEIGHT, stdout()),
         key: 0,
     }));
 
@@ -298,49 +270,16 @@ fn main() {
 
     let mut halt: bool = false;
 
-    let mut sout = stdout();
-    execute!(sout, Clear(ClearType::All),).expect("Something went wrong");
-    
-    //going into raw mode
-    enable_raw_mode().unwrap();
+    execute!(stdout(), Clear(ClearType::All),).expect("Something went wrong");
 
     // start keyboard thread
-    let irq_key = Arc::clone(&irq_arc);
-    let mem_key = Arc::clone(&mem_arc);
-    let t = thread::spawn(move || {
-        loop {
-            let event = read().unwrap();
-            match event {
-                Event::Key(KeyEvent {
-                    code: KeyCode::Char(c),
-                    modifiers: KeyModifiers::NONE,
-                }) => {
-                    if c >= 'a' && c <= 'z' {
-                        *irq_key.lock().unwrap() = true;
-                        mem_key.lock().unwrap().key_write(c as u16);
-                        // TODO: key_write should take in ps2 code instead
-                    }
-                },
-                Event::Key(KeyEvent {
-                    code: KeyCode::Char('c'),
-                    modifiers: KeyModifiers::CONTROL,
-                }) => {
-                    execute!(
-                        stdout(),
-                        ResetColor,
-                    ).expect("Something went wrong!");
+    let mut key: Key = Key::new(Arc::clone(&irq_arc), Arc::clone(&mem_arc));
+    let key_handler = thread::spawn(move || key.handle());
 
-                    exit(0);
-                },
-                _ => (),
-            };
-        }
-    });
-
+    // main thread
     let irq = Arc::clone(&irq_arc);
     let mem = Arc::clone(&mem_arc);
     while !halt {
-
         if *irq.lock().unwrap() {
             *irq.lock().unwrap() = false;
             mem.lock().unwrap().mem_write(registers.sp, registers.pc);
@@ -424,7 +363,9 @@ fn main() {
                         registers.sp -= 1;
                         registers.pc = mem.lock().unwrap().mem_read(registers.sp);
                     } else if l {
-                        mem.lock().unwrap().mem_write(registers.sp, registers.pc + 1);
+                        mem.lock()
+                            .unwrap()
+                            .mem_write(registers.sp, registers.pc + 1);
                         registers.sp += 1;
 
                         registers.pc = registers[r1];
@@ -446,8 +387,8 @@ fn main() {
         }
         registers.pc += 1;
     }
-    
-    t.join().unwrap();
+
+    key_handler.join().unwrap();
 
     let last_pc = registers.pc - 1;
     println!("Program halted at PC={last_pc}");

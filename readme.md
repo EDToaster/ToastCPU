@@ -13,10 +13,12 @@ Read documents on the [architecture](spec/arch.md), and the [application binary 
 - [ ] VGA buffer currently takes up too much of the IO mapped space, maybe consider changing to 0x0000: Address, 0x0001: Value type of memory addressing.
 - [ ] Implement elementary OS / Basic interpreter
 - [ ] Extend functionality of assembler
-    - [ ] Add `call` macro
+    - [x] Add `call` macro
 - [ ] Implement a compiler backend for C->`toast` compilation
 - [ ] Add floating point module, maybe a 32-bit variant?
 - [x] IRQ and handlers (keyboard driver testing TBD...)
 - [ ] Implement a `rti` instruction that allows for more interrupts to occur. Currently, interrupts will nest themselves and cause a ton of issues.
-    - [ ] `rti` will also need to restore the status register
+    - [x] `rti` will also need to restore the status register
+    - [ ] `rti` will also stop other interrupts from occuring
+- [ ] Implement better multi-interrupt support.
 - [ ] Add Register Banking (Maybe...)

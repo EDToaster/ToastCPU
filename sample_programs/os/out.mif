@@ -5,28 +5,28 @@ DATA_RADIX = HEX;             -- The radix for data values
 CONTENT                       -- start of (address : data pairs)
 BEGIN
 0000 : 2C08; -- imov r12 .isr
-0001 : 2000; -- call .main
-0002 : 904A; -- 
-0003 : 9002; -- 
-0004 : 904A; -- 
-0005 : 9092; -- 
-0006 : A010; -- 
+0001 : 2000; -- call! .main
+0002 : 904A; -- ║
+0003 : 9002; -- ║
+0004 : 904A; -- ║
+0005 : 9092; -- ║
+0006 : A010; -- ╝
 0007 : 7000; -- halt
 0008 : C000; -- rti
 0009 : 2143; -- imov r1 .welcome_message        # load message
 000A : 5D10; -- push r1                         # push argument to stack
-000B : 2000; -- call .print_string
-000C : 904A; -- 
-000D : 9012; -- 
-000E : 904A; -- 
-000F : 9032; -- 
-0010 : A010; -- 
+000B : 2000; -- call! .print_string
+000C : 904A; -- ║
+000D : 9012; -- ║
+000E : 904A; -- ║
+000F : 9032; -- ║
+0010 : A010; -- ╝
 0011 : 61D0; -- pop  r1
 0012 : A020; -- jmpr
-0013 : 5D20; -- push r2 # message pointer
-0014 : 5D30; -- push r3 # char to print
-0015 : 5D40; -- push r4 # VGA pointer
-0016 : 5D50; -- push r5 # jmp loc
+0013 : 5D20; -- push! r2 r3 r4 r5
+0014 : 5D30; -- ║
+0015 : 5D40; -- ║
+0016 : 5D50; -- ╝
 0017 : 2400; -- imov r4 0
 0018 : 82D6; -- mov  r2 r13
 0019 : 9265; -- isub r2 6
@@ -37,22 +37,22 @@ BEGIN
 001E : A501; -- jz   r5
 001F : 5D30; -- push r3
 0020 : 5D40; -- push r4
-0021 : 2000; -- call .print_char
-0022 : 904A; -- 
-0023 : 9032; -- 
-0024 : 904A; -- 
-0025 : 9022; -- 
-0026 : A010; -- 
+0021 : 2000; -- call! .print_char
+0022 : 904A; -- ║
+0023 : 9032; -- ║
+0024 : 904A; -- ║
+0025 : 9022; -- ║
+0026 : A010; -- ╝
 0027 : 64D0; -- pop  r4
 0028 : 63D0; -- pop  r3
 0029 : 9214; -- iadd r2 1
 002A : 9414; -- iadd r4 1
 002B : 251B; -- imov r5 .print_string_loop
 002C : A500; -- jmp  r5
-002D : 65D0; -- pop  r5
-002E : 64D0; -- pop  r4
-002F : 63D0; -- pop  r3
-0030 : 62D0; -- pop  r2
+002D : 65D0; -- pop! r5 r4 r3 r2
+002E : 64D0; -- ║
+002F : 63D0; -- ║
+0030 : 62D0; -- ╝
 0031 : A020; -- jmpr
 0032 : 5D20; -- push r2
 0033 : 5D30; -- push r3
@@ -171,7 +171,5 @@ BEGIN
 00A4 : 0020; --  
 00A5 : 0020; --  
 00A6 : 0020; --  
-00A7 : 003E; -- >
-00A8 : 0020; --  
-00A9 : 0000; -- 0
+00A7 : 0000; -- 0
 END;

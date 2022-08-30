@@ -7,7 +7,7 @@
 .reset
     # setup isr and jump to main
     imov r12 .isr
-    call .main
+    call! .main
     halt
 
 # due to dumb limitation, all referenced labels must be within 256 words of memory
@@ -17,16 +17,16 @@
 .main
     imov r1 .welcome_message        # load message
     push r1                         # push argument to stack
-    call .print_string
+    call! .print_string
     pop  r1
     jmpr
 
 .print_string # (char *)
-    # save registers
-    push r2 # message pointer
-    push r3 # char to print
-    push r4 # VGA pointer
-    push r5 # jmp loc
+    # message pointer
+    # char to print
+    # VGA pointer
+    # jmp loc
+    push! r2 r3 r4 r5 
 
     # address counter
     imov r4 0
@@ -46,7 +46,7 @@
 
     push r3
     push r4
-    call .print_char
+    call! .print_char
     pop  r4
     pop  r3
 
@@ -59,10 +59,7 @@
 
 .print_string_exit
     # restore registers and return
-    pop  r5
-    pop  r4
-    pop  r3
-    pop  r2
+    pop! r5 r4 r3 r2
     jmpr
 
 .print_char # (word char_to_print, word *print_loc)

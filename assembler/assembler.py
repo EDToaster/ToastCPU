@@ -53,7 +53,7 @@ opcodes = {
     "ishl": "1001",
 }
 
-macros = [ "call" ]
+macros = [ "call", "call!", "push!", "pop!" ]
 
 one_4bit_opcodes = ["not", ]
 
@@ -219,9 +219,11 @@ class Instruction:
             return self.words[0].to_binary(16)
 
     def expand_and_convert_mask(self) -> List[Instruction]:
+        args = self.words[1:]
+        num_args = len(args)
         if isinstance(self.words[0], Opcode):
             opcode = self.words[0].opcode
-            if opcode == "call":
+            if opcode == "call" or opcode == "call!":
                 """        
                 imov r0 LabelMask(.label, 0xFF00, 8)
                 ishl r0 4
@@ -235,11 +237,25 @@ class Instruction:
                     raise "call macro is supposed to have one argument that is a label"
                 return [
                     Instruction(self.text, self.labels, [Opcode("imov"), Register(0), LabelMask(label, 0xFF00, 8)]),
-                    Instruction("", [], [Opcode("ishl"), Register(0), Number(4)]),
-                    Instruction("", [], [Opcode("ior"), Register(0), LabelMask(label, 0x00F0, 4)]),
-                    Instruction("", [], [Opcode("ishl"), Register(0), Number(4)]),
-                    Instruction("", [], [Opcode("ior"), Register(0), LabelMask(label, 0x000F, 0)]),
-                    Instruction("", [], [Opcode("jmpl"), Register(0)]),
+                    Instruction("║", [], [Opcode("ishl"), Register(0), Number(4)]),
+                    Instruction("║", [], [Opcode("ior"), Register(0), LabelMask(label, 0x00F0, 4)]),
+                    Instruction("║", [], [Opcode("ishl"), Register(0), Number(4)]),
+                    Instruction("║", [], [Opcode("ior"), Register(0), LabelMask(label, 0x000F, 0)]),
+                    Instruction("╝", [], [Opcode("jmpl"), Register(0)]),
+                ]
+            elif opcode == "push!":
+                return [
+                    Instruction(
+                        self.text if i == 0 else ("╝" if i == num_args - 1 else "║"), 
+                        self.labels if i == 0 else [], 
+                        [Opcode("push"), arg]) for i, arg in enumerate(args)
+                ]
+            elif opcode == "pop!":
+                return [
+                    Instruction(
+                        self.text if i == 0 else ("╝" if i == num_args - 1 else "║"), 
+                        self.labels if i == 0 else [], 
+                        [Opcode("pop"), arg]) for i, arg in enumerate(args)
                 ]
             else:
                 return [

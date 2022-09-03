@@ -53,7 +53,7 @@ opcodes = {
     "ishl": "1001",
 }
 
-macros = [ "call", "call!", "push!", "pop!" ]
+macros = [ "call", "call!", "push!", "pop!", "load!", "str!" ]
 
 one_4bit_opcodes = ["not", ]
 
@@ -257,6 +257,48 @@ class Instruction:
                         self.labels if i == 0 else [], 
                         [Opcode("pop"), arg]) for i, arg in enumerate(args)
                 ]
+            elif opcode == "load!":
+                """
+                imov rx LabelMask(.label, 0xFF00, 8)
+                ishl rx 4
+                ior  rx LabelMask(.label, 0x00F0, 4)
+                ishl rx 4
+                ior  rx LabelMask(.label, 0x000F, 0)
+                load rx rx
+                load rx rx
+                """
+                reg = self.words[1]
+                label = self.words[2]
+                assert isinstance(reg, Register) and isinstance(label, Label)
+                return [
+                    Instruction(self.text, self.labels, [Opcode("imov"), reg, LabelMask(label, 0xFF00, 8)]),
+                    Instruction("║", [], [Opcode("ishl"), reg, Number(4)]),
+                    Instruction("║", [], [Opcode("ior"), reg, LabelMask(label, 0x00F0, 4)]),
+                    Instruction("║", [], [Opcode("ishl"), reg, Number(4)]),
+                    Instruction("║", [], [Opcode("ior"), reg, LabelMask(label, 0x000F, 0)]),
+                    Instruction("╝", [], [Opcode("load"), reg, reg])
+                ]
+            elif opcode == "str!":
+                """
+                imov r0 LabelMask(.label, 0xFF00, 8)
+                ishl r0 4
+                ior  r0 LabelMask(.label, 0x00F0, 4)
+                ishl r0 4
+                ior  r0 LabelMask(.label, 0x000F, 0)
+                load r0 r0
+                str  r0 rx
+                """
+                label = self.words[1]
+                reg = self.words[2]
+                assert isinstance(reg, Register) and isinstance(label, Label)
+                return [
+                    Instruction(self.text, self.labels, [Opcode("imov"), Register(0), LabelMask(label, 0xFF00, 8)]),
+                    Instruction("║ ishl", [], [Opcode("ishl"), Register(0), Number(4)]),
+                    Instruction("║ ior", [], [Opcode("ior"), Register(0), LabelMask(label, 0x00F0, 4)]),
+                    Instruction("║ ishl", [], [Opcode("ishl"), Register(0), Number(4)]),
+                    Instruction("║ ior", [], [Opcode("ior"), Register(0), LabelMask(label, 0x000F, 0)]),
+                    Instruction("╝ str", [], [Opcode("str"), Register(0), reg])
+                ]
             else:
                 return [
                     Instruction(self.text, self.labels, [(LabelMask(l, 0xFFFF, 0) if isinstance(l, Label) else l) for l in self.words])
@@ -341,13 +383,16 @@ class Program:
             raw_format.append((stripped_line, [r for r in raw if r is not None]))
 
         # add labels to words
+        label_locations = {}
         labeled_instructions: List[Instruction] = []
         current_labels_for_line = []
         for (text, line) in raw_format:
             if len(line) < 1:
                 continue
 
-            if isinstance(line[0], Label):
+            if len(line) >= 2 and isinstance(line[0], Label) and isinstance(line[1], Number):
+                label_locations[line[0]] = line[1]
+            elif isinstance(line[0], Label):
                 current_labels_for_line.append(line[0])
             else:
                 labeled_instructions.append(Instruction(text, current_labels_for_line, line))
@@ -365,12 +410,13 @@ class Program:
         [print (line) for line in expanded_instructions]
 
         # find label locations
-        label_locations: Dict[Label, Number] = {}
         for i, line in enumerate(expanded_instructions):
             for label in line.labels:
-                print (f"{label} at {i}")
                 label_locations[label] = Number(i)
         
+        for label, loc in label_locations.items():
+            print (f"{label} at {loc}")
+
         # replace labels with numbers
         labels_replaced = []
         for line in expanded_instructions:

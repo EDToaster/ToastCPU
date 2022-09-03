@@ -1,8 +1,8 @@
 mod key;
 mod vga;
 mod devices;
+mod diagnostics;
 
-use std::cell::RefCell;
 use std::env;
 use std::fs;
 use std::io::stdout;
@@ -11,11 +11,13 @@ use std::process;
 use std::rc::Rc;
 use std::sync::{Arc, Mutex};
 use std::thread;
+use std::time::Duration;
 
 use regex::Regex;
 use vga::VGA;
 
 use crate::devices::Devices;
+use crate::diagnostics::Diagnostics;
 use crate::key::Key;
 
 const ROM_SIZE: usize = 0x8000;
@@ -242,6 +244,8 @@ fn main() {
     let key_handler_thread = thread::spawn(move || 
        key_handler.handle());
 
+    let mut diagnostics: Diagnostics = Diagnostics::new(Arc::clone(&vga), Duration::new(0, 500_000_000));
+
     // main thread
     let mut mem = Devices::new(rom, vga, ram, key);
     while !halt {
@@ -349,6 +353,7 @@ fn main() {
             _ => (),
         }
         registers.pc += 1;
+        diagnostics.increment();
     }
 
     key_handler_thread.join().unwrap();

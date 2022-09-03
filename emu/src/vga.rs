@@ -3,7 +3,7 @@
  */
 use std::{io::Stdout};
 
-use crossterm::{execute, style::{Color, SetColors, Colors, Print}, cursor::{MoveTo, Hide}, terminal::{Clear, ClearType}};
+use crossterm::{execute, style::{Color, SetColors, Colors, Print}, cursor::{MoveTo, Hide}};
 
 const COLORS: [Color; 8] = [
     Color::Rgb { r: 0, g: 0, b: 0 },
@@ -48,10 +48,10 @@ impl VGA {
             ).expect("Something went wrong writing to the virtual terminal!");
         }
 
-        self.put_dianostics(0, "Starting");
+        self.put_dianostics(0, "Starting ...");
     }
 
-    fn put_dianostics(&mut self, x: u16, s: &str) {
+    pub fn put_dianostics(&mut self, x: u16, s: &str) {
         execute!(
             self.stdout,
             SetColors(Colors::new(Color::White, Color::Blue)),

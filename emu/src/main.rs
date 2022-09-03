@@ -12,11 +12,6 @@ use std::rc::Rc;
 use std::sync::{Arc, Mutex};
 use std::thread;
 
-use crossterm::{
-    execute,
-    terminal::{Clear, ClearType},
-};
-
 use regex::Regex;
 use vga::VGA;
 
@@ -225,8 +220,9 @@ fn main() {
     let rom: Rc<Vec<u16>> = Rc::new(parse_program(&prog_string));
     println!("rom is sized {}", rom.len());
 
-    let ram: Rc<RefCell<Vec<u16>>> = Rc::new(RefCell::new(vec![0; RAM_SIZE]));
+    let ram: Rc<Vec<u16>> = Rc::new(vec![0; RAM_SIZE]);
     let vga: Arc<Mutex<VGA>> = Arc::new(Mutex::new(VGA::new(VGA_WIDTH, VGA_HEIGHT, stdout())));
+    vga.lock().unwrap().reset();
     let key: Arc<Mutex<u16>> = Arc::new(Mutex::new(0));
     let irq: Arc<Mutex<bool>> = Arc::new(Mutex::new(false));
 
@@ -241,12 +237,10 @@ fn main() {
 
     let mut halt: bool = false;
 
-    execute!(stdout(), Clear(ClearType::All),).expect("Something went wrong");
-
     // start keyboard thread
-    let mut key_handler_arg =  Key::new(Arc::clone(&irq), Arc::clone(&key));
-    let key_handler = thread::spawn(move || 
-       key_handler_arg.handle());
+    let mut key_handler = Key::new(Arc::clone(&irq), Arc::clone(&key));
+    let key_handler_thread = thread::spawn(move || 
+       key_handler.handle());
 
     // main thread
     let mut mem = Devices::new(rom, vga, ram, key);
@@ -357,7 +351,7 @@ fn main() {
         registers.pc += 1;
     }
 
-    key_handler.join().unwrap();
+    key_handler_thread.join().unwrap();
 
     let last_pc = registers.pc - 1;
     println!("Program halted at PC={last_pc}");

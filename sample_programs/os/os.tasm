@@ -14,20 +14,22 @@
 .isr
     rti
 
-# WORD *counter_ptr = 0xA000
-.counter_ptr    0xA000
+# WORD *
+.ptr_counter        0xBFFF
+.ptr_line_counter   0xBFFE
 
 .main # ( )
+    # init variables
     imov  r1 0
-    str!  .counter_ptr r1
+    str!  .ptr_counter r1
 
+    imov  r1 100
+    imoh  r1 0
+    str!  .ptr_line_counter r1
+
+    # start printing
     imov r1 .welcome_message        # load message
     push r1                         # push argument to stack
-    call! .print_string
-    call! .print_string
-    call! .print_string
-    call! .print_string
-    call! .print_string
     call! .print_string
     call! .print_string
     call! .print_string
@@ -40,11 +42,7 @@
     # char to print
     # VGA pointer
     # jmp loc
-    # counter_ptr
     push! r2 r3 r4 r5
-
-    # address counter
-    load! r4 .counter_ptr
 
     # get argument into r2
     mov  r2 r13
@@ -54,42 +52,51 @@
     # loop through each char of the string
 .print_string_loop
     # load exit point
-    imov r5 .print_string_exit
     load r3 r2
-    iadd r3 0 # load doesn't do arith
-    jz   r5
+    iadd r3 0 # load doesn't set flags
+    jz!  .print_string_exit
 
-    push! r3 r4
+    push  r3
     call! .print_char
-    pop! r4 r3
+    pop   r3
 
     # increment vga and text loc
     iadd r2 1
     iadd r4 1
 
-    imov r5 .print_string_loop
-    jmp  r5
+    jmp! .print_string_loop
 
 .print_string_exit
-    str! .counter_ptr r4
     # restore registers and return
     pop! r5 r4 r3 r2
     jmpr
 # end print_string
 
-.print_char # (word char_to_print, word *print_loc)
+.print_char # (word char_to_print)
     # save registers
     push! r2 r3 r4
 
     # get argument into r2
-    mov  r2 r13
-    isub r2 6
-    load r2 r2 # r2 is now char
+    mov  r3 r13
+    isub r3 5
+    load r2 r3 # r2 is now char
 
-    # get argument into r2
-    mov  r4 r13
-    isub r4 5
-    load r4 r4 # r4 is now word *
+    # destructively check if char is newline
+    isub r2 0x0A
+    jnz! .print_char_keep_going
+
+    load! r3 .ptr_counter
+    load! r4 .ptr_line_counter
+    add   r3 r4
+    str!  .ptr_counter r3
+    imov  r4 0
+    iadd  r4 100
+    jmp!  .print_char_store_and_exit
+.print_char_keep_going
+    load r2 r3 # r2 is now char
+
+    # get counter into r4
+    load! r4 .ptr_counter
 
     imov r3 0b00111000
     ishl r3 8
@@ -98,11 +105,22 @@
     # vga addr
     str  r4 r2
 
+    iadd r4 1
+    str! .ptr_counter r4
+
+    load! r4 .ptr_line_counter
+    isub  r4 1
+    jnz!  .print_char_store_and_exit
+    iadd  r4 100
+.print_char_store_and_exit
+    str!  .ptr_line_counter r4
+
     # restore registers and return
     pop! r4 r3 r2
     jmpr
 # end print_char
 
 .welcome_message
-    "Hello from ToastOS!                                                                                 "
+    "Hello from ToastOS!"
+    0x0A
     0

@@ -54,8 +54,6 @@ opcodes = {
     "ishl": "1001",
 }
 
-macros = [ "call", "call!", "push!", "pop!", "load!", "str!" ]
-
 one_4bit_opcodes = ["not", ]
 
 two_4bit_opcodes = [
@@ -84,6 +82,11 @@ jump_opcodes = {
     "jnl": "010011",
     "jpl": "010100",
 }
+
+macros = [ 
+    "call", "call!", "push!", "pop!", "load!", "str!",
+]
+macros += [ f"{j}!" for j in jump_opcodes ]
 
 jumpr_opcodes = {
     "jmpr": "100000",
@@ -282,6 +285,19 @@ class Instruction:
                     Instruction(self.text, self.labels, [Opcode("imov"), Register(0), LabelMask(label, 0x00FF, 0)]),
                     Instruction("|", [], [Opcode("imoh"), Register(0), LabelMask(label, 0xFF00, 8)]),
                     Instruction("|", [], [Opcode("str"), Register(0), reg])
+                ]
+            elif opcode[:-1] in jump_opcodes and opcode[-1] == '!':
+                """
+                imov r0 LabelMask(.label, 0x00FF, 0)
+                imoh r0 LabelMask(.label, 0xFF00, 8)
+                j_op r0
+                """
+                label = self.words[1]
+                assert isinstance(label, Label)
+                return [
+                    Instruction(self.text, self.labels, [Opcode("imov"), Register(0), LabelMask(label, 0x00FF, 0)]),
+                    Instruction("|", [], [Opcode("imoh"), Register(0), LabelMask(label, 0xFF00, 8)]),
+                    Instruction("|", [], [Opcode(opcode[:-1]), Register(0)])
                 ]
             else:
                 return [

@@ -283,7 +283,7 @@ fn main() {
                 registers[r1] = imov_imm8;
             }
             IMOH => {
-                registers[r2] = imoh_imm8 | (registers[r2] & 0x00FF);
+                registers[r1] = imoh_imm8 | (registers[r1] & 0x00FF);
             }
             PUSH => {
                 mem.write(registers[r1], registers[r2]);

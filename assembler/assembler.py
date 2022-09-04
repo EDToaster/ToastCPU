@@ -229,22 +229,16 @@ class Instruction:
             opcode = self.words[0].opcode
             if opcode == "call" or opcode == "call!":
                 """        
-                imov r0 LabelMask(.label, 0xFF00, 8)
-                ishl r0 4
-                ior  r0 LabelMask(.label, 0x00F0, 4)
-                ishl r0 4
-                ior  r0 LabelMask(.label, 0x000F, 0)
+                imov r0 LabelMask(.label, 0x00FF, 0)
+                imoh r0 LabelMask(.label, 0xFF00, 8)
                 jmpl r0
                 """
                 label = self.words[1]
                 if not isinstance(label, Label):
                     raise "call macro is supposed to have one argument that is a label"
                 return [
-                    Instruction(self.text, self.labels, [Opcode("imov"), Register(0), LabelMask(label, 0xFF00, 8)]),
-                    Instruction("║", [], [Opcode("ishl"), Register(0), Number(4)]),
-                    Instruction("║", [], [Opcode("ior"), Register(0), LabelMask(label, 0x00F0, 4)]),
-                    Instruction("║", [], [Opcode("ishl"), Register(0), Number(4)]),
-                    Instruction("║", [], [Opcode("ior"), Register(0), LabelMask(label, 0x000F, 0)]),
+                    Instruction(self.text, self.labels, [Opcode("imov"), Register(0), LabelMask(label, 0x00FF, 0)]),
+                    Instruction("║", [], [Opcode("imoh"), Register(0), LabelMask(label, 0xFF00, 8)]),
                     Instruction("╝", [], [Opcode("jmpl"), Register(0)]),
                 ]
             elif opcode == "push!":
@@ -263,44 +257,30 @@ class Instruction:
                 ]
             elif opcode == "load!":
                 """
-                imov rx LabelMask(.label, 0xFF00, 8)
-                ishl rx 4
-                ior  rx LabelMask(.label, 0x00F0, 4)
-                ishl rx 4
-                ior  rx LabelMask(.label, 0x000F, 0)
-                load rx rx
+                imov rx LabelMask(.label, 0x00FF, 0)
+                imoh rx LabelMask(.label, 0xFF00, 8)
                 load rx rx
                 """
                 reg = self.words[1]
                 label = self.words[2]
                 assert isinstance(reg, Register) and isinstance(label, Label)
                 return [
-                    Instruction(self.text, self.labels, [Opcode("imov"), reg, LabelMask(label, 0xFF00, 8)]),
-                    Instruction("║", [], [Opcode("ishl"), reg, Number(4)]),
-                    Instruction("║", [], [Opcode("ior"), reg, LabelMask(label, 0x00F0, 4)]),
-                    Instruction("║", [], [Opcode("ishl"), reg, Number(4)]),
-                    Instruction("║", [], [Opcode("ior"), reg, LabelMask(label, 0x000F, 0)]),
+                    Instruction(self.text, self.labels, [Opcode("imov"), reg, LabelMask(label, 0x00FF, 0)]),
+                    Instruction("║", [], [Opcode("imoh"), reg, LabelMask(label, 0xFF00, 8)]),
                     Instruction("╝", [], [Opcode("load"), reg, reg])
                 ]
             elif opcode == "str!":
                 """
-                imov r0 LabelMask(.label, 0xFF00, 8)
-                ishl r0 4
-                ior  r0 LabelMask(.label, 0x00F0, 4)
-                ishl r0 4
-                ior  r0 LabelMask(.label, 0x000F, 0)
-                load r0 r0
+                imov r0 LabelMask(.label, 0x00FF, 0)
+                imoh r0 LabelMask(.label, 0xFF00, 8)
                 str  r0 rx
                 """
                 label = self.words[1]
                 reg = self.words[2]
                 assert isinstance(reg, Register) and isinstance(label, Label)
                 return [
-                    Instruction(self.text, self.labels, [Opcode("imov"), Register(0), LabelMask(label, 0xFF00, 8)]),
-                    Instruction("║ ishl", [], [Opcode("ishl"), Register(0), Number(4)]),
-                    Instruction("║ ior", [], [Opcode("ior"), Register(0), LabelMask(label, 0x00F0, 4)]),
-                    Instruction("║ ishl", [], [Opcode("ishl"), Register(0), Number(4)]),
-                    Instruction("║ ior", [], [Opcode("ior"), Register(0), LabelMask(label, 0x000F, 0)]),
+                    Instruction(self.text, self.labels, [Opcode("imov"), Register(0), LabelMask(label, 0x00FF, 0)]),
+                    Instruction("║", [], [Opcode("imoh"), Register(0), LabelMask(label, 0xFF00, 8)]),
                     Instruction("╝ str", [], [Opcode("str"), Register(0), reg])
                 ]
             else:

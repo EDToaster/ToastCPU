@@ -46,6 +46,7 @@ module main(
             alu_set_flags, set_pc, sr_from_mem, set_sp, increase_sp, mem_write;
 
 
+    alu_output_override_t::t    alu_output_override;
     pc_data_source_t::t         pc_data_source;
     mem_write_addr_source_t::t  mem_write_addr_source;
     mem_write_data_source_t::t  mem_write_data_source;
@@ -67,7 +68,7 @@ module main(
         .mem_to_reg, 			// transfer memory to reg? (for load, etc)
         .mem_read_is_pc,	// on clock
         .mem_read_is_sp,	// on clock
-        .alu_override_imm8,	
+        .alu_output_override,	
         .alu_override_imm4,
         .alu_set_flags,			// on clock, set status flags?
         .set_pc,					// on clock
@@ -114,7 +115,7 @@ module main(
         .mem_to_reg, 			// transfer memory to reg? (for load, etc)
         .mem_read_is_pc,	// on clock
         .mem_read_is_sp,	// on clock
-        .alu_override_imm8,	
+        .alu_output_override,	
         .alu_override_imm4,	
         .alu_set_flags,			// on clock, set status flags?
         .set_pc,					// on clock

@@ -1,0 +1,4 @@
+.reset
+    imov r1 0xEF
+    imoh r1 0xBE
+    halt

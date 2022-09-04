@@ -1,9 +1,11 @@
+`include "types/control_signals_imports.svh"
+
 module alu (
     input [15:0] a_in,
     input [15:0] b_in,
     
-    input [15:0] output_override,
-    input output_override_enable,
+    input [7:0] output_override,
+    input alu_output_override_t::t alu_output_override,
     
     input [3:0] operation,
     input carry_in,
@@ -42,7 +44,7 @@ module alu (
     
     always_comb
     begin: alu_V
-        if (output_override_enable) begin V = 1'b0; end
+        if (alu_output_override != alu_output_override_t::none) begin V = 1'b0; end
         else begin 
             case(operation)
                 ADD: V = (a[15] == b[15]) & (a[15] ^ agg[15]);
@@ -54,7 +56,7 @@ module alu (
     
     always_comb
     begin: alu_C
-        if (output_override_enable) begin C = 1'b0; end
+        if (alu_output_override != alu_output_override_t::none) begin C = 1'b0; end
         else begin 
             case(operation)
                 ADD, SUB: C = inter_agg[16];
@@ -69,7 +71,12 @@ module alu (
 
     always_comb
     begin: alu_comb
-        if (output_override_enable) begin inter_agg = { output_override[15], output_override }; end
+        if (alu_output_override == alu_output_override_t::imm8) begin 
+            inter_agg = { { 9{output_override[7]} }, output_override }; 
+        end
+        else if (alu_output_override == alu_output_override_t::imm8_high) begin 
+            inter_agg = { output_override[7], output_override[7:0], a_in[7:0] }; 
+        end
         else begin 
             case(operation)
                 NOT: inter_agg = ~a;
@@ -86,7 +93,4 @@ module alu (
             endcase
         end
     end
-    
-
-
 endmodule

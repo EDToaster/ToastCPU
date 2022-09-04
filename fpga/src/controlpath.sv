@@ -16,7 +16,8 @@ module controlpath(
     output logic mem_read_is_pc,	// on clock
     output logic mem_read_is_sp,	// on clock
 
-    output logic alu_override_imm8,	// override output of alu to be imm16 value?
+    output alu_output_override_t::t alu_output_override,
+
     output logic alu_override_imm4,		// override input b of alu to be imm4 value?
     output logic alu_set_flags,		// on clock, set status flags?
     output logic set_pc,					// on clock
@@ -80,6 +81,8 @@ module controlpath(
         op_rti_set_sr,			// write stack to SR
         
         op_alu,
+
+        op_imov,
         
         op_halt 					// halt
     } cpu_state;
@@ -139,7 +142,7 @@ module controlpath(
         // all control flags by default are 0
         reg_write = 1'b0;
         mem_to_reg = 1'b0;
-        alu_override_imm8 = 1'b0;
+        alu_output_override = alu_output_override_t::none;
         alu_override_imm4 = 1'b0;
         alu_set_flags = 1'b0;
         set_pc = 1'b0;
@@ -250,8 +253,13 @@ module controlpath(
                 reg_write = 1'b1;
                 alu_set_flags = 1'b1;
                 set_pc = 1'b1;
-                alu_override_imm8 = opcode == 4'b0010;
                 alu_override_imm4 = opcode == 4'b1001;
+            end
+
+            op_imov: begin
+                reg_write = 1'b1;
+                set_pc = 1'b1;
+                alu_output_override = opcode == 4'b0010 ? alu_output_override_t::imm8 : alu_output_override_t::imm8_high;
             end
             
             op_halt:;
@@ -265,7 +273,7 @@ module controlpath(
             4'b0001: op_decode_state = op_store;
             4'b0101: op_decode_state = op_push_store;
             4'b0110: op_decode_state = op_pop_dec;
-            4'b0010: op_decode_state = op_alu;
+            4'b0010, 4'b0011: op_decode_state = op_imov;
             4'b1010: op_decode_state = (ret_jump & do_jump) ? op_jmp_ret_dec : ((link_jump & do_jump) ? op_jmp_link : op_jmp); // if do_jump is false, fallback to op_jmp and inc PC
             4'b1100: op_decode_state = op_rti_dec;
             4'b0111: op_decode_state = op_halt;
@@ -314,6 +322,8 @@ module controlpath(
             op_rti_set_sr				: next_state = op_jmp_ret_dec;
             
             op_alu						: next_state = reset_state;
+
+            op_imov                     : next_state = reset_state;
             
             op_halt						: next_state = op_halt;				// halt
         endcase

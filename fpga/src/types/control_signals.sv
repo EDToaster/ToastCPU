@@ -23,3 +23,11 @@ package pc_data_source_t;
         mem
     } t;
 endpackage
+
+package alu_output_override_t;
+    typedef enum {
+        none,
+        imm8,
+        imm8_high
+    } t;
+endpackage

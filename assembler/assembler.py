@@ -8,6 +8,7 @@ opcodes = {
     "load": "0000",
     "str": "0001",
     "imov": "0010",
+    "imoh": "0011",
     
     "jmp": "1010",
     "jz": "1010",
@@ -62,9 +63,12 @@ two_4bit_opcodes = [
     "xor", "add", "sub", "mov", 
     "shr", "sshr", "shl", "iand", 
     "ior", "ixor", "iadd", "isub", 
-    "ishr", "isshr", "ishl"]
+    "ishr", "isshr", "ishl"
+]
+
 imm8_opcodes = [
-    "imov"
+    "imov",
+    "imoh",
 ]
 
 jump_opcodes = {

@@ -10,7 +10,7 @@ module datapath (
     input logic mem_to_reg, 			// transfer memory to reg? (for load, etc)
     input logic mem_read_is_pc,			// set the read address 
     input logic mem_read_is_sp,			// set the read address 
-    input logic alu_override_imm8,		// override output of alu to be imm16 value?
+    input alu_output_override_t::t alu_output_override,
     input logic alu_override_imm4,		// override input of alu_b to be imm4 value?
     input logic alu_set_flags,			// on clock, set status flags?
     input logic set_pc,					// on clock
@@ -116,7 +116,6 @@ module datapath (
     wire [3:0] 	imm4 = current_instruction[7:4];
     wire [7:0]  imm8 = current_instruction[7:0];
     wire [15:0] imm4_16 = { 12'b0 , imm4[3:0] };
-    wire [15:0] imm8_16 = {{ 8{imm8[7]} }  , imm8[7:0] }; 	
     
     
     // registers
@@ -166,8 +165,8 @@ module datapath (
         .a_in,
         .b_in,
         
-        .output_override(imm8_16),
-        .output_override_enable(alu_override_imm8),
+        .output_override(imm8),
+        .alu_output_override,
         
         .operation(alu_op),
         // todo: add carry support, including carry_enable

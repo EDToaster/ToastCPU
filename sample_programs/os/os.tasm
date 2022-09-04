@@ -23,17 +23,25 @@
     imov  r1 0
     str!  .ptr_counter r1
 
-    imov  r1 100
-    imoh  r1 0
+    imov!  r1 100
     str!  .ptr_line_counter r1
 
     # start printing
-    imov r1 .welcome_message        # load message
+    imov! r1 .welcome_message        # load message
     push r1                         # push argument to stack
     call! .print_string
-    call! .print_string
+    pop  r1
+
+    imov! r1 .welcome_message2         # load message
+    push r1                         # push argument to stack
     call! .print_string
     pop  r1
+
+    imov! r1 .welcome_message3         # load message
+    push r1                         # push argument to stack
+    call! .print_string
+    pop  r1
+
     jmpr
 # end main
 
@@ -89,8 +97,7 @@
     load! r4 .ptr_line_counter
     add   r3 r4
     str!  .ptr_counter r3
-    imov  r4 0
-    iadd  r4 100
+    imov! r4 100
     jmp!  .print_char_store_and_exit
 .print_char_keep_going
     load r2 r3 # r2 is now char
@@ -111,7 +118,7 @@
     load! r4 .ptr_line_counter
     isub  r4 1
     jnz!  .print_char_store_and_exit
-    iadd  r4 100
+    imov!  r4 100
 .print_char_store_and_exit
     str!  .ptr_line_counter r4
 
@@ -121,6 +128,14 @@
 # end print_char
 
 .welcome_message
-    "Hello from ToastOS!"
+    "Hello from ToastOS once!Hello from ToastOS once!Hello from ToastOS once!Hello from ToastOS once!Hello from ToastOS once!Hello from ToastOS once!"
+    0x0A
+    0
+.welcome_message2
+    "Hello from ToastOS twice!"
+    0x0A
+    0
+.welcome_message3
+    "Hello from ToastOS thrice!"
     0x0A
     0

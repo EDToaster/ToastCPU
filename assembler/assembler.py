@@ -84,7 +84,7 @@ jump_opcodes = {
 }
 
 macros = [ 
-    "call", "call!", "push!", "pop!", "load!", "str!",
+    "call", "call!", "push!", "pop!", "load!", "str!", "imov!"
 ]
 macros += [ f"{j}!" for j in jump_opcodes ]
 
@@ -298,6 +298,19 @@ class Instruction:
                     Instruction(self.text, self.labels, [Opcode("imov"), Register(0), LabelMask(label, 0x00FF, 0)]),
                     Instruction("|", [], [Opcode("imoh"), Register(0), LabelMask(label, 0xFF00, 8)]),
                     Instruction("|", [], [Opcode(opcode[:-1]), Register(0)])
+                ]
+            elif opcode == "imov!":
+                """
+                imov rx LabelMask(.label, 0x00FF, 0)
+                imoh rx LabelMask(.label, 0xFF00, 8)
+                """
+                reg = self.words[1]
+                dest = self.words[2]
+                assert isinstance(reg, Register) and (isinstance(dest, Label) or isinstance(dest, Number))
+                is_label = isinstance(dest, Label)
+                return [
+                    Instruction(self.text, self.labels, [Opcode("imov"), reg, LabelMask(dest, 0x00FF, 0) if is_label else Number(dest.number & 0x00FF)]),
+                    Instruction("|", [], [Opcode("imoh"), reg, LabelMask(dest, 0xFF00, 8) if is_label else Number((dest.number & 0xFF00) >> 8)]),
                 ]
             else:
                 return [

@@ -30,7 +30,10 @@ impl Devices {
 
     pub fn write(&mut self, addr: u16, val: u16) {
         match addr {
-            0..=0x7FFF => self.vga.lock().unwrap().put_char(addr.into(), val),
+            0..=0x7FFF => {
+                // println!("{:04x} at {:04x}", val, addr);
+                self.vga.lock().unwrap().put_char(addr.into(), val);
+            },
             0x8000..=0xBFFF => Rc::get_mut(&mut self.ram).unwrap()[(addr - 0x8000) as usize] = val,
             _ => todo!("Memory location {addr:#06x}={val:#06x}"),
         }

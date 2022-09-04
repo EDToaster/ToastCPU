@@ -8,8 +8,8 @@
 .vga_addr4 0x0013
 
 .main
-    imov r1 0
-    imoh r1 0b00111111
+    imov r1 97
+    imoh r1 0b00111101
     str! .vga_addr r1 
     str! .vga_addr2 r1 
     str! .vga_addr3 r1 

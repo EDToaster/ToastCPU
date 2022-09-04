@@ -8,7 +8,7 @@ use crossterm::{
     event::{read, Event, KeyCode, KeyEvent, KeyModifiers},
     execute,
     style::ResetColor,
-    terminal::{disable_raw_mode, enable_raw_mode},
+    terminal::{disable_raw_mode, enable_raw_mode}, cursor::Show,
 };
 
 pub struct Key {
@@ -71,7 +71,7 @@ impl Key {
                     code: KeyCode::Char('c'),
                     modifiers: KeyModifiers::CONTROL,
                 }) => {
-                    execute!(stdout(), ResetColor,).expect("Something went wrong!");
+                    execute!(stdout(), ResetColor, Show).expect("Something went wrong!");
                     disable_raw_mode().unwrap();
                     exit(0);
                 }

@@ -1,4 +1,4 @@
-use std::{rc::Rc, sync::{Arc, Mutex}, process::exit};
+use std::{rc::Rc, sync::{Arc, Mutex}};
 
 use crate::vga::VGA;
 

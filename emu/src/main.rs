@@ -28,6 +28,7 @@ const VGA_HEIGHT: usize = 60;
 const LOAD: u16 = 0;
 const STR: u16 = 1;
 const IMOV: u16 = 2;
+const IMOH: u16 = 3;
 const PUSH: u16 = 5;
 const POP: u16 = 6;
 const HALT: u16 = 7;
@@ -264,6 +265,7 @@ fn main() {
 
         let r1: u16 = (inst & 0x0F00) >> 8;
         let r2: u16 = (inst & 0x00F0) >> 4;
+        let imoh_imm8: u16 = (inst & 0x00FF) << 8;
         let imov_imm8: u16 = (inst & 0x00FF) | (if (inst & 0x0080) == 0 { 0x0000 } else { 0xFF00 });
 
         let alu_imm4: u16 = r2;
@@ -279,6 +281,9 @@ fn main() {
             }
             IMOV => {
                 registers[r1] = imov_imm8;
+            }
+            IMOH => {
+                registers[r2] = imoh_imm8 | (registers[r2] & 0x00FF);
             }
             PUSH => {
                 mem.write(registers[r1], registers[r2]);

@@ -128,7 +128,7 @@
 # end print_char
 
 .welcome_message
-    "Hello from ToastOS once!Hello from ToastOS once!Hello from ToastOS once!Hello from ToastOS once!Hello from ToastOS once!Hello from ToastOS once!"
+    "Hello from ToastOS once!Hello from ToastOS once!Hello from ToastOS once!Hello from ToastOS once!Hello from ToastOS once!Hello from ToastOS once!a"
     0x0A
     0
 .welcome_message2

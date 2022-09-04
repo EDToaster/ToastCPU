@@ -1,0 +1,31 @@
+.ps2_scancode_ptr 0xFFFF
+
+.ps2_lut
+    "              ` "
+    "     q1   zsaw2 "
+    " cxde43   vftr5 "
+    " nbhgy6   mju78 "
+    " ,kio09  ./l;p- "
+    "    [=    \n] \\  "
+    "                "
+    "                "
+    "                "
+    "                "
+    "                "
+    "                "
+    "                "
+    "                "
+    "                "
+    "                "
+
+.get_keyboard_ascii
+    push!   t0
+
+    imov!   v0 .ps2_lut
+    load!   t0 .ps2_scancode_ptr
+
+    add     v0 t0
+    load    v0 v0
+
+    pop!    t0
+    jmpr

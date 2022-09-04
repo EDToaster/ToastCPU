@@ -23,7 +23,11 @@ impl Devices {
         match addr {
             0..=0x7FFF => self.rom[addr as usize] as u16,
             0x8000..=0xBFFF => self.ram[(addr - 0x8000) as usize] as u16,
-            0xFFFF => *self.key.lock().unwrap(),
+            0xFFFF => {
+                let a = *self.key.lock().unwrap();
+                // println!("{:04x} at {:04x}", a, addr);
+                a
+            },
             _ => todo!("Memory location {addr:#06x}"),
         }
     }

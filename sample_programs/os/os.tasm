@@ -1,31 +1,42 @@
 .reset
     # setup isr and jump to main
-    imov    isr .isr
+    imov!    isr .isr
     call!   .main
     halt
 
 #include<print>
-#include<print>
+#include<ps2lut>
 
 .isr
     isr!
+    
+    call!   .get_keyboard_ascii
+    mov     p0 v0
+    call!   .print_char
+
     rti!
+
 
 .main # ( )
     # init variables
-    imov    t0 0
-    str!    .ptr_counter t0
+    call!   .print_init
 
-    imov!   t0 100
-    str!    .ptr_line_counter t0
-
-    # start printing
-    imov!   p0 .welcome_message        # load message
+    # print welcome message
+    imov!   p0 .welcome_message
     call!   .print_string
+
+    imov!   p0 .prompt_message
+    call!   .print_string
+
+.loop
+    jmp!    .loop
 
     jmpr
 # end main
 
-
 .welcome_message
     "Hello from <ToastOS>\n\0"
+
+.prompt_message
+    "$ "
+  

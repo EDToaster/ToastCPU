@@ -1,30 +1,38 @@
+.print_init
+    imov    t0 0
+    str!    .ptr_counter t0
+
+    imov!   t0 100
+    str!    .ptr_line_counter t0
+    
+    jmpr
+
 .print_string # (char *)
     # message pointer
     # char to print
-    # jmp loc
-    push! t0 t1 p0
+    push!   t0 t1 p0
 
     # get argument into r2
-    mov  t0 p0 # r2 is now the string pointer
+    mov     t0 p0 # r2 is now the string pointer
 
     # loop through each char of the string
 .print_string_loop
     # load exit point
-    load t1 t0
-    iadd t1 0 # load doesn't set flags
-    jz!  .print_string_exit
+    load    t1 t0
+    iadd    t1 0 # load doesn't set flags
+    jz!     .print_string_exit
 
-    mov   p0 t1
-    call! .print_char
+    mov     p0 t1
+    call!   .print_char
 
     # increment vga and text loc
-    iadd t0 1
+    iadd    t0 1
 
-    jmp! .print_string_loop
+    jmp!    .print_string_loop
 
 .print_string_exit
     # restore registers and return
-    pop! p0 t1 t0
+    pop!    p0 t1 t0
     jmpr
 # end print_string
 
@@ -35,45 +43,45 @@
 
 .print_char # (word char_to_print)
     # save registers
-    push! t0 t1 t2
+    push!   t0 t1 t2
 
     # get argument into r2
-    mov t0 p0 # r0 is now char
+    mov     t0 p0 # r0 is now char
 
     # destructively check if char is newline
-    isub t0 0x0A
-    jnz! .print_char_keep_going
+    isub    t0 0x0A
+    jnz!    .print_char_keep_going
 
-    load! t1 .ptr_counter
-    load! t2 .ptr_line_counter
-    add   t1 t2
-    str!  .ptr_counter t1
-    imov! t2 100
-    jmp!  .print_char_store_and_exit
+    load!   t1 .ptr_counter
+    load!   t2 .ptr_line_counter
+    add     t1 t2
+    str!    .ptr_counter t1
+    imov!   t2 100
+    jmp!    .print_char_store_and_exit
 .print_char_keep_going
-    mov t0 p0 # r2 is now char
+    mov     t0 p0 # r2 is now char
 
     # get counter into r4
-    load! t2 .ptr_counter
+    load!   t2 .ptr_counter
 
-    imov t1 0b00111000
-    ishl t1 8
-    or   t0 t1
+    imov    t1 0b00111000
+    ishl    t1 8
+    or      t0 t1
 
     # vga addr
-    str  t2 t0
+    str     t2 t0
 
-    iadd t2 1
-    str! .ptr_counter t2
+    iadd    t2 1
+    str!    .ptr_counter t2
 
-    load! t2 .ptr_line_counter
-    isub  t2 1
-    jnz!  .print_char_store_and_exit
-    imov!  t2 100
+    load!   t2 .ptr_line_counter
+    isub    t2 1
+    jnz!    .print_char_store_and_exit
+    imov!   t2 100
 .print_char_store_and_exit
-    str!  .ptr_line_counter t2
+    str!    .ptr_line_counter t2
 
     # restore registers and return
-    pop! t2 t1 t0
+    pop!    t2 t1 t0
     jmpr
 # end print_char

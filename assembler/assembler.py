@@ -238,8 +238,8 @@ class Instruction:
                     raise "call macro is supposed to have one argument that is a label"
                 return [
                     Instruction(self.text, self.labels, [Opcode("imov"), Register(0), LabelMask(label, 0x00FF, 0)]),
-                    Instruction("║", [], [Opcode("imoh"), Register(0), LabelMask(label, 0xFF00, 8)]),
-                    Instruction("╝", [], [Opcode("jmpl"), Register(0)]),
+                    Instruction("|", [], [Opcode("imoh"), Register(0), LabelMask(label, 0xFF00, 8)]),
+                    Instruction("|", [], [Opcode("jmpl"), Register(0)]),
                 ]
             elif opcode == "push!":
                 return [
@@ -266,8 +266,8 @@ class Instruction:
                 assert isinstance(reg, Register) and isinstance(label, Label)
                 return [
                     Instruction(self.text, self.labels, [Opcode("imov"), reg, LabelMask(label, 0x00FF, 0)]),
-                    Instruction("║", [], [Opcode("imoh"), reg, LabelMask(label, 0xFF00, 8)]),
-                    Instruction("╝", [], [Opcode("load"), reg, reg])
+                    Instruction("|", [], [Opcode("imoh"), reg, LabelMask(label, 0xFF00, 8)]),
+                    Instruction("|", [], [Opcode("load"), reg, reg])
                 ]
             elif opcode == "str!":
                 """
@@ -280,8 +280,8 @@ class Instruction:
                 assert isinstance(reg, Register) and isinstance(label, Label)
                 return [
                     Instruction(self.text, self.labels, [Opcode("imov"), Register(0), LabelMask(label, 0x00FF, 0)]),
-                    Instruction("║", [], [Opcode("imoh"), Register(0), LabelMask(label, 0xFF00, 8)]),
-                    Instruction("╝ str", [], [Opcode("str"), Register(0), reg])
+                    Instruction("|", [], [Opcode("imoh"), Register(0), LabelMask(label, 0xFF00, 8)]),
+                    Instruction("|", [], [Opcode("str"), Register(0), reg])
                 ]
             else:
                 return [

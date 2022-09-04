@@ -1,0 +1,17 @@
+.reset
+    call! .main
+    halt
+
+.vga_addr 0x0010
+.vga_addr2 0x0011
+.vga_addr3 0x0012
+.vga_addr4 0x0013
+
+.main
+    imov r1 0
+    imoh r1 0b00111111
+    str! .vga_addr r1 
+    str! .vga_addr2 r1 
+    str! .vga_addr3 r1 
+    str! .vga_addr4 r1 
+    jmpr

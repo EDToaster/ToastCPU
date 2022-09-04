@@ -1,0 +1,86 @@
+.print_string # (char *)
+    # message pointer
+    # char to print
+    # VGA pointer
+    # jmp loc
+    push! r2 r3 r4 r5
+
+    # get argument into r2
+    mov  r2 r13
+    isub r2 6
+    load r2 r2 # r2 is now the argument/pointer
+
+    # loop through each char of the string
+.print_string_loop
+    # load exit point
+    load r3 r2
+    iadd r3 0 # load doesn't set flags
+    jz!  .print_string_exit
+
+    push  r3
+    call! .print_char
+    pop   r3
+
+    # increment vga and text loc
+    iadd r2 1
+    iadd r4 1
+
+    jmp! .print_string_loop
+
+.print_string_exit
+    # restore registers and return
+    pop! r5 r4 r3 r2
+    jmpr
+# end print_string
+
+
+# WORD *
+.ptr_counter        0xBFFF
+.ptr_line_counter   0xBFFE
+
+.print_char # (word char_to_print)
+    # save registers
+    push! r2 r3 r4
+
+    # get argument into r2
+    mov  r3 r13
+    isub r3 5
+    load r2 r3 # r2 is now char
+
+    # destructively check if char is newline
+    isub r2 0x0A
+    jnz! .print_char_keep_going
+
+    load! r3 .ptr_counter
+    load! r4 .ptr_line_counter
+    add   r3 r4
+    str!  .ptr_counter r3
+    imov! r4 100
+    jmp!  .print_char_store_and_exit
+.print_char_keep_going
+    load r2 r3 # r2 is now char
+
+    # get counter into r4
+    load! r4 .ptr_counter
+
+    imov r3 0b00111000
+    ishl r3 8
+    or  r2 r3
+
+    # vga addr
+    str  r4 r2
+
+    iadd r4 1
+    str! .ptr_counter r4
+
+    load! r4 .ptr_line_counter
+    isub  r4 1
+    jnz!  .print_char_store_and_exit
+    imov!  r4 100
+.print_char_store_and_exit
+    str!  .ptr_line_counter r4
+
+    # restore registers and return
+    pop! r4 r3 r2
+    jmpr
+# end print_char

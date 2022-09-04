@@ -1,8 +1,9 @@
 from __future__ import annotations
 from cmath import exp
 from dataclasses import dataclass
-from typing import Optional, List, Tuple, Dict
+from typing import Optional, List, Set, Tuple, Dict
 import re
+import os
 
 opcodes = {
     "load": "0000",
@@ -84,7 +85,9 @@ jump_opcodes = {
 }
 
 macros = [ 
-    "call", "call!", "push!", "pop!", "load!", "str!", "imov!"
+    "call", "call!", "push!", "pop!", 
+    "load!", "str!", "imov!",
+    "isr!", "rti!"
 ]
 macros += [ f"{j}!" for j in jump_opcodes ]
 
@@ -240,21 +243,22 @@ class Instruction:
                 if not isinstance(label, Label):
                     raise "call macro is supposed to have one argument that is a label"
                 return [
-                    Instruction(self.text, self.labels, [Opcode("imov"), Register(0), LabelMask(label, 0x00FF, 0)]),
-                    Instruction("|", [], [Opcode("imoh"), Register(0), LabelMask(label, 0xFF00, 8)]),
-                    Instruction("|", [], [Opcode("jmpl"), Register(0)]),
+                    Instruction(f". imov r0 .{label.name}  [{self.text}]", self.labels, [Opcode("imov"), Register(0), LabelMask(label, 0x00FF, 0)]),
+                    Instruction(f"| imoh r0 .{label.name}", [], [Opcode("imoh"), Register(0), LabelMask(label, 0xFF00, 8)]),
+                    Instruction(f"' jmpl", [], [Opcode("jmpl"), Register(0)]),
                 ]
             elif opcode == "push!":
                 return [
                     Instruction(
-                        self.text if i == 0 else ("|" if i == num_args - 1 else "|"), 
+                        f". push [{self.text}]" if i == 0 else ("' push" if i == num_args - 1 else "| push"), 
                         self.labels if i == 0 else [], 
-                        [Opcode("push"), arg]) for i, arg in enumerate(args)
+                        [Opcode("push"), arg]) 
+                    for i, arg in enumerate(args)
                 ]
             elif opcode == "pop!":
                 return [
                     Instruction(
-                        self.text if i == 0 else ("|" if i == num_args - 1 else "|"), 
+                        f". pop [{self.text}]" if i == 0 else ("' pop" if i == num_args - 1 else "| pop"), 
                         self.labels if i == 0 else [], 
                         [Opcode("pop"), arg]) for i, arg in enumerate(args)
                 ]
@@ -268,9 +272,9 @@ class Instruction:
                 label = self.words[2]
                 assert isinstance(reg, Register) and isinstance(label, Label)
                 return [
-                    Instruction(self.text, self.labels, [Opcode("imov"), reg, LabelMask(label, 0x00FF, 0)]),
-                    Instruction("|", [], [Opcode("imoh"), reg, LabelMask(label, 0xFF00, 8)]),
-                    Instruction("|", [], [Opcode("load"), reg, reg])
+                    Instruction(f". imov [{self.text}]", self.labels, [Opcode("imov"), reg, LabelMask(label, 0x00FF, 0)]),
+                    Instruction("| imoh", [], [Opcode("imoh"), reg, LabelMask(label, 0xFF00, 8)]),
+                    Instruction("' load", [], [Opcode("load"), reg, reg])
                 ]
             elif opcode == "str!":
                 """
@@ -282,9 +286,9 @@ class Instruction:
                 reg = self.words[2]
                 assert isinstance(reg, Register) and isinstance(label, Label)
                 return [
-                    Instruction(self.text, self.labels, [Opcode("imov"), Register(0), LabelMask(label, 0x00FF, 0)]),
-                    Instruction("|", [], [Opcode("imoh"), Register(0), LabelMask(label, 0xFF00, 8)]),
-                    Instruction("|", [], [Opcode("str"), Register(0), reg])
+                    Instruction(f". imov [{self.text}]", self.labels, [Opcode("imov"), Register(0), LabelMask(label, 0x00FF, 0)]),
+                    Instruction("| imoh", [], [Opcode("imoh"), Register(0), LabelMask(label, 0xFF00, 8)]),
+                    Instruction("' str", [], [Opcode("str"), Register(0), reg])
                 ]
             elif opcode[:-1] in jump_opcodes and opcode[-1] == '!':
                 """
@@ -295,9 +299,9 @@ class Instruction:
                 label = self.words[1]
                 assert isinstance(label, Label)
                 return [
-                    Instruction(self.text, self.labels, [Opcode("imov"), Register(0), LabelMask(label, 0x00FF, 0)]),
-                    Instruction("|", [], [Opcode("imoh"), Register(0), LabelMask(label, 0xFF00, 8)]),
-                    Instruction("|", [], [Opcode(opcode[:-1]), Register(0)])
+                    Instruction(f". imov [{self.text}]", self.labels, [Opcode("imov"), Register(0), LabelMask(label, 0x00FF, 0)]),
+                    Instruction("| imoh", [], [Opcode("imoh"), Register(0), LabelMask(label, 0xFF00, 8)]),
+                    Instruction("' j_op", [], [Opcode(opcode[:-1]), Register(0)])
                 ]
             elif opcode == "imov!":
                 """
@@ -309,12 +313,28 @@ class Instruction:
                 assert isinstance(reg, Register) and (isinstance(dest, Label) or isinstance(dest, Number))
                 is_label = isinstance(dest, Label)
                 return [
-                    Instruction(self.text, self.labels, [Opcode("imov"), reg, LabelMask(dest, 0x00FF, 0) if is_label else Number(dest.number & 0x00FF)]),
-                    Instruction("|", [], [Opcode("imoh"), reg, LabelMask(dest, 0xFF00, 8) if is_label else Number((dest.number & 0xFF00) >> 8)]),
+                    Instruction(f". imov [{self.text}]", self.labels, [Opcode("imov"), reg, LabelMask(dest, 0x00FF, 0) if is_label else Number(dest.number & 0x00FF)]),
+                    Instruction("' imoh", [], [Opcode("imoh"), reg, LabelMask(dest, 0xFF00, 8) if is_label else Number((dest.number & 0xFF00) >> 8)]),
+                ]
+            elif opcode == "isr!":
+                """
+                push r0
+                """
+                return [ 
+                    Instruction(f"· push r0 [{self.text}]", self.labels, [Opcode("push"), Register(0)])
+                ]
+            elif opcode == "rti!":
+                """
+                pop r0
+                rti
+                """
+                return [
+                    Instruction(f". pop r0 [{self.text}]", self.labels, [Opcode("pop"), Register(0)]),
+                    Instruction("' rti", [], [Opcode("rti")]),
                 ]
             else:
                 return [
-                    Instruction(self.text, self.labels, [(LabelMask(l, 0xFFFF, 0) if isinstance(l, Label) else l) for l in self.words])
+                    Instruction("  " + self.text, self.labels, [(LabelMask(l, 0xFFFF, 0) if isinstance(l, Label) else l) for l in self.words])
                 ]
         if isinstance(self.words[0], Number):
             return [
@@ -333,6 +353,10 @@ class Program:
             return None
     
     def parse_opcode(self, token) -> Optional[Opcode]:
+        # todo: should make ISR more automated using labels
+        if token == "rti":
+            raise "The rti instruction isn't meant to be used when using the assembler. Use the isr! and rti! macros instead to automatically push and pop the AR register."
+
         if token in opcodes:
             return Opcode(token)
 
@@ -385,12 +409,15 @@ class Program:
         raw_format = []
         for line in lines:
             stripped_line = line.strip()
-            if stripped_line.startswith("\"") and stripped_line.endswith("\""):
-                raw_string = stripped_line[1:-1]
-                raw_format += [(c, [Number(ord(c))]) for c in raw_string]
+            line_to_parse = re.split("#|@|//", stripped_line)[0].strip()
+
+            # parse strings!
+            if line_to_parse.startswith("\"") and line_to_parse.endswith("\""):
+                raw_string = line_to_parse[1:-1]
+                raw_format += [(str(c.encode('ascii'))[2:-1], [Number(ord(c))]) for c in raw_string.encode('utf-8').decode('unicode_escape')]
                 continue
 
-            raw = [self.parse_token(tok.strip()) for tok in line.split()]
+            raw = [self.parse_token(tok.strip()) for tok in line_to_parse.split()]
             if len(raw) < 1 or raw[0] is None:
                 continue
             raw_format.append((stripped_line, [r for r in raw if r is not None]))
@@ -443,6 +470,34 @@ class Program:
 
         return [(line.text, line.to_binary()) for line in labels_replaced]
 
+def read_raw_lines(file_name: str) -> List[str]:
+    with open(file_name) as f:
+        return f.readlines()
+
+def preprocess(root_file: str, included: Set[str]) -> List[str]:
+    """
+    Read in the file and preprocess annotations and include statements
+    """
+    include_regex = re.compile(r"#include<([\w\-. ]+)>")
+
+    lines: List[str] = read_raw_lines(root_file)
+
+    final_lines = []
+    for l in lines:
+        match = re.match(include_regex, l)
+        if match is not None:
+            to_include = os.path.abspath(f"{match.group(1)}.tasm")
+            if to_include in included:
+                continue
+        
+            included.add(to_include)
+            final_lines += preprocess(to_include, included)
+        else:
+            final_lines.append(l)
+    
+    return final_lines
+
+
 def main():
     import argparse
     parser = argparse.ArgumentParser(description="Assembles ToastCPU Architecture")
@@ -454,8 +509,11 @@ def main():
 
     print(f"Input: {i}, Output: {o}")
 
-    lines = None
-    with open(i) as f: lines = f.readlines()
+    input_file = os.path.abspath(i)
+    lines = preprocess(input_file, set([input_file]))
+
+    for l in lines:
+        print(l.strip())
 
     program: Program = Program()
     binary = program.parse(lines)

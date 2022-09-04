@@ -236,7 +236,7 @@ module controlpath(
             end
             
             op_jmp: begin
-                pc_data_source = pc_data_source_t::register;
+                pc_data_source = do_jump ? pc_data_source_t::register : pc_data_source_t::next_pc;
                 set_pc = 1'b1;
             end
             

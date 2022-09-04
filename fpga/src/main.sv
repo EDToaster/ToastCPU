@@ -163,6 +163,9 @@ module main(
      */
     assign LEDR[0] = pc_data_source == pc_data_source_t::register;
     assign LEDR[1] = alu_set_flags;
+
+    assign LEDR[2] = Z;
+    assign LEDR[3] = N;
     
     assign LEDR[9] = irq;
     assign LEDR[8] = reset_irq;

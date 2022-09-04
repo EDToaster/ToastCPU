@@ -247,14 +247,14 @@ class Instruction:
             elif opcode == "push!":
                 return [
                     Instruction(
-                        self.text if i == 0 else ("╝" if i == num_args - 1 else "║"), 
+                        self.text if i == 0 else ("|" if i == num_args - 1 else "|"), 
                         self.labels if i == 0 else [], 
                         [Opcode("push"), arg]) for i, arg in enumerate(args)
                 ]
             elif opcode == "pop!":
                 return [
                     Instruction(
-                        self.text if i == 0 else ("╝" if i == num_args - 1 else "║"), 
+                        self.text if i == 0 else ("|" if i == num_args - 1 else "|"), 
                         self.labels if i == 0 else [], 
                         [Opcode("pop"), arg]) for i, arg in enumerate(args)
                 ]

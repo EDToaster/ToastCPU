@@ -14,10 +14,6 @@
 .isr
     rti
 
-# WORD *
-.ptr_counter        0xBFFF
-.ptr_line_counter   0xBFFE
-
 .main # ( )
     # init variables
     imov  r1 0
@@ -79,6 +75,11 @@
     pop! r5 r4 r3 r2
     jmpr
 # end print_string
+
+
+# WORD *
+.ptr_counter        0xBFFF
+.ptr_line_counter   0xBFFE
 
 .print_char # (word char_to_print)
     # save registers

@@ -1,14 +1,7 @@
-# Some useful stuff
-# r0  - AR
-# r12 - ISR
-# r13 - SP
-# r14 - SR
-# r15 - PC
-
 .reset
     # setup isr and jump to main
-    imov r12 .isr
-    call! .main
+    imov    isr .isr
+    call!   .main
     halt
 
 #include<print>
@@ -20,17 +13,15 @@
 
 .main # ( )
     # init variables
-    imov  r1 0
-    str!  .ptr_counter r1
+    imov    t0 0
+    str!    .ptr_counter t0
 
-    imov!  r1 100
-    str!  .ptr_line_counter r1
+    imov!   t0 100
+    str!    .ptr_line_counter t0
 
     # start printing
-    imov! r1 .welcome_message        # load message
-    push r1                         # push argument to stack
-    call! .print_string
-    pop  r1
+    imov!   p0 .welcome_message        # load message
+    call!   .print_string
 
     jmpr
 # end main

@@ -22,12 +22,13 @@ This section will outline what conditions the assembler needs to maintain when e
 
 As stated in the [architecture spec](./arch.md) there are 16 16-bit registers, allocated as:
 
-* (at) 1 Assembler Temporary register 
-* (p0 to p3) 4 Function Argument Registers 
-* (t0 to t3) 4 Temporary Scratch Registers 
-* (t4 to t7) 4 Saved Temporary Registers
-* (sp) Stack Pointer
-* (sr) Status Register
+* `r0     (ar) 1 Assembler Temporary register`
+* `r1-r4  (p0 to p3) 4 Function Argument Registers`
+* `r5-r11 (t0 to t6) 7 General Purpose Registers (Callee must restore)`
+* `r12    (isr) Interrupt service routine`
+* `r13    (sp) Stack Pointer`
+* `r14    (sr) Status Register`
+* `r15    (pc) Program Counter`
 
 Of which, only the `p` and `t` registers should directly be modified by the programmer. 
 

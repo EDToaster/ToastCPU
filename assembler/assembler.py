@@ -131,6 +131,21 @@ opcodes_suffix = {
 }
 
 named_registers = {
+    "ar": 0,
+
+    "p0": 1,
+    "p1": 2,
+    "p2": 3,
+    "p3": 4,
+
+    "t0": 5,
+    "t1": 6,
+    "t2": 7,
+    "t3": 8,
+    "t4": 9,
+    "t5": 10,
+    "t6": 11,
+
     "isr": 12,
     "sp": 13,
     "sr": 14,
@@ -366,15 +381,17 @@ class Program:
 
     def parse_register(self, token) -> Optional[Register]:
         x = re.search("^\\[?r([0-9]|1[0-5])\\]?$", token)
+        num = None
         if x is not None:
             num = int(x.group(1))
-            if num == 0:
-                raise "r0 is reserved for the assembler"
-            return Register(num)
         elif token in named_registers:
-            return Register(named_registers[token])
+            num = named_registers[token]
         else:
             return None
+            
+        if num == 0:
+            raise "r0 is reserved for the assembler"
+        return Register(num)
 
     def parse_number(self, token) -> Optional[Number]:
         try:

@@ -36,19 +36,19 @@ All addresses and datasizes are 16 bits wide. This means that `toast` has a tota
 
 There are a total of 16 16-bit integer registers:
 
-* (at) 1 Assembler Temporary register 
-* (p0 to p3) 4 Function Argument Registers 
-* (t0 to t3) 4 Temporary Scratch Registers 
-* (t4 to t7) 4 Saved Temporary Registers
-* (sp) Stack Pointer, initialized to 0x8000 on reset
-* (sr) Status Register, containing processor flags:
+* `r0     (ar) 1 Assembler Temporary register`
+* `r1-r4  (p0 to p3) 4 Function Argument Registers`
+* `r5-r11 (t0 to t6) 7 General Purpose Registers (Callee must restore)`
+* `r12    (isr) Interrupt service routine`
+* `r13    (sp) Stack Pointer`
+* `r14    (sr) Status Register`
    * WIP: Bits 15-8: Register bank #
    * Bit 4: V, if last operation caused overflow
    * Bit 3: C, if last operation caused carry
    * Bit 2: N, if last operation produced a negative number
    * Bit 1: Z, if last operation produced 0x0000
    * Bit 0: X, if last operation produced 0xFFFF
-* (pc) Program Counter
+* `r15    (pc) Program Counter`
 
 ## Status Register
 

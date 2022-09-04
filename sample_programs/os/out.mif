@@ -4,131 +4,121 @@ ADDRESS_RADIX = HEX;          -- The radix for address values
 DATA_RADIX = HEX;             -- The radix for data values
 CONTENT                       -- start of (address : data pairs)
 BEGIN
-0000 : 2C55; --   imov r12 .isr
-0001 : 2058; -- . imov r0 .main  [call! .main]
+0000 : 2C4D; --   imov    isr .isr
+0001 : 2050; -- . imov r0 .main  [call!   .main]
 0002 : 3000; -- | imoh r0 .main
 0003 : A010; -- ' jmpl
 0004 : 7000; --   halt
-0005 : 5D20; -- . push [push! r2 r3 r4 r5]
-0006 : 5D30; -- | push
-0007 : 5D40; -- | push
-0008 : 5D50; -- ' push
-0009 : 82D6; --   mov  r2 r13
-000A : 9265; --   isub r2 6
-000B : 0220; --   load r2 r2 # r2 is now the argument/pointer
-000C : 0320; --   load r3 r2
-000D : 9304; --   iadd r3 0 # load doesn't set flags
-000E : 201B; -- . imov [jz!  .print_string_exit]
-000F : 3000; -- | imoh
-0010 : A001; -- ' j_op
-0011 : 5D30; --   push  r3
-0012 : 2020; -- . imov r0 .print_char  [call! .print_char]
-0013 : 3000; -- | imoh r0 .print_char
-0014 : A010; -- ' jmpl
-0015 : 63D0; --   pop   r3
-0016 : 9214; --   iadd r2 1
-0017 : 9414; --   iadd r4 1
-0018 : 200C; -- . imov [jmp! .print_string_loop]
-0019 : 3000; -- | imoh
-001A : A000; -- ' j_op
-001B : 65D0; -- . pop [pop! r5 r4 r3 r2]
-001C : 64D0; -- | pop
-001D : 63D0; -- | pop
-001E : 62D0; -- ' pop
-001F : A020; --   jmpr
-0020 : 5D20; -- . push [push! r2 r3 r4]
-0021 : 5D30; -- | push
-0022 : 5D40; -- ' push
-0023 : 83D6; --   mov  r3 r13
-0024 : 9355; --   isub r3 5
-0025 : 0230; --   load r2 r3 # r2 is now char
-0026 : 92A5; --   isub r2 0x0A
-0027 : 2039; -- . imov [jnz! .print_char_keep_going]
-0028 : 3000; -- | imoh
-0029 : A002; -- ' j_op
-002A : 23FF; -- . imov [load! r3 .ptr_counter]
-002B : 33BF; -- | imoh
-002C : 0330; -- ' load
-002D : 24FE; -- . imov [load! r4 .ptr_line_counter]
-002E : 34BF; -- | imoh
-002F : 0440; -- ' load
-0030 : 8344; --   add   r3 r4
-0031 : 20FF; -- . imov [str!  .ptr_counter r3]
-0032 : 30BF; -- | imoh
-0033 : 1030; -- ' str
-0034 : 2464; -- . imov [imov! r4 100]
-0035 : 3400; -- ' imoh
-0036 : 204E; -- . imov [jmp!  .print_char_store_and_exit]
-0037 : 3000; -- | imoh
-0038 : A000; -- ' j_op
-0039 : 0230; --   load r2 r3 # r2 is now char
-003A : 24FF; -- . imov [load! r4 .ptr_counter]
-003B : 34BF; -- | imoh
-003C : 0440; -- ' load
-003D : 2338; --   imov r3 0b00111000
-003E : 938A; --   ishl r3 8
-003F : 8232; --   or  r2 r3
-0040 : 1420; --   str  r4 r2
-0041 : 9414; --   iadd r4 1
-0042 : 20FF; -- . imov [str! .ptr_counter r4]
-0043 : 30BF; -- | imoh
-0044 : 1040; -- ' str
-0045 : 24FE; -- . imov [load! r4 .ptr_line_counter]
-0046 : 34BF; -- | imoh
-0047 : 0440; -- ' load
-0048 : 9415; --   isub  r4 1
-0049 : 204E; -- . imov [jnz!  .print_char_store_and_exit]
-004A : 3000; -- | imoh
-004B : A002; -- ' j_op
-004C : 2464; -- . imov [imov!  r4 100]
-004D : 3400; -- ' imoh
-004E : 20FE; -- . imov [str!  .ptr_line_counter r4]
-004F : 30BF; -- | imoh
-0050 : 1040; -- ' str
-0051 : 64D0; -- . pop [pop! r4 r3 r2]
-0052 : 63D0; -- | pop
-0053 : 62D0; -- ' pop
-0054 : A020; --   jmpr
-0055 : 5D00; -- · push r0 [isr!]
-0056 : 60D0; -- . pop r0 [rti!]
-0057 : C000; -- ' rti
-0058 : 2100; --   imov  r1 0
-0059 : 20FF; -- . imov [str!  .ptr_counter r1]
-005A : 30BF; -- | imoh
-005B : 1010; -- ' str
-005C : 2164; -- . imov [imov!  r1 100]
-005D : 3100; -- ' imoh
-005E : 20FE; -- . imov [str!  .ptr_line_counter r1]
-005F : 30BF; -- | imoh
-0060 : 1010; -- ' str
-0061 : 2169; -- . imov [imov! r1 .welcome_message        # load message]
-0062 : 3100; -- ' imoh
-0063 : 5D10; --   push r1                         # push argument to stack
-0064 : 2005; -- . imov r0 .print_string  [call! .print_string]
-0065 : 3000; -- | imoh r0 .print_string
-0066 : A010; -- ' jmpl
-0067 : 61D0; --   pop  r1
-0068 : A020; --   jmpr
-0069 : 0048; -- H
-006A : 0065; -- e
-006B : 006C; -- l
-006C : 006C; -- l
-006D : 006F; -- o
-006E : 0020; --  
-006F : 0066; -- f
-0070 : 0072; -- r
-0071 : 006F; -- o
-0072 : 006D; -- m
-0073 : 0020; --  
-0074 : 003C; -- <
-0075 : 0054; -- T
-0076 : 006F; -- o
-0077 : 0061; -- a
-0078 : 0073; -- s
-0079 : 0074; -- t
-007A : 004F; -- O
-007B : 0053; -- S
-007C : 003E; -- >
-007D : 000A; -- \n
-007E : 0000; -- \x00
+0005 : 5D50; -- . push [push! t0 t1 p0]
+0006 : 5D60; -- | push
+0007 : 5D10; -- ' push
+0008 : 8516; --   mov  t0 p0 # r2 is now the string pointer
+0009 : 0650; --   load t1 t0
+000A : 9604; --   iadd t1 0 # load doesn't set flags
+000B : 2016; -- . imov [jz!  .print_string_exit]
+000C : 3000; -- | imoh
+000D : A001; -- ' j_op
+000E : 8166; --   mov   p0 t1
+000F : 201A; -- . imov r0 .print_char  [call! .print_char]
+0010 : 3000; -- | imoh r0 .print_char
+0011 : A010; -- ' jmpl
+0012 : 9514; --   iadd t0 1
+0013 : 2009; -- . imov [jmp! .print_string_loop]
+0014 : 3000; -- | imoh
+0015 : A000; -- ' j_op
+0016 : 61D0; -- . pop [pop! p0 t1 t0]
+0017 : 66D0; -- | pop
+0018 : 65D0; -- ' pop
+0019 : A020; --   jmpr
+001A : 5D50; -- . push [push! t0 t1 t2]
+001B : 5D60; -- | push
+001C : 5D70; -- ' push
+001D : 8516; --   mov t0 p0 # r0 is now char
+001E : 95A5; --   isub t0 0x0A
+001F : 2031; -- . imov [jnz! .print_char_keep_going]
+0020 : 3000; -- | imoh
+0021 : A002; -- ' j_op
+0022 : 26FF; -- . imov [load! t1 .ptr_counter]
+0023 : 36BF; -- | imoh
+0024 : 0660; -- ' load
+0025 : 27FE; -- . imov [load! t2 .ptr_line_counter]
+0026 : 37BF; -- | imoh
+0027 : 0770; -- ' load
+0028 : 8674; --   add   t1 t2
+0029 : 20FF; -- . imov [str!  .ptr_counter t1]
+002A : 30BF; -- | imoh
+002B : 1060; -- ' str
+002C : 2764; -- . imov [imov! t2 100]
+002D : 3700; -- ' imoh
+002E : 2046; -- . imov [jmp!  .print_char_store_and_exit]
+002F : 3000; -- | imoh
+0030 : A000; -- ' j_op
+0031 : 8516; --   mov t0 p0 # r2 is now char
+0032 : 27FF; -- . imov [load! t2 .ptr_counter]
+0033 : 37BF; -- | imoh
+0034 : 0770; -- ' load
+0035 : 2638; --   imov t1 0b00111000
+0036 : 968A; --   ishl t1 8
+0037 : 8562; --   or   t0 t1
+0038 : 1750; --   str  t2 t0
+0039 : 9714; --   iadd t2 1
+003A : 20FF; -- . imov [str! .ptr_counter t2]
+003B : 30BF; -- | imoh
+003C : 1070; -- ' str
+003D : 27FE; -- . imov [load! t2 .ptr_line_counter]
+003E : 37BF; -- | imoh
+003F : 0770; -- ' load
+0040 : 9715; --   isub  t2 1
+0041 : 2046; -- . imov [jnz!  .print_char_store_and_exit]
+0042 : 3000; -- | imoh
+0043 : A002; -- ' j_op
+0044 : 2764; -- . imov [imov!  t2 100]
+0045 : 3700; -- ' imoh
+0046 : 20FE; -- . imov [str!  .ptr_line_counter t2]
+0047 : 30BF; -- | imoh
+0048 : 1070; -- ' str
+0049 : 67D0; -- . pop [pop! t2 t1 t0]
+004A : 66D0; -- | pop
+004B : 65D0; -- ' pop
+004C : A020; --   jmpr
+004D : 5D00; -- · push r0 [isr!]
+004E : 60D0; -- . pop r0 [rti!]
+004F : C000; -- ' rti
+0050 : 2500; --   imov    t0 0
+0051 : 20FF; -- . imov [str!    .ptr_counter t0]
+0052 : 30BF; -- | imoh
+0053 : 1050; -- ' str
+0054 : 2564; -- . imov [imov!   t0 100]
+0055 : 3500; -- ' imoh
+0056 : 20FE; -- . imov [str!    .ptr_line_counter t0]
+0057 : 30BF; -- | imoh
+0058 : 1050; -- ' str
+0059 : 215F; -- . imov [imov!   p0 .welcome_message        # load message]
+005A : 3100; -- ' imoh
+005B : 2005; -- . imov r0 .print_string  [call!   .print_string]
+005C : 3000; -- | imoh r0 .print_string
+005D : A010; -- ' jmpl
+005E : A020; --   jmpr
+005F : 0048; -- H
+0060 : 0065; -- e
+0061 : 006C; -- l
+0062 : 006C; -- l
+0063 : 006F; -- o
+0064 : 0020; --  
+0065 : 0066; -- f
+0066 : 0072; -- r
+0067 : 006F; -- o
+0068 : 006D; -- m
+0069 : 0020; --  
+006A : 003C; -- <
+006B : 0054; -- T
+006C : 006F; -- o
+006D : 0061; -- a
+006E : 0073; -- s
+006F : 0074; -- t
+0070 : 004F; -- O
+0071 : 0053; -- S
+0072 : 003E; -- >
+0073 : 000A; -- \n
+0074 : 0000; -- \x00
 END;

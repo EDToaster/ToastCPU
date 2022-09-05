@@ -1,0 +1,26 @@
+{
+  "name": "toast-asm",
+  "displayName": "toast-asm",
+  "description": "",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.71.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Themes"
+  ],
+  "contributes": {
+    "languages": [{
+      "id": "tasm",
+      "aliases": ["Toast ASM", "tasm"],
+      "extensions": [".tasm",".t"],
+      "configuration": "./language-configuration.json"
+    }],
+    "grammars": [{
+      "language": "tasm",
+      "scopeName": "source.tasm",
+      "path": "./syntaxes/tasm.tmLanguage.json"
+    }]
+  }
+}

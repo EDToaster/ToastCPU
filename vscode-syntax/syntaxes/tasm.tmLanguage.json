@@ -1,0 +1,130 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "Toast ASM",
+	"patterns": [
+		{
+			"include": "#includes"
+		},
+		{
+			"include": "#comments"
+		},
+		{
+			"include": "#labels"
+		},
+		{
+			"include": "#opcodes"
+		},
+		{
+			"include": "#registers"
+		},
+		{
+			"include": "#numbers"
+		},
+		{
+			"include": "#strings"
+		}
+	],
+	"repository": {
+		"includes": {
+			"patterns": [
+				{
+					"name": "keyword.control.directive.include.tasm",
+					"begin": "(^|(?<=\\s))(#include)",
+					"end": "\\s",
+					"patterns": [
+						{
+							"name": "string.quoted.lt-gt.include.tasm",
+							"match": "<([\\w\\-. /]+)>"
+						}
+					]
+				}
+			]
+		},
+		"comments": {
+			"patterns": [
+				{
+					"name": "comment.line.tasm",
+					"match": "([#@].*)"
+				}
+			]
+		},
+		"labels": {
+			"patterns": [
+				{
+					"comment": "Matches .fn_label that is preceeded by whitespace or start of line",
+					"name": "entity.name.type.label.tasm",
+					"match": "(^|(?<=\\s))(\\.fn_[\\w]+)\\b"
+				},
+				{
+					"comment": "Matches .label that is preceeded by whitespace or start of line",
+					"name": "variable.other.constant.label.tasm",
+					"match": "(^|(?<=\\s))(\\.[\\w]+)\\b"
+				}
+			]
+		},
+		"opcodes": {
+			"patterns": [
+				{
+					"comment": "Matches all raw opcodes",
+					"name": "entity.name.function.opcode.tasm",
+					"match": "(^|(?<=\\s))(load|str|imov|imoh|push|pop|halt|not|and|or|xor|add|sub|mov|shr|sshr|shl|iand|ior|ixor|iadd|isub|ishr|isshr|ishl)\\s"
+				},
+				{
+					"comment": "Matches all macros",
+					"name": "entity.name.function.macro.tasm",
+					"match": "(^|(?<=\\s))(call|call!|push!|pop!|load!|str!|imov!|isr!)\\s"
+				},
+				{
+					"comment": "Matches all raw jump opcodes",
+					"name": "keyword.control.opcode.tasm",
+					"match": "(^|(?<=\\s))(jmp|jz|jnz|jp|jn|jmpl|jzl|jnzl|jpl|jnl|jmpr|jzr|jnzr|jpr|jnr|rti)\\s"
+				},
+				{
+					"comment": "Matches all jump macros",
+					"name": "keyword.control.macro.tasm",
+					"match": "(^|(?<=\\s))(rti!|jmp!|jz!|jnz!|jn!|jp!|jmpl!|jzl!|jnzl!|jnl!|jpl!)\\s"
+				}
+			]
+		},
+		"registers": {
+			"patterns": [
+				{
+					"comment": "Matches named and unnamed registers",
+					"name": "entity.name.variable.register.tasm",
+					"match": "(^|(?<=\\s))(r[0-9]|r1[0-5]|ar|isr|sp|sr|pc|p[0-3]|v0|t[0-5])\\s"
+				}
+			]
+		},
+		"numbers": {
+			"patterns": [
+				{
+					"comment": "Matches hex numbers",
+					"name": "constant.numeric.hex.tasm",
+					"match": "\\b(0x[0-9A-Fa-f]+)\\b"
+				},
+				{
+					"comment": "Matches dec numbers",
+					"name": "constant.numeric.dec.tasm",
+					"match": "\\b([0-9]+)\\b"
+				},
+				{
+					"comment": "Matches bin numbers",
+					"name": "constant.numeric.bin.tasm",
+					"match": "\\b(0b[01]+)\\b"
+				}
+			]
+		},
+		"strings": {
+			"name": "string.quoted.double.tasm",
+			"begin": "\"",
+			"end": "\"",
+			"patterns": [
+				{
+					"name": "constant.character.escape.tasm",
+					"match": "\\\\."
+				}
+			]
+		}
+	},
+	"scopeName": "source.tasm"
+}

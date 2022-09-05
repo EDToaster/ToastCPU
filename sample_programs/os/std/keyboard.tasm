@@ -18,7 +18,7 @@
     "                "
     "                "
 
-.get_keyboard_ascii
+.get_keyboard_ascii # ( ) -> WORD
     push!   t0
 
     imov!   v0 .ps2_lut

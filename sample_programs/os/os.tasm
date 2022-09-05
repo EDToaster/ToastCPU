@@ -1,23 +1,29 @@
 .reset
     # setup isr and jump to main
-    imov!    isr .isr
+    imov!   isr .isr
     call!   .main
     halt
 
-#include<print>
-#include<ps2lut>
+#include<std/print>
+#include<std/keyboard>
+
+.welcome_message
+    "Hello from ToastOS\n"
+    "Memory Layout: 32kW ROM 16kW RAM 16kW IO\n\0"
+
+.prompt_message
+    "$ \0"
 
 .isr
     isr!
     
-    call!   .get_keyboard_ascii
+    call!   .get_keyboard_ascii 
     mov     p0 v0
     call!   .print_char
 
     rti!
 
-
-.main # ( )
+.main # ( ) -> ( )
     # init variables
     call!   .print_init
 
@@ -33,10 +39,3 @@
 
     jmpr
 # end main
-
-.welcome_message
-    "Hello from <ToastOS>\n\0"
-
-.prompt_message
-    "$ "
-  

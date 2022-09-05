@@ -4,9 +4,9 @@ ADDRESS_RADIX = HEX;          -- The radix for address values
 DATA_RADIX = HEX;             -- The radix for data values
 CONTENT                       -- start of (address : data pairs)
 BEGIN
-0000 : 2C62; -- . imov [imov!    isr .isr]
+0000 : 2CA2; -- . imov [imov!    isr .isr]
 0001 : 3C01; -- ' imoh
-0002 : 206C; -- . imov r0 .main  [call!   .main]
+0002 : 20AC; -- . imov r0 .main  [call!   .main]
 0003 : 3001; -- | imoh r0 .main
 0004 : A010; -- ' jmpl
 0005 : 7000; --   halt
@@ -44,8 +44,8 @@ BEGIN
 0025 : 5D60; -- . push [push!   t0 t1 t2]
 0026 : 5D70; -- | push
 0027 : 5D80; -- ' push
-0028 : 8616; --   mov     t0 p0 # r0 is now char
-0029 : 96A5; --   isub    t0 0x0A
+0028 : 8616; --   mov     t0 p0                   # t0 = c
+0029 : 96A5; --   isub    t0 0x0A                 # if (t0 == '\n')
 002A : 203C; -- . imov [jnz!    .print_char_keep_going]
 002B : 3000; -- | imoh
 002C : A002; -- ' j_op
@@ -64,7 +64,7 @@ BEGIN
 0039 : 2051; -- . imov [jmp!    .print_char_store_and_exit]
 003A : 3000; -- | imoh
 003B : A000; -- ' j_op
-003C : 8616; --   mov     t0 p0 # r2 is now char
+003C : 8616; --   mov     t0 p0
 003D : 28FF; -- . imov [load!   t2 .ptr_counter]
 003E : 38BF; -- | imoh
 003F : 0880; -- ' load
@@ -358,55 +358,95 @@ BEGIN
 015F : 0550; --   load    v0 v0
 0160 : 66D0; -- . pop [pop!    t0]
 0161 : A020; --   jmpr
-0162 : 5D00; -- · push r0 [isr!]
-0163 : 2058; -- . imov r0 .get_keyboard_ascii  [call!   .get_keyboard_ascii]
-0164 : 3001; -- | imoh r0 .get_keyboard_ascii
-0165 : A010; -- ' jmpl
-0166 : 8156; --   mov     p0 v0
-0167 : 2025; -- . imov r0 .print_char  [call!   .print_char]
-0168 : 3000; -- | imoh r0 .print_char
-0169 : A010; -- ' jmpl
-016A : 60D0; -- . pop r0 [rti!]
-016B : C000; -- ' rti
-016C : 2006; -- . imov r0 .print_init  [call!   .print_init]
-016D : 3000; -- | imoh r0 .print_init
-016E : A010; -- ' jmpl
-016F : 217D; -- . imov [imov!   p0 .welcome_message]
-0170 : 3101; -- ' imoh
-0171 : 2010; -- . imov r0 .print_string  [call!   .print_string]
-0172 : 3000; -- | imoh r0 .print_string
-0173 : A010; -- ' jmpl
-0174 : 2193; -- . imov [imov!   p0 .prompt_message]
-0175 : 3101; -- ' imoh
-0176 : 2010; -- . imov r0 .print_string  [call!   .print_string]
-0177 : 3000; -- | imoh r0 .print_string
-0178 : A010; -- ' jmpl
-0179 : 2079; -- . imov [jmp!    .loop]
-017A : 3001; -- | imoh
-017B : A000; -- ' j_op
-017C : A020; --   jmpr
-017D : 0048; -- H
-017E : 0065; -- e
-017F : 006C; -- l
-0180 : 006C; -- l
-0181 : 006F; -- o
-0182 : 0020; --  
-0183 : 0066; -- f
-0184 : 0072; -- r
-0185 : 006F; -- o
-0186 : 006D; -- m
-0187 : 0020; --  
-0188 : 003C; -- <
-0189 : 0054; -- T
-018A : 006F; -- o
-018B : 0061; -- a
-018C : 0073; -- s
-018D : 0074; -- t
-018E : 004F; -- O
-018F : 0053; -- S
-0190 : 003E; -- >
-0191 : 000A; -- \n
-0192 : 0000; -- \x00
-0193 : 0024; -- $
-0194 : 0020; --  
+0162 : 0048; -- H
+0163 : 0065; -- e
+0164 : 006C; -- l
+0165 : 006C; -- l
+0166 : 006F; -- o
+0167 : 0020; --  
+0168 : 0066; -- f
+0169 : 0072; -- r
+016A : 006F; -- o
+016B : 006D; -- m
+016C : 0020; --  
+016D : 0054; -- T
+016E : 006F; -- o
+016F : 0061; -- a
+0170 : 0073; -- s
+0171 : 0074; -- t
+0172 : 004F; -- O
+0173 : 0053; -- S
+0174 : 000A; -- \n
+0175 : 004D; -- M
+0176 : 0065; -- e
+0177 : 006D; -- m
+0178 : 006F; -- o
+0179 : 0072; -- r
+017A : 0079; -- y
+017B : 0020; --  
+017C : 004C; -- L
+017D : 0061; -- a
+017E : 0079; -- y
+017F : 006F; -- o
+0180 : 0075; -- u
+0181 : 0074; -- t
+0182 : 003A; -- :
+0183 : 0020; --  
+0184 : 0033; -- 3
+0185 : 0032; -- 2
+0186 : 006B; -- k
+0187 : 0057; -- W
+0188 : 0020; --  
+0189 : 0052; -- R
+018A : 004F; -- O
+018B : 004D; -- M
+018C : 0020; --  
+018D : 0031; -- 1
+018E : 0036; -- 6
+018F : 006B; -- k
+0190 : 0057; -- W
+0191 : 0020; --  
+0192 : 0052; -- R
+0193 : 0041; -- A
+0194 : 004D; -- M
+0195 : 0020; --  
+0196 : 0031; -- 1
+0197 : 0036; -- 6
+0198 : 006B; -- k
+0199 : 0057; -- W
+019A : 0020; --  
+019B : 0049; -- I
+019C : 004F; -- O
+019D : 000A; -- \n
+019E : 0000; -- \x00
+019F : 0024; -- $
+01A0 : 0020; --  
+01A1 : 0000; -- \x00
+01A2 : 5D00; -- · push r0 [isr!]
+01A3 : 2058; -- . imov r0 .get_keyboard_ascii  [call!   .get_keyboard_ascii]
+01A4 : 3001; -- | imoh r0 .get_keyboard_ascii
+01A5 : A010; -- ' jmpl
+01A6 : 8156; --   mov     p0 v0
+01A7 : 2025; -- . imov r0 .print_char  [call!   .print_char]
+01A8 : 3000; -- | imoh r0 .print_char
+01A9 : A010; -- ' jmpl
+01AA : 60D0; -- . pop r0 [rti!]
+01AB : C000; -- ' rti
+01AC : 2006; -- . imov r0 .print_init  [call!   .print_init]
+01AD : 3000; -- | imoh r0 .print_init
+01AE : A010; -- ' jmpl
+01AF : 2162; -- . imov [imov!   p0 .welcome_message]
+01B0 : 3101; -- ' imoh
+01B1 : 2010; -- . imov r0 .print_string  [call!   .print_string]
+01B2 : 3000; -- | imoh r0 .print_string
+01B3 : A010; -- ' jmpl
+01B4 : 219F; -- . imov [imov!   p0 .prompt_message]
+01B5 : 3101; -- ' imoh
+01B6 : 2010; -- . imov r0 .print_string  [call!   .print_string]
+01B7 : 3000; -- | imoh r0 .print_string
+01B8 : A010; -- ' jmpl
+01B9 : 20B9; -- . imov [jmp!    .loop]
+01BA : 3001; -- | imoh
+01BB : A000; -- ' j_op
+01BC : A020; --   jmpr
 END;

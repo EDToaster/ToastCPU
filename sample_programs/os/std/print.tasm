@@ -1,4 +1,4 @@
-.print_init
+.print_init # ( ) -> ( )
     imov    t0 0
     str!    .ptr_counter t0
 
@@ -7,7 +7,7 @@
     
     jmpr
 
-.print_string # (char *)
+.print_string # (char *) -> ( )
     # message pointer
     # char to print
     push!   t0 t1 p0
@@ -41,16 +41,13 @@
 .ptr_counter        0xBFFF
 .ptr_line_counter   0xBFFE
 
-.print_char # (word char_to_print)
-    # save registers
+.print_char # (word char_to_print) -> ( )
     push!   t0 t1 t2
 
-    # get argument into r2
-    mov     t0 p0 # r0 is now char
+    mov     t0 p0                   # t0 = c
 
-    # destructively check if char is newline
-    isub    t0 0x0A
-    jnz!    .print_char_keep_going
+    isub    t0 0x0A                 # if (t0 == '\n')
+    jnz!    .print_char_keep_going  
 
     load!   t1 .ptr_counter
     load!   t2 .ptr_line_counter
@@ -58,10 +55,10 @@
     str!    .ptr_counter t1
     imov!   t2 100
     jmp!    .print_char_store_and_exit
-.print_char_keep_going
-    mov     t0 p0 # r2 is now char
+.print_char_keep_going              # else
+    mov     t0 p0                   
 
-    # get counter into r4
+    # get counter into t2
     load!   t2 .ptr_counter
 
     imov    t1 0b00111000

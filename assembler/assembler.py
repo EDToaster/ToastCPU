@@ -496,7 +496,7 @@ def preprocess(root_file: str, included: Set[str]) -> List[str]:
     """
     Read in the file and preprocess annotations and include statements
     """
-    include_regex = re.compile(r"#include<([\w\-. ]+)>")
+    include_regex = re.compile(r"#include<([\w\-. /]+)>")
 
     lines: List[str] = read_raw_lines(root_file)
 

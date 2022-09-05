@@ -54,6 +54,11 @@ impl Key {
         Key { irq, key }
     }
 
+    fn irq(&mut self, code: u16) {
+        *self.irq.lock().unwrap() = true;
+        *self.key.lock().unwrap() = code;
+    }
+
     pub fn handle(&mut self) {
         loop {
             let event = read().unwrap();
@@ -63,9 +68,14 @@ impl Key {
                     modifiers: KeyModifiers::NONE,
                 }) => {
                     if c >= 'a' && c <= 'z' {
-                        *self.irq.lock().unwrap() = true;
-                        *self.key.lock().unwrap() = self.convert_to_scan_code(c as u8);
+                        self.irq(self.convert_to_scan_code(c as u8));
                     }
+                }
+                Event::Key(KeyEvent { 
+                    code: KeyCode::Enter,
+                    modifiers: KeyModifiers::NONE, 
+                }) => {
+                    self.irq(0x005A);
                 }
                 Event::Key(KeyEvent {
                     code: KeyCode::Char('c'),

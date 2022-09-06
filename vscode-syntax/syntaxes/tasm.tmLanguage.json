@@ -3,7 +3,7 @@
 	"name": "Toast ASM",
 	"patterns": [
 		{
-			"include": "#includes"
+			"include": "#directives"
 		},
 		{
 			"include": "#comments"
@@ -25,7 +25,7 @@
 		}
 	],
 	"repository": {
-		"includes": {
+		"directives": {
 			"patterns": [
 				{
 					"name": "keyword.control.directive.include.tasm",
@@ -72,7 +72,7 @@
 				{
 					"comment": "Matches all macros",
 					"name": "entity.name.function.macro.tasm",
-					"match": "(^|(?<=\\s))(call|call!|push!|pop!|load!|str!|imov!|isr!)\\s"
+					"match": "(^|(?<=\\s))(push!|pop!|load!|str!|imov!|isr!)\\s"
 				},
 				{
 					"comment": "Matches all raw jump opcodes",
@@ -82,7 +82,7 @@
 				{
 					"comment": "Matches all jump macros",
 					"name": "keyword.control.macro.tasm",
-					"match": "(^|(?<=\\s))(rti!|jmp!|jz!|jnz!|jn!|jp!|jmpl!|jzl!|jnzl!|jnl!|jpl!)\\s"
+					"match": "(^|(?<=\\s))(call|call!|rti!|jmp!|jz!|jnz!|jn!|jp!|jmpl!|jzl!|jnzl!|jnl!|jpl!)\\s"
 				}
 			]
 		},

@@ -16,12 +16,11 @@
 
 .isr
     isr!
-    
-    call!   .get_keyboard_ascii 
+    call!   .get_keyboard_ascii
     mov     p0 v0
     call!   .print_char
-
     rti!
+#end .isr
 
 .main # ( ) -> ( )
     # init variables
@@ -34,8 +33,7 @@
     imov!   p0 .prompt_message
     call!   .print_string
 
-.loop
-    jmp!    .loop
-
-    jmpr
-# end main
+.main_loop
+    jmp!    .main_loop
+    jmpr    # deadcode
+#end .main

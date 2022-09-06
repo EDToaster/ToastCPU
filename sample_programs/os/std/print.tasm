@@ -6,42 +6,34 @@
     str!    .ptr_line_counter t0
     
     jmpr
+#end .print_init
 
-.print_string # (char *) -> ( )
-    # message pointer
-    # char to print
+.print_string # (char *str) -> ( )
     push!   t0 t1 p0
 
-    # get argument into r2
-    mov     t0 p0 # r2 is now the string pointer
+    mov     t0 p0   # t0 = str
 
-    # loop through each char of the string
-.print_string_loop
-    # load exit point
+.print_string_loop  # loop through each char of the string
     load    t1 t0
-    iadd    t1 0 # load doesn't set flags
+    iadd    t1 0    # if (t0 == '\0')
     jz!     .print_string_exit
 
     mov     p0 t1
     call!   .print_char
-
-    # increment vga and text loc
-    iadd    t0 1
+    iadd    t0 1    # t0++
 
     jmp!    .print_string_loop
-
 .print_string_exit
-    # restore registers and return
     pop!    p0 t1 t0
     jmpr
-# end print_string
+#end .print_string
 
 
-# WORD *
-.ptr_counter        0xBFFF
-.ptr_line_counter   0xBFFE
+# allocate memory
+.ptr_counter        [1]
+.ptr_line_counter   [1]
 
-.print_char # (word char_to_print) -> ( )
+.print_char # (word c) -> ( )
     push!   t0 t1 t2
 
     mov     t0 p0                   # t0 = c
@@ -81,4 +73,4 @@
     # restore registers and return
     pop!    t2 t1 t0
     jmpr
-# end print_char
+#end .print_char

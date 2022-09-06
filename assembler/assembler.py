@@ -199,6 +199,10 @@ class Number:
         return f"{{:0{bits}b}}".format(self.number)
 
 @dataclass
+class Allocation:
+    size: int
+
+@dataclass
 class Instruction:
     text: str
     labels: List[Label]
@@ -400,6 +404,14 @@ class Program:
         except ValueError:
             return None
 
+    def parse_allocation(self, token) -> Optional[Allocation]:
+        try:
+            if token[0] == '[' and token[-1] == ']':
+                return Allocation(int(token[1:-1], 0))
+        except ValueError:
+            return None
+        return None
+
     def parse_token(self, token: str):
         label = self.parse_label(token)
         if label is not None:
@@ -420,6 +432,10 @@ class Program:
         number = self.parse_number(token)
         if number is not None:
             return number
+
+        alloc = self.parse_allocation(token)
+        if alloc is not None:
+            return alloc
         
         return None
 
@@ -444,12 +460,19 @@ class Program:
         label_locations = {}
         labeled_instructions: List[Instruction] = []
         current_labels_for_line = []
+
+        # compile-time allocation
+        heap = 0xC000
+
         for (text, line) in raw_format:
             if len(line) < 1:
                 continue
 
             if len(line) >= 2 and isinstance(line[0], Label) and isinstance(line[1], Number):
                 label_locations[line[0]] = line[1]
+            elif len(line) >= 2 and isinstance(line[0], Label) and isinstance(line[1], Allocation):
+                heap -= line[1].size
+                label_locations[line[0]] = Number(heap)
             elif isinstance(line[0], Label):
                 current_labels_for_line.append(line[0])
             else:

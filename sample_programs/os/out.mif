@@ -4,7 +4,7 @@ ADDRESS_RADIX = HEX;          -- The radix for address values
 DATA_RADIX = HEX;             -- The radix for data values
 CONTENT                       -- start of (address : data pairs)
 BEGIN
-0000 : 2CA2; -- . imov [imov!    isr .isr]
+0000 : 2CA2; -- . imov [imov!   isr .isr]
 0001 : 3C01; -- ' imoh
 0002 : 20AC; -- . imov r0 .main  [call!   .main]
 0003 : 3001; -- | imoh r0 .main
@@ -23,9 +23,9 @@ BEGIN
 0010 : 5D60; -- . push [push!   t0 t1 p0]
 0011 : 5D70; -- | push
 0012 : 5D10; -- ' push
-0013 : 8616; --   mov     t0 p0 # r2 is now the string pointer
+0013 : 8616; --   mov     t0 p0   # t0 = str
 0014 : 0760; --   load    t1 t0
-0015 : 9704; --   iadd    t1 0 # load doesn't set flags
+0015 : 9704; --   iadd    t1 0    # if (t0 == '\0')
 0016 : 2021; -- . imov [jz!     .print_string_exit]
 0017 : 3000; -- | imoh
 0018 : A001; -- ' j_op
@@ -33,7 +33,7 @@ BEGIN
 001A : 2025; -- . imov r0 .print_char  [call!   .print_char]
 001B : 3000; -- | imoh r0 .print_char
 001C : A010; -- ' jmpl
-001D : 9614; --   iadd    t0 1
+001D : 9614; --   iadd    t0 1    # t0++
 001E : 2014; -- . imov [jmp!    .print_string_loop]
 001F : 3000; -- | imoh
 0020 : A000; -- ' j_op
@@ -445,8 +445,8 @@ BEGIN
 01B6 : 2010; -- . imov r0 .print_string  [call!   .print_string]
 01B7 : 3000; -- | imoh r0 .print_string
 01B8 : A010; -- ' jmpl
-01B9 : 20B9; -- . imov [jmp!    .loop]
+01B9 : 20B9; -- . imov [jmp!    .main_loop]
 01BA : 3001; -- | imoh
 01BB : A000; -- ' j_op
-01BC : A020; --   jmpr
+01BC : A020; --   jmpr    # deadcode
 END;

@@ -366,9 +366,11 @@ fn main() {
         diagnostics.increment();
     }
 
-    let last_pc = registers.pc - 1;
+    // let last_pc = registers.pc - 1;
+    // let v0 = registers[5];
 
-    println!("Program halted at PC={last_pc:04x}");
+    // println!("Program halted at PC={last_pc:04x}");
+    // println!("Program halted at v0={v0:04x}");
     
     key_handler_thread.join().unwrap();
 

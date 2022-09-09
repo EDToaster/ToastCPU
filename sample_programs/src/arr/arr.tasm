@@ -1,0 +1,33 @@
+.main
+    imov! isr .isr
+
+    imov! p0 .arr
+    imov! p1 0xABCD
+    imov! p2 4
+
+    call! .arr_find
+
+    icmp! v0 2
+    jz!   .correct
+
+    halt
+    halt
+    halt
+    halt
+.correct
+    halt
+    halt
+    halt
+    halt
+
+#include<../../lib/std/arr>
+
+.isr
+    isr!
+    rti!
+
+.arr
+    0xDEAD
+    0xBEEF
+    0xABCD
+    0xDCBA

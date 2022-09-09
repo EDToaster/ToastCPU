@@ -1,0 +1,33 @@
+
+# Find index of val in arr of size, return -1 if not found 
+.arr_find # (WORD *arr, WORD val, WORD size) -> WORD
+    push! t0 t1 t2
+
+    # counter, but also return value
+    imov  v0 0
+.arr_find_next
+
+    # if counter == size
+    cmp   v0 p2
+    jz!   .arr_find_set_not_found
+
+    # load element into t1
+    mov   t1 p0 
+    add   t1 v0
+    load  t1 t1
+
+    # if t1 == val 
+    cmp   t1 p1
+    jz!   .arr_find_exit
+
+    iadd  v0 1
+    jmp!  .arr_find_next
+
+.arr_find_set_not_found
+    imov! v0 0xFFFF
+.arr_find_exit
+    pop!  t2 t1 t0
+    jmpr
+
+
+#end .arr_find

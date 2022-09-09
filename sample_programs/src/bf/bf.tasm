@@ -3,28 +3,31 @@
     halt
 
 #include<../../lib/std/print>
+#include<../../lib/std/arr>
 
 .isr
     isr!
     rti!
 
-.memory_table       [1024]
+.memory_table   [1024]
 
-.jump_forward_table [1024] # mapping scope level to ptr of corresponding ']'
-.jump_back_table    [1024] # mapping scope level to ptr of corresponding '['
+.jump_forward   [1024]
+.jump_backward  [1024]
 
-#   0      5      10      15
-#   +++ [ +++ [ +++ ] +++ ] +++
-#       L0    L1    L2    L1
-#   Forward Table:  Back Table:
-#   [ 15, 11 ]      [ x, 3, 7 ]
+# 0       5      10     15      20
+# [ +++ [ +++ ] +++ ] +++ [ +++ ]  
+#
+# jump_forward:     jump_backward:
+# [ 4, 0, 16 ]      [ 8, 12, 20 ]
+
+
 
 .fn_preprocess
     push! t0 t1 t2 t3 t4 t5
 
     # t0 = program counter
     # t1 = current command
-    # t2 = scope level
+    # t2 = bracket pair counter
     # t3 = corresponding start loop loc
 
     # t4 = whatever we need it for
@@ -50,26 +53,25 @@
 .preprocessing_handle_start_loop
     # push current address on to stack
     push t0
-    iadd t2 1
     jmp! .preprocessing_next
 
 .preprocessing_handle_end_loop
     # pop start loop address
     pop  t3
 
-    # jump_forward_table[t2] = t0
-    # jump_back_table[t2-1]    = t3
+    # jump_forward[t2] = t3
+    # jump_backward[t2] = t0
+    # t2++
 
-    imov! t4 .jump_back_table
+    imov! t4 .jump_forward
     add   t4 t2
     str   t4 t3
 
-    isub t2 1
-
-    imov! t4 .jump_forward_table
+    imov! t4 .jump_backward
     add   t4 t2
     str   t4 t0
 
+    iadd  t2 1
 
     jmp! .preprocessing_next
 
@@ -92,7 +94,6 @@
     # t0 = program counter
     # t1 = current command
     # t2 = memory ptr
-    # t3 = scope level
 
     # t5 = handler specific
 
@@ -141,36 +142,37 @@
     # check if we need to skip
     load t5 t2
     tst  t5
-    jnz! .handle_start_loop_continue
+    jnz! .next_loop
 
 .handle_start_loop_skip
-    # pc = jump_forward_table[t3]
-    imov! t0 .jump_forward_table
-    add   t0 t3
-    load  t0 t0
-    jmp! .next_loop
+    # pc = jump_backward[arr_find(jump_forward, t0, 1024))
+    imov! p0  .jump_forward
+    mov   p1  t0
+    imov! p2  1024
+    call! .arr_find
 
-.handle_start_loop_continue
-    # increment scope level and continue
-    iadd t3 1
+    imov! t0 .jump_backward
+    add   t0 v0
+    load  t0 t0
+
     jmp! .next_loop
 
 .handle_end_loop
     # check if we need to skip
     load t5 t2
     tst  t5
-    jz!  .handle_end_loop_continue
+    jz!  .next_loop
 
 .handle_end_loop_skip
-    # pc = jump_back_table[t3]
-    imov! t0 .jump_back_table
-    add   t0 t3
-    load  t0 t0
-    jmp! .next_loop
+    # pc = jump_forward[arr_find(jump_backward, t0, 1024))
+    imov! p0  .jump_backward
+    mov   p1  t0
+    imov! p2  1024
+    call! .arr_find
 
-.handle_end_loop_continue
-    # decrement scope level
-    isub t3 1
+    imov! t0 .jump_forward
+    add   t0 v0
+    load  t0 t0
     jmp! .next_loop
 
 .handle_ptr_right
@@ -208,6 +210,16 @@
 #end .fn_main
 
 .bf_main
-    ">++++++++[<+++++++++>-]<..."
-    # ">++++[<+++++++>-]<+."
+    ">++++++++[<+++++++++>-]<."
+    ">++++[<+++++++>-]<+."
+    "+++++++.."
+    "+++."
+    ">>++++++[<+++++++>-]<++."
+    "------------."
+    ">++++++[<+++++++++>-]<+."
+    "<."
+    "+++."
+    "------."
+    "--------."
+    ">>>++++[<++++++++>-]<+."
     0

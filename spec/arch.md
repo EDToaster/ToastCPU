@@ -38,7 +38,8 @@ There are a total of 16 16-bit integer registers:
 
 * `r0     (ar) 1 Assembler Temporary register`
 * `r1-r4  (p0 to p3) 4 Function Argument Registers`
-* `r5-r11 (t0 to t6) 7 General Purpose Registers (Callee must restore)`
+* `r5     (v0) Return value` 
+* `r6-r11 (t0 to t5) 7 General Purpose Registers (Callee must restore)`
 * `r12    (isr) Interrupt service routine`
 * `r13    (sp) Stack Pointer`
 * `r14    (sr) Status Register`

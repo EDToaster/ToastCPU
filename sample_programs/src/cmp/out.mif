@@ -1,0 +1,31 @@
+DEPTH = 32768;                -- The size of memory in words
+WIDTH = 16;                   -- The size of data in bits
+ADDRESS_RADIX = HEX;          -- The radix for address values
+DATA_RADIX = HEX;             -- The radix for data values
+CONTENT                       -- start of (address : data pairs)
+BEGIN
+0000 : 2C05; -- . imov [imov! isr .isr]
+0001 : 3C00; -- ' imoh
+0002 : 2008; -- . imov r0 .main  [call! .main]
+0003 : 3000; -- | imoh r0 .main
+0004 : A010; -- ' jmpl
+0005 : 5D00; -- · push r0 [isr!]
+0006 : 60D0; -- . pop r0 [rti!]
+0007 : C000; -- ' rti
+0008 : 26AE; -- . imov [imov! t0 0x00AE]
+0009 : 3600; -- ' imoh
+000A : 27AF; -- . imov [imov! t1 0x00AF]
+000B : 3700; -- ' imoh
+000C : 0008; --   cmp   t1 t0
+000D : 2014; -- . imov [jp!   .correct]
+000E : 3000; -- | imoh
+000F : A004; -- ' j_op
+0010 : 7000; --   halt
+0011 : 7000; --   halt
+0012 : 7000; --   halt
+0013 : 7000; --   halt
+0014 : 7000; --   halt
+0015 : 7000; --   halt
+0016 : 7000; --   halt
+0017 : 7000; --   halt
+END;

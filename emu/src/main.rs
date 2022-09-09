@@ -169,6 +169,7 @@ fn alu(op: u16, a: i32, b: i32, sr: &mut StatusRegister) -> u16 {
         0x4 => a + b,
         0x5 => a - b,
         0x6 => b,
+        0x7 => a - b,
         0x8 => ((a as u16) >> b) as i32,
         0x9 => a >> b,
         0xA => a << b,
@@ -187,7 +188,7 @@ fn alu(op: u16, a: i32, b: i32, sr: &mut StatusRegister) -> u16 {
             );
             sr.set(StatusRegisterFlag::C, bit(agg, 16));
         }
-        0x5 => {
+        0x5 | 0x7 => {
             sr.set(
                 StatusRegisterFlag::V,
                 (bit(a, 15) ^ bit(b, 15)) && (bit(a, 15) != bit(agg, 15)),
@@ -304,7 +305,9 @@ fn main() {
                     &mut registers.sr,
                 );
 
-                registers[r1] = agg;
+                if alu_op != 0x7 {
+                    registers[r1] = agg;
+                }
             }
             IALU => {
                 let agg = alu(
@@ -314,7 +317,9 @@ fn main() {
                     &mut registers.sr,
                 );
 
-                registers[r1] = agg;
+                if alu_op != 0x7 {
+                    registers[r1] = agg;
+                }
             }
             JMP => {
                 let l: bool = r2 & 1 != 0;
@@ -361,8 +366,10 @@ fn main() {
         diagnostics.increment();
     }
 
+    let last_pc = registers.pc - 1;
+
+    println!("Program halted at PC={last_pc:04x}");
+    
     key_handler_thread.join().unwrap();
 
-    let last_pc = registers.pc - 1;
-    println!("Program halted at PC={last_pc}");
 }

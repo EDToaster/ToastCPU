@@ -116,9 +116,14 @@ halt
                 add  = 0100
                 sub  = 0101
                 mov  = 0110
+                cmp  = 0111
                 shr  = 1000
                 sshr = 1001
                 shl  = 1010
+
+                cmp will emulate a subtraction, and set all 
+                of the flags, but will not write the result 
+                back into the register.
 
 1001 xxxx xxxx xxxx
 (op) rx1  imm4 aluop
@@ -132,9 +137,13 @@ halt
                  iadd  = 0100
                  isub  = 0101
                  imov  = 0110  // actually useless
+                 icmp  = 0111
                  ishr  = 1000
                  isshr = 1001
                  ishl  = 1010
+
+                 `tst rx` is an alias for:
+                    icmp rx 0
 
 1010 xxxx --xx xxxx
 (op) rdst   rl jop

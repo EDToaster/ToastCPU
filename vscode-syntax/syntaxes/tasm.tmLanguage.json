@@ -22,6 +22,9 @@
 		},
 		{
 			"include": "#strings"
+		},
+		{
+			"include": "#chars"
 		}
 	],
 	"repository": {
@@ -67,12 +70,12 @@
 				{
 					"comment": "Matches all raw opcodes",
 					"name": "entity.name.function.opcode.tasm",
-					"match": "(^|(?<=\\s))(load|str|imov|imoh|push|pop|halt|not|and|or|xor|add|sub|mov|shr|sshr|shl|iand|ior|ixor|iadd|isub|ishr|isshr|ishl)\\s"
+					"match": "(^|(?<=\\s))(load|str|imov|imoh|push|pop|halt|not|and|or|xor|add|sub|mov|cmp|shr|sshr|shl|iand|ior|ixor|iadd|isub|icmp|tst|ishr|isshr|ishl)\\s"
 				},
 				{
 					"comment": "Matches all macros",
 					"name": "entity.name.function.macro.tasm",
-					"match": "(^|(?<=\\s))(push!|pop!|load!|str!|imov!|isr!)\\s"
+					"match": "(^|(?<=\\s))(push!|pop!|load!|str!|imov!|isr!|icmp!)\\s"
 				},
 				{
 					"comment": "Matches all raw jump opcodes",
@@ -118,6 +121,17 @@
 			"name": "string.quoted.double.tasm",
 			"begin": "\"",
 			"end": "\"",
+			"patterns": [
+				{
+					"name": "constant.character.escape.tasm",
+					"match": "\\\\."
+				}
+			]
+		},
+		"chars": {
+			"name": "string.quoted.double.tasm",
+			"begin": "'",
+			"end": "'",
 			"patterns": [
 				{
 					"name": "constant.character.escape.tasm",

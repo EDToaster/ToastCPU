@@ -1,0 +1,24 @@
+.reset
+    imov! isr .isr
+    call! .main
+
+.isr
+    isr!
+    rti!
+
+.main
+    imov! t0 0x00AE
+    imov! t1 0x00AF
+    cmp   t1 t0
+    jp!   .correct
+    halt
+    halt
+    halt
+    halt
+    
+.correct
+    halt
+    halt
+    halt
+    halt
+

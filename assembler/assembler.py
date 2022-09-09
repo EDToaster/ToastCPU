@@ -34,6 +34,7 @@ opcodes = {
     "push": "0101",
     "pop": "0110",
     "halt": "0111",
+    
     "not": "1000",
     "and": "1000",
     "or": "1000",
@@ -41,6 +42,7 @@ opcodes = {
     "add": "1000",
     "sub": "1000",
     "mov": "1000",
+    "cmp": "1000",
     "shr": "1000",
     "sshr": "1000",
     "shl": "1000",
@@ -50,18 +52,20 @@ opcodes = {
     "ixor": "1001",
     "iadd": "1001",
     "isub": "1001",
+    "icmp": "1001",
+    "tst": "1001",
     "ishr": "1001",
     "isshr": "1001",
     "ishl": "1001",
 }
 
-one_4bit_opcodes = ["not", ]
+one_4bit_opcodes = ["not", "tst"]
 
 two_4bit_opcodes = [
     "load", "str", "and", "or", 
-    "xor", "add", "sub", "mov", 
+    "xor", "add", "sub", "mov", "cmp",
     "shr", "sshr", "shl", "iand", 
-    "ior", "ixor", "iadd", "isub", 
+    "ior", "ixor", "iadd", "isub", "icmp",
     "ishr", "isshr", "ishl"
 ]
 
@@ -87,7 +91,9 @@ jump_opcodes = {
 macros = [ 
     "call", "call!", "push!", "pop!", 
     "load!", "str!", "imov!",
-    "isr!", "rti!"
+    "isr!", "rti!",
+
+    "icmp!",
 ]
 macros += [ f"{j}!" for j in jump_opcodes ]
 
@@ -116,6 +122,7 @@ opcodes_suffix = {
     "add": "0100",
     "sub": "0101",
     "mov": "0110",
+    "cmp": "0111",
     "shr": "1000",
     "sshr": "1001",
     "shl": "1010",
@@ -125,6 +132,8 @@ opcodes_suffix = {
     "ixor": "0011",
     "iadd": "0100",
     "isub": "0101",
+    "icmp": "0111",
+    "tst": "0111",
     "ishr": "1000",
     "isshr": "1001",
     "ishl": "1010",
@@ -225,10 +234,10 @@ class Instruction:
             instr += self.words[2].to_binary(8)
         elif opcode in jump_opcodes:
             instr += self.words[1].to_binary(4)
-            instr += "00"
+            instr += "0" * 2
             instr += jump_opcodes[opcode]
         elif opcode in jumpr_opcodes:
-            instr += "000000"
+            instr += "0" * 6
             instr += jumpr_opcodes[opcode]
         elif opcode in no_arg_opcodes:
             instr += "0" * 12
@@ -352,6 +361,21 @@ class Instruction:
                     Instruction(f". pop r0 [{self.text}]", self.labels, [Opcode("pop"), Register(0)]),
                     Instruction("' rti", [], [Opcode("rti")]),
                 ]
+            elif opcode == "icmp!":
+                """
+                imov r0 LabelMask(.label, 0x00FF, 0)
+                imoh r0 LabelMask(.label, 0xFF00, 8)
+                cmp  rx r0
+                """
+                reg = self.words[1]
+                dest = self.words[2]
+                assert isinstance(reg, Register) and (isinstance(dest, Label) or isinstance(dest, Number))
+                is_label = isinstance(dest, Label)
+                return [
+                    Instruction(f". imov [{self.text}]", self.labels, [Opcode("imov"), Register(0), LabelMask(dest, 0x00FF, 0) if is_label else Number(dest.number & 0x00FF)]),
+                    Instruction("| imoh", [], [Opcode("imoh"), Register(0), LabelMask(dest, 0xFF00, 8) if is_label else Number((dest.number & 0xFF00) >> 8)]),
+                    Instruction("' cmp", [], [Opcode("cmp"), reg, Register(0)]),
+                ]
             else:
                 return [
                     Instruction("  " + self.text, self.labels, [(LabelMask(l, 0xFFFF, 0) if isinstance(l, Label) else l) for l in self.words])
@@ -399,6 +423,9 @@ class Program:
         return Register(num)
 
     def parse_number(self, token) -> Optional[Number]:
+        if len(token) == 3 and token[0] == '\'' and token[-1] == '\'':
+            return Number(ord(token[1]))
+
         try:
             return Number(int(token, 0))
         except ValueError:
@@ -559,7 +586,7 @@ def main():
     program: Program = Program()
     binary = program.parse(lines)
 
-    with open(o, "w") as f: 
+    with open(o, "w", encoding="utf-8") as f: 
         f.write(
 """DEPTH = 32768;                -- The size of memory in words
 WIDTH = 16;                   -- The size of data in bits

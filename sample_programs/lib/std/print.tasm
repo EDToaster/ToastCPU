@@ -38,7 +38,7 @@
 
     mov     t0 p0                   # t0 = c
 
-    isub    t0 0x0A                 # if (t0 == '\n')
+    icmp    t0 0x0A                 # if (t0 == '\n')
     jnz!    .print_char_keep_going  
 
     load!   t1 .ptr_counter
@@ -48,7 +48,6 @@
     imov!   t2 100
     jmp!    .print_char_store_and_exit
 .print_char_keep_going              # else
-    mov     t0 p0                   
 
     # get counter into t2
     load!   t2 .ptr_counter

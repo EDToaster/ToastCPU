@@ -1,0 +1,156 @@
+use std::str::FromStr;
+use std::vec::Vec;
+
+use crate::tasm_convert::*;
+use crate::tasm_ast::*;
+use crate::tasm_ops::*;
+
+grammar;
+
+pub Statements: Vec<Statement<'input>> = Statement*;
+
+pub Statement: Statement<'input> = {
+    <Label> => Statement::Label(<>),
+    <Instruction> => Statement::Instruction(<>),
+    <Num> => Statement::Numeric(<>),
+}
+
+pub Label: Label<'input> = {
+    <label:r"\.[a-zA-Z\-_]\w*"> => Label { label },
+}
+
+pub Instruction: Instruction<'input> = {
+    <PushPopOpcode> <Register> => Instruction::PushPop(<>),
+    <LoadStoreOpcode> <Register> <Register> => Instruction::LoadStore(<>),
+    <IMoveOpcode> <Register> <IVal> => Instruction::IMove(<>),
+    <NoArgumentOpcode> => Instruction::NoArgument(<>),
+
+    JumpInstruction,
+    ALUInstruction,
+}
+
+JumpInstruction: Instruction<'input> = {
+    <JumpOpcode> <Register> => Instruction::Jump(<>),
+    <JumpLinkOpcode> <Register> => Instruction::JumpLink(<>),
+    <JumpRetOpcode> => Instruction::JumpRet(<>),
+}
+
+ALUInstruction: Instruction<'input> = {
+    <SingleALUOpcode> <Register> => Instruction::SingleALU(<>),
+    <ALUOpcode> <Register> <Register> => Instruction::ALU(<>),
+    <IALUOpcode> <Register> <IVal> => Instruction::IALU(<>),
+}
+
+pub Register: Register = {
+    <r:r"r[0-9]"> => Register::new(i32::from_str(&r[1..]).unwrap()),
+    <r:r"r1[0-5]"> => Register::new(i32::from_str(&r[1..]).unwrap()),
+
+    <r:r"ar"> => Register::new(0),
+
+    <r:r"p[0-3]"> => Register::new(i32::from_str(&r[1..]).unwrap() + 1),
+    <r:r"v0"> => Register::new(5),
+    <r:r"t[0-5]"> => Register::new(i32::from_str(&r[1..]).unwrap() + 6),
+
+    <r:r"isr"> => Register::new(12),
+    <r:r"sp"> => Register::new(13),
+    <r:r"sr"> => Register::new(14),
+    <r:r"pc"> => Register::new(15),
+}
+
+pub Allocation: Allocation = {
+    "[" <n:Num> "]" => Allocation::new(n),
+}
+
+pub IVal: IVal<'input> = {
+    <Label> => IVal::Label(<>),
+    <Num> => IVal::Numeric(<>),
+}
+
+pub Num: i32 = {
+    <s:r"[0-9]+"> => i32::parse_with_prefix(s).unwrap(),
+    <s:r"0x[0-9a-fA-F]+"> => i32::parse_with_prefix(s).unwrap(),
+    <s:r"0b[01]+"> => i32::parse_with_prefix(s).unwrap(),
+}
+
+PushPopOpcode: PushPopOpcode = {
+    "push"  => PushPopOpcode::PUSH,
+    "pop"  => PushPopOpcode::POP,
+}
+
+LoadStoreOpcode: LoadStoreOpcode = {
+    "load" => LoadStoreOpcode::LOAD,
+    "str" => LoadStoreOpcode::STR,
+}
+
+IMoveOpcode: IMoveOpcode = {
+    "imov" => IMoveOpcode::IMOV,
+    "imoh" => IMoveOpcode::IMOH,
+}
+
+NoArgumentOpcode: NoArgumentOpcode = {
+    "halt" => NoArgumentOpcode::HALT,
+    "rti" => NoArgumentOpcode::RTI,
+}
+
+JumpOpcode: JumpOpcode = {
+    "jmp"   => JumpOpcode::JMP,
+    "jz"    => JumpOpcode::JZ,
+    "jnz"   => JumpOpcode::JNZ,
+    "jn"    => JumpOpcode::JN,
+    "jp"    => JumpOpcode::JP,
+}
+
+JumpLinkOpcode: JumpLinkOpcode = {
+    "jmpl"   => JumpLinkOpcode::JMPL,
+    "jzl"    => JumpLinkOpcode::JZL,
+    "jnzl"   => JumpLinkOpcode::JNZL,
+    "jnl"    => JumpLinkOpcode::JNL,
+    "jpl"    => JumpLinkOpcode::JPL,
+}
+
+JumpRetOpcode: JumpRetOpcode = {
+    "jmpr"   => JumpRetOpcode::JMPR,
+    "jzr"    => JumpRetOpcode::JZR,
+    "jnzr"   => JumpRetOpcode::JNZR,
+    "jnr"    => JumpRetOpcode::JNR,
+    "jpr"    => JumpRetOpcode::JPR,
+}
+
+SingleALUOpcode: SingleALUOpcode = {
+    "not" => SingleALUOpcode::NOT,
+}
+
+ALUOpcode: ALUOpcode = {
+    "and" => ALUOpcode::AND, 
+    "or" => ALUOpcode::OR, 
+    "xor" => ALUOpcode::XOR, 
+    "add" => ALUOpcode::ADD, 
+    "sub" => ALUOpcode::SUB, 
+    "mov" => ALUOpcode::MOV, 
+    "shr" => ALUOpcode::SHR, 
+    "sshr" => ALUOpcode::SSHR, 
+    "shl" => ALUOpcode::SHL,
+}
+
+IALUOpcode: IALUOpcode = {
+    "iand" => IALUOpcode::IAND, 
+    "ior" => IALUOpcode::IOR, 
+    "ixor" => IALUOpcode::IXOR, 
+    "iadd" => IALUOpcode::IADD, 
+    "isub" => IALUOpcode::ISUB, 
+    "ishr" => IALUOpcode::ISHR, 
+    "isshr" => IALUOpcode::ISSHR, 
+    "ishl" => IALUOpcode::ISHL,
+}
+
+match {
+    // match newline
+    r"\s*" => { }, // The default whitespace skipping is disabled an `ignore pattern` is specified
+    r"//[^\n\r]*[\n\r]*" => { }, // Skip `// comments`
+    r"#[^\n\r]*[\n\r]*" => { }, // Skip `# comments`
+    r"/\*[^*]*\*+(?:[^/*][^*]*\*+)*/" => { },  // Skip `/* comments */`
+} else {
+    // add comments
+    r"\n" => NEWLINE,
+    _
+}

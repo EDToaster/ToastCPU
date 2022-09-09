@@ -4,8 +4,8 @@
     call!   .main
     halt
 
-#include<std/print>
-#include<std/keyboard>
+#include<../../lib/std/print>
+#include<../../lib/std/keyboard>
 
 .welcome_message
     "Hello from ToastOS\n"

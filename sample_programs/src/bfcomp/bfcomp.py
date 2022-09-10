@@ -22,6 +22,12 @@ output = """
 .memory_table   [10240]
 
 .main
+
+    imov! p0 .memory_table
+    imov  p1 0
+    imov! p2 10240
+    call! .arr_memset
+    
     # t0 = mem_ptr
     imov! t0 0
     mov   t3 0  # always zero

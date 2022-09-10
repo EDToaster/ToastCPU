@@ -1,0 +1,23 @@
+# BF COMPILER
+
+.reset
+    imov! isr .isr
+    call! .print_init
+    call! .main
+
+.isr
+    isr!
+    rti!
+
+#include<../../lib/std/print>
+#include<../../lib/std/arr>
+
+.memory_table   [10240]
+
+.main
+    # t0 = mem_ptr
+    imov! t0 .memory_table
+
+
+    jmpr
+#end .main

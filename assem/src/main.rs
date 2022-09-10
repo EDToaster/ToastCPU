@@ -136,7 +136,7 @@ fn parse_statements() {
 
 #[test]
 fn parse_file() {
-    let s = include_str!("../../sample_programs/text/text.tasm");
+    let s = include_str!("../../sample_programs/src/text/text.tasm");
     dbg!(tasm::StatementsParser::new().parse(s).unwrap());
 }
 

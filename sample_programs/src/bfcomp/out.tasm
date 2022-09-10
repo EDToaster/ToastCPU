@@ -1,0 +1,9154 @@
+
+.reset
+    imov! isr .isr
+    call! .print_init
+    call! .main
+    halt
+
+.isr
+    isr!
+    rti!
+
+#include<../../lib/std/print>
+#include<../../lib/std/arr>
+
+.memory_table   [10240]
+
+.main
+    # t0 = mem_ptr
+    imov! t0 .memory_table
+    imov! t1 0
+    
+    load t2 t0
+    iadd  t2 13
+    str  t0 t2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_0
+.bf_label_start_0
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 2
+    str  t0 t2
+    iadd  t0 3
+    load t2 t0
+    iadd  t2 5
+    str  t0 t2
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 2
+    str  t0 t2
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 6
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_0
+.bf_label_end_0
+    iadd  t0 5
+    load t2 t0
+    iadd  t2 6
+    str  t0 t2
+    iadd  t0 1
+    load t2 t0
+    isub  t2 3
+    str  t0 t2
+    iadd  t0 10
+    load t2 t0
+    iadd  t2 15
+    str  t0 t2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_3
+.bf_label_start_3
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_1
+.bf_label_start_1
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_1
+.bf_label_end_1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_2
+.bf_label_start_2
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_2
+.bf_label_end_2
+    iadd  t0 9
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_3
+.bf_label_end_3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_5
+.bf_label_start_5
+    iadd  t0 8
+    str  t0 t3
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_5
+.bf_label_end_5
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_6
+.bf_label_start_6
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_6
+.bf_label_end_6
+    iadd  t0 8
+    str  t0 t3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 7
+    load t2 t0
+    iadd  t2 5
+    str  t0 t2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_9
+.bf_label_start_9
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_8
+.bf_label_start_8
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 9
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_8
+.bf_label_end_8
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_9
+.bf_label_end_9
+    iadd  t0 7
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    imov! t1 27
+    add  t0 t1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    imov! t1 17
+    sub  t0 t1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_10
+.bf_label_start_10
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_10
+.bf_label_end_10
+    iadd  t0 3
+    str  t0 t3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_685
+.bf_label_start_685
+    iadd  t0 6
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_13
+.bf_label_start_13
+    iadd  t0 7
+    str  t0 t3
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_13
+.bf_label_end_13
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_14
+.bf_label_start_14
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_14
+.bf_label_end_14
+    iadd  t0 7
+    str  t0 t3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 6
+    load t2 t0
+    iadd  t2 4
+    str  t0 t2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_17
+.bf_label_start_17
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_16
+.bf_label_start_16
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 9
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_16
+.bf_label_end_16
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_17
+.bf_label_end_17
+    iadd  t0 6
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 6
+    load t2 t0
+    iadd  t2 7
+    str  t0 t2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_19
+.bf_label_start_19
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_18
+.bf_label_start_18
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 9
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_18
+.bf_label_end_18
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_19
+.bf_label_end_19
+    iadd  t0 6
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    imov! t1 16
+    sub  t0 t1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_20
+.bf_label_start_20
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_20
+.bf_label_end_20
+    iadd  t0 3
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_618
+.bf_label_start_618
+    str  t0 t3
+    iadd  t0 6
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_24
+.bf_label_start_24
+    iadd  t0 7
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_22
+.bf_label_start_22
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 6
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 6
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_22
+.bf_label_end_22
+    isub  t0 6
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_23
+.bf_label_start_23
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 6
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_23
+.bf_label_end_23
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_24
+.bf_label_end_24
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_25
+.bf_label_start_25
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_25
+.bf_label_end_25
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_28
+.bf_label_start_28
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_26
+.bf_label_start_26
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 7
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 7
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_26
+.bf_label_end_26
+    isub  t0 7
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_27
+.bf_label_start_27
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 7
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_27
+.bf_label_end_27
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_28
+.bf_label_end_28
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_29
+.bf_label_start_29
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_29
+.bf_label_end_29
+    iadd  t0 7
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_30
+.bf_label_start_30
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 7
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 7
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_30
+.bf_label_end_30
+    isub  t0 7
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_31
+.bf_label_start_31
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 7
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 5
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_31
+.bf_label_end_31
+    iadd  t0 9
+    load t2 t0
+    iadd  t2 15
+    str  t0 t2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_43
+.bf_label_start_43
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_32
+.bf_label_start_32
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_32
+.bf_label_end_32
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_42
+.bf_label_start_42
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_42
+.bf_label_end_42
+    iadd  t0 9
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_43
+.bf_label_end_43
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_44
+.bf_label_start_44
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_44
+.bf_label_end_44
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_45
+.bf_label_start_45
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_45
+.bf_label_end_45
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_56
+.bf_label_start_56
+    iadd  t0 1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_46
+.bf_label_start_46
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_46
+.bf_label_end_46
+    isub  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_51
+.bf_label_start_51
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 5
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_49
+.bf_label_start_49
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_47
+.bf_label_start_47
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_47
+.bf_label_end_47
+    isub  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_48
+.bf_label_start_48
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_48
+.bf_label_end_48
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_49
+.bf_label_end_49
+    isub  t0 8
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_50
+.bf_label_start_50
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_50
+.bf_label_end_50
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_51
+.bf_label_end_51
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_52
+.bf_label_start_52
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_52
+.bf_label_end_52
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_54
+.bf_label_start_54
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_53
+.bf_label_start_53
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 9
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_53
+.bf_label_end_53
+    isub  t0 10
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_54
+.bf_label_end_54
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_55
+.bf_label_start_55
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 9
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_55
+.bf_label_end_55
+    isub  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_56
+.bf_label_end_56
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_62
+.bf_label_start_62
+    iadd  t0 1
+    str  t0 t3
+    isub  t0 1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_60
+.bf_label_start_60
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_58
+.bf_label_start_58
+    isub  t0 1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 6
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 6
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_58
+.bf_label_end_58
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_59
+.bf_label_start_59
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_59
+.bf_label_end_59
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_60
+.bf_label_end_60
+    isub  t0 3
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_61
+.bf_label_start_61
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_61
+.bf_label_end_61
+    isub  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_62
+.bf_label_end_62
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_63
+.bf_label_start_63
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_63
+.bf_label_end_63
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_64
+.bf_label_start_64
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_64
+.bf_label_end_64
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_75
+.bf_label_start_75
+    iadd  t0 1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 5
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_65
+.bf_label_start_65
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 5
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 5
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_65
+.bf_label_end_65
+    isub  t0 5
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_70
+.bf_label_start_70
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 5
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 6
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_68
+.bf_label_start_68
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_66
+.bf_label_start_66
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_66
+.bf_label_end_66
+    isub  t0 3
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_67
+.bf_label_start_67
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_67
+.bf_label_end_67
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_68
+.bf_label_end_68
+    isub  t0 8
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_69
+.bf_label_start_69
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_69
+.bf_label_end_69
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_70
+.bf_label_end_70
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_71
+.bf_label_start_71
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_71
+.bf_label_end_71
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_73
+.bf_label_start_73
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_72
+.bf_label_start_72
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 9
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_72
+.bf_label_end_72
+    isub  t0 11
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_73
+.bf_label_end_73
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_74
+.bf_label_start_74
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 9
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_74
+.bf_label_end_74
+    isub  t0 2
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_75
+.bf_label_end_75
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_81
+.bf_label_start_81
+    iadd  t0 1
+    str  t0 t3
+    isub  t0 1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_79
+.bf_label_start_79
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_77
+.bf_label_start_77
+    isub  t0 1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 6
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 6
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_77
+.bf_label_end_77
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_78
+.bf_label_start_78
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_78
+.bf_label_end_78
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_79
+.bf_label_end_79
+    isub  t0 3
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_80
+.bf_label_start_80
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_80
+.bf_label_end_80
+    isub  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_81
+.bf_label_end_81
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_83
+.bf_label_start_83
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_82
+.bf_label_start_82
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    imov! t1 36
+    sub  t0 t1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    imov! t1 36
+    add  t0 t1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_82
+.bf_label_end_82
+    iadd  t0 5
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_83
+.bf_label_end_83
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_84
+.bf_label_start_84
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_84
+.bf_label_end_84
+    iadd  t0 9
+    load t2 t0
+    iadd  t2 15
+    str  t0 t2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_87
+.bf_label_start_87
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_85
+.bf_label_start_85
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_85
+.bf_label_end_85
+    isub  t0 9
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_86
+.bf_label_start_86
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_86
+.bf_label_end_86
+    iadd  t0 9
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_87
+.bf_label_end_87
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    imov! t1 21
+    add  t0 t1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_88
+.bf_label_start_88
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_88
+.bf_label_end_88
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_106
+.bf_label_start_106
+    iadd  t0 3
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_89
+.bf_label_start_89
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_89
+.bf_label_end_89
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_95
+.bf_label_start_95
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_90
+.bf_label_start_90
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_90
+.bf_label_end_90
+    isub  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_94
+.bf_label_start_94
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 13
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_91
+.bf_label_start_91
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_91
+.bf_label_end_91
+    iadd  t0 4
+    str  t0 t3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 5
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_93
+.bf_label_start_93
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_93
+.bf_label_end_93
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_94
+.bf_label_end_94
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_95
+.bf_label_end_95
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_96
+.bf_label_start_96
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_96
+.bf_label_end_96
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_103
+.bf_label_start_103
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_97
+.bf_label_start_97
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_97
+.bf_label_end_97
+    isub  t0 3
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_102
+.bf_label_start_102
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 12
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_98
+.bf_label_start_98
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_98
+.bf_label_end_98
+    iadd  t0 3
+    str  t0 t3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 6
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_100
+.bf_label_start_100
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_100
+.bf_label_end_100
+    iadd  t0 1
+    str  t0 t3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_102
+.bf_label_end_102
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_103
+.bf_label_end_103
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_105
+.bf_label_start_105
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_104
+.bf_label_start_104
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_104
+.bf_label_end_104
+    isub  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_105
+.bf_label_end_105
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_106
+.bf_label_end_106
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_107
+.bf_label_start_107
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_107
+.bf_label_end_107
+    isub  t0 7
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_108
+.bf_label_start_108
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_108
+.bf_label_end_108
+    iadd  t0 9
+    imov! t1 26
+    load t2 t0
+    add  t2 t1
+    str  t0 t2
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_109
+.bf_label_start_109
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_109
+.bf_label_end_109
+    isub  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_111
+.bf_label_start_111
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 2
+    str  t0 t3
+    isub  t0 2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_111
+.bf_label_end_111
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_534
+.bf_label_start_534
+    isub  t0 7
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_113
+.bf_label_start_113
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 2
+    str  t0 t3
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_113
+.bf_label_end_113
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_115
+.bf_label_start_115
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_114
+.bf_label_start_114
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_114
+.bf_label_end_114
+    iadd  t0 3
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_115
+.bf_label_end_115
+    iadd  t0 13
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_119
+.bf_label_start_119
+    iadd  t0 2
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 5
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_119
+.bf_label_end_119
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_120
+.bf_label_start_120
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_120
+.bf_label_end_120
+    iadd  t0 3
+    str  t0 t3
+    iadd  t0 6
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_124
+.bf_label_start_124
+    iadd  t0 5
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_122
+.bf_label_start_122
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_122
+.bf_label_end_122
+    isub  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_123
+.bf_label_start_123
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_123
+.bf_label_end_123
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_124
+.bf_label_end_124
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_125
+.bf_label_start_125
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_125
+.bf_label_end_125
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_127
+.bf_label_start_127
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_126
+.bf_label_start_126
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 9
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_126
+.bf_label_end_126
+    iadd  t0 7
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_127
+.bf_label_end_127
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_128
+.bf_label_start_128
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_128
+.bf_label_end_128
+    iadd  t0 9
+    load t2 t0
+    iadd  t2 15
+    str  t0 t2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_140
+.bf_label_start_140
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_129
+.bf_label_start_129
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_129
+.bf_label_end_129
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_139
+.bf_label_start_139
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_139
+.bf_label_end_139
+    iadd  t0 9
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_140
+.bf_label_end_140
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_141
+.bf_label_start_141
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_141
+.bf_label_end_141
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_142
+.bf_label_start_142
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_142
+.bf_label_end_142
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_153
+.bf_label_start_153
+    iadd  t0 1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 5
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_143
+.bf_label_start_143
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 5
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 5
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_143
+.bf_label_end_143
+    isub  t0 5
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_148
+.bf_label_start_148
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 5
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 6
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_146
+.bf_label_start_146
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_144
+.bf_label_start_144
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_144
+.bf_label_end_144
+    isub  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_145
+.bf_label_start_145
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_145
+.bf_label_end_145
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_146
+.bf_label_end_146
+    isub  t0 8
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_147
+.bf_label_start_147
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_147
+.bf_label_end_147
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_148
+.bf_label_end_148
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_149
+.bf_label_start_149
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_149
+.bf_label_end_149
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_151
+.bf_label_start_151
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_150
+.bf_label_start_150
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 9
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_150
+.bf_label_end_150
+    isub  t0 10
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_151
+.bf_label_end_151
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_152
+.bf_label_start_152
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 9
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_152
+.bf_label_end_152
+    isub  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_153
+.bf_label_end_153
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_159
+.bf_label_start_159
+    iadd  t0 1
+    str  t0 t3
+    isub  t0 1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_157
+.bf_label_start_157
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_155
+.bf_label_start_155
+    isub  t0 1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 7
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 7
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_155
+.bf_label_end_155
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_156
+.bf_label_start_156
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_156
+.bf_label_end_156
+    iadd  t0 3
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_157
+.bf_label_end_157
+    isub  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_158
+.bf_label_start_158
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_158
+.bf_label_end_158
+    isub  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_159
+.bf_label_end_159
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_162
+.bf_label_start_162
+    iadd  t0 6
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_160
+.bf_label_start_160
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 5
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 5
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_160
+.bf_label_end_160
+    isub  t0 5
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_161
+.bf_label_start_161
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 5
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_161
+.bf_label_end_161
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_162
+.bf_label_end_162
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_163
+.bf_label_start_163
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_163
+.bf_label_end_163
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_164
+.bf_label_start_164
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_164
+.bf_label_end_164
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_165
+.bf_label_start_165
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_165
+.bf_label_end_165
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_176
+.bf_label_start_176
+    iadd  t0 1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 5
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_166
+.bf_label_start_166
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 5
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 5
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_166
+.bf_label_end_166
+    isub  t0 5
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_171
+.bf_label_start_171
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 5
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 6
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_169
+.bf_label_start_169
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_167
+.bf_label_start_167
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_167
+.bf_label_end_167
+    isub  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_168
+.bf_label_start_168
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_168
+.bf_label_end_168
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_169
+.bf_label_end_169
+    isub  t0 8
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_170
+.bf_label_start_170
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_170
+.bf_label_end_170
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_171
+.bf_label_end_171
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_172
+.bf_label_start_172
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_172
+.bf_label_end_172
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_174
+.bf_label_start_174
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_173
+.bf_label_start_173
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 9
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_173
+.bf_label_end_173
+    isub  t0 10
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_174
+.bf_label_end_174
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_175
+.bf_label_start_175
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 9
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_175
+.bf_label_end_175
+    isub  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_176
+.bf_label_end_176
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_182
+.bf_label_start_182
+    iadd  t0 1
+    str  t0 t3
+    isub  t0 1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_180
+.bf_label_start_180
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_178
+.bf_label_start_178
+    isub  t0 1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 6
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 6
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_178
+.bf_label_end_178
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_179
+.bf_label_start_179
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_179
+.bf_label_end_179
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_180
+.bf_label_end_180
+    isub  t0 3
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_181
+.bf_label_start_181
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_181
+.bf_label_end_181
+    isub  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_182
+.bf_label_end_182
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_184
+.bf_label_start_184
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_183
+.bf_label_start_183
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    imov! t1 36
+    sub  t0 t1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    imov! t1 36
+    add  t0 t1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_183
+.bf_label_end_183
+    iadd  t0 5
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_184
+.bf_label_end_184
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_185
+.bf_label_start_185
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_185
+.bf_label_end_185
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_187
+.bf_label_start_187
+    iadd  t0 3
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_186
+.bf_label_start_186
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    imov! t1 36
+    sub  t0 t1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    imov! t1 36
+    add  t0 t1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_186
+.bf_label_end_186
+    iadd  t0 6
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_187
+.bf_label_end_187
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_188
+.bf_label_start_188
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_188
+.bf_label_end_188
+    iadd  t0 9
+    load t2 t0
+    iadd  t2 15
+    str  t0 t2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_191
+.bf_label_start_191
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_189
+.bf_label_start_189
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_189
+.bf_label_end_189
+    isub  t0 9
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_190
+.bf_label_start_190
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_190
+.bf_label_end_190
+    iadd  t0 9
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_191
+.bf_label_end_191
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_194
+.bf_label_start_194
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_192
+.bf_label_start_192
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 7
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 7
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_192
+.bf_label_end_192
+    isub  t0 7
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_193
+.bf_label_start_193
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 7
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 6
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_193
+.bf_label_end_193
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_194
+.bf_label_end_194
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_195
+.bf_label_start_195
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_195
+.bf_label_end_195
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_197
+.bf_label_start_197
+    iadd  t0 6
+    str  t0 t3
+    iadd  t0 3
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_197
+.bf_label_end_197
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_198
+.bf_label_start_198
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_198
+.bf_label_end_198
+    iadd  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_199
+.bf_label_start_199
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 5
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_199
+.bf_label_end_199
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_202
+.bf_label_start_202
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 6
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_200
+.bf_label_start_200
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 5
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t2 t0
+    iadd  t2 2
+    str  t0 t2
+    isub  t0 4
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_200
+.bf_label_end_200
+    iadd  t0 5
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_201
+.bf_label_start_201
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 5
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 5
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_201
+.bf_label_end_201
+    isub  t0 1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_202
+.bf_label_end_202
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_203
+.bf_label_start_203
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_203
+.bf_label_end_203
+    isub  t0 5
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_204
+.bf_label_start_204
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 5
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 5
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_204
+.bf_label_end_204
+    iadd  t0 6
+    str  t0 t3
+    isub  t0 6
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_206
+.bf_label_start_206
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_206
+.bf_label_end_206
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_253
+.bf_label_start_253
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 5
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_224
+.bf_label_start_224
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_207
+.bf_label_start_207
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_207
+.bf_label_end_207
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_213
+.bf_label_start_213
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_208
+.bf_label_start_208
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_208
+.bf_label_end_208
+    isub  t0 3
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_212
+.bf_label_start_212
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 12
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_209
+.bf_label_start_209
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_209
+.bf_label_end_209
+    iadd  t0 3
+    str  t0 t3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 6
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_211
+.bf_label_start_211
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_211
+.bf_label_end_211
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_212
+.bf_label_end_212
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_213
+.bf_label_end_213
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_214
+.bf_label_start_214
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_214
+.bf_label_end_214
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_221
+.bf_label_start_221
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_215
+.bf_label_start_215
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_215
+.bf_label_end_215
+    isub  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_220
+.bf_label_start_220
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 11
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_216
+.bf_label_start_216
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_216
+.bf_label_end_216
+    iadd  t0 4
+    str  t0 t3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 5
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_218
+.bf_label_start_218
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_218
+.bf_label_end_218
+    iadd  t0 1
+    str  t0 t3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_220
+.bf_label_end_220
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_221
+.bf_label_end_221
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_223
+.bf_label_start_223
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_222
+.bf_label_start_222
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_222
+.bf_label_end_222
+    isub  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_223
+.bf_label_end_223
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_224
+.bf_label_end_224
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_225
+.bf_label_start_225
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_225
+.bf_label_end_225
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_226
+.bf_label_start_226
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_226
+.bf_label_end_226
+    isub  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_239
+.bf_label_start_239
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 5
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_229
+.bf_label_start_229
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_227
+.bf_label_start_227
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_227
+.bf_label_end_227
+    isub  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_228
+.bf_label_start_228
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_228
+.bf_label_end_228
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_229
+.bf_label_end_229
+    isub  t0 8
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_237
+.bf_label_start_237
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_233
+.bf_label_start_233
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 5
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_231
+.bf_label_start_231
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 14
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 11
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_230
+.bf_label_start_230
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_230
+.bf_label_end_230
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_231
+.bf_label_end_231
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_232
+.bf_label_start_232
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 14
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 11
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_232
+.bf_label_end_232
+    isub  t0 2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_233
+.bf_label_end_233
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_235
+.bf_label_start_235
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_234
+.bf_label_start_234
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 14
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 11
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_234
+.bf_label_end_234
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_235
+.bf_label_end_235
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_236
+.bf_label_start_236
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_236
+.bf_label_end_236
+    isub  t0 12
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_237
+.bf_label_end_237
+    iadd  t0 4
+    str  t0 t3
+    isub  t0 4
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_239
+.bf_label_end_239
+    iadd  t0 3
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_240
+.bf_label_start_240
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_240
+.bf_label_end_240
+    isub  t0 3
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_252
+.bf_label_start_252
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 6
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_243
+.bf_label_start_243
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_241
+.bf_label_start_241
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_241
+.bf_label_end_241
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_242
+.bf_label_start_242
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_242
+.bf_label_end_242
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_243
+.bf_label_end_243
+    isub  t0 8
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_251
+.bf_label_start_251
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_247
+.bf_label_start_247
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 5
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_245
+.bf_label_start_245
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 14
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 10
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_244
+.bf_label_start_244
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_244
+.bf_label_end_244
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_245
+.bf_label_end_245
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_246
+.bf_label_start_246
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 14
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 10
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_246
+.bf_label_end_246
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_247
+.bf_label_end_247
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_249
+.bf_label_start_249
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_248
+.bf_label_start_248
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 14
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 10
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_248
+.bf_label_end_248
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_249
+.bf_label_end_249
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_250
+.bf_label_start_250
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_250
+.bf_label_end_250
+    isub  t0 11
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_251
+.bf_label_end_251
+    iadd  t0 6
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 6
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_252
+.bf_label_end_252
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_253
+.bf_label_end_253
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_254
+.bf_label_start_254
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_254
+.bf_label_end_254
+    isub  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_264
+.bf_label_start_264
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 5
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_255
+.bf_label_start_255
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_255
+.bf_label_end_255
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_263
+.bf_label_start_263
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_259
+.bf_label_start_259
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 5
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_257
+.bf_label_start_257
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 14
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 11
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_256
+.bf_label_start_256
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_256
+.bf_label_end_256
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_257
+.bf_label_end_257
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_258
+.bf_label_start_258
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 14
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 11
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_258
+.bf_label_end_258
+    isub  t0 2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_259
+.bf_label_end_259
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_261
+.bf_label_start_261
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_260
+.bf_label_start_260
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 14
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 11
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_260
+.bf_label_end_260
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_261
+.bf_label_end_261
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_262
+.bf_label_start_262
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_262
+.bf_label_end_262
+    isub  t0 12
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_263
+.bf_label_end_263
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_264
+.bf_label_end_264
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 2
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 5
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_270
+.bf_label_start_270
+    iadd  t0 2
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 6
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_270
+.bf_label_end_270
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_271
+.bf_label_start_271
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_271
+.bf_label_end_271
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_274
+.bf_label_start_274
+    iadd  t0 5
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_272
+.bf_label_start_272
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_272
+.bf_label_end_272
+    isub  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_273
+.bf_label_start_273
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_273
+.bf_label_end_273
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_274
+.bf_label_end_274
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_275
+.bf_label_start_275
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_275
+.bf_label_end_275
+    iadd  t0 9
+    load t2 t0
+    iadd  t2 15
+    str  t0 t2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_287
+.bf_label_start_287
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_276
+.bf_label_start_276
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_276
+.bf_label_end_276
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_286
+.bf_label_start_286
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_286
+.bf_label_end_286
+    iadd  t0 9
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_287
+.bf_label_end_287
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_288
+.bf_label_start_288
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_288
+.bf_label_end_288
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_289
+.bf_label_start_289
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_289
+.bf_label_end_289
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_300
+.bf_label_start_300
+    iadd  t0 1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_290
+.bf_label_start_290
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_290
+.bf_label_end_290
+    isub  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_295
+.bf_label_start_295
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 5
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_293
+.bf_label_start_293
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_291
+.bf_label_start_291
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_291
+.bf_label_end_291
+    isub  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_292
+.bf_label_start_292
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_292
+.bf_label_end_292
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_293
+.bf_label_end_293
+    isub  t0 8
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_294
+.bf_label_start_294
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_294
+.bf_label_end_294
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_295
+.bf_label_end_295
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_296
+.bf_label_start_296
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_296
+.bf_label_end_296
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_298
+.bf_label_start_298
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_297
+.bf_label_start_297
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 9
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_297
+.bf_label_end_297
+    isub  t0 10
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_298
+.bf_label_end_298
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_299
+.bf_label_start_299
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 9
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_299
+.bf_label_end_299
+    isub  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_300
+.bf_label_end_300
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_306
+.bf_label_start_306
+    iadd  t0 1
+    str  t0 t3
+    isub  t0 1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_304
+.bf_label_start_304
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_302
+.bf_label_start_302
+    isub  t0 1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 7
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 7
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_302
+.bf_label_end_302
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_303
+.bf_label_start_303
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_303
+.bf_label_end_303
+    iadd  t0 3
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_304
+.bf_label_end_304
+    isub  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_305
+.bf_label_start_305
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_305
+.bf_label_end_305
+    isub  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_306
+.bf_label_end_306
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_308
+.bf_label_start_308
+    iadd  t0 3
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_307
+.bf_label_start_307
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    imov! t1 36
+    sub  t0 t1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    imov! t1 36
+    add  t0 t1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_307
+.bf_label_end_307
+    iadd  t0 6
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_308
+.bf_label_end_308
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_309
+.bf_label_start_309
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_309
+.bf_label_end_309
+    iadd  t0 5
+    str  t0 t3
+    iadd  t0 4
+    load t2 t0
+    iadd  t2 15
+    str  t0 t2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_313
+.bf_label_start_313
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_311
+.bf_label_start_311
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_311
+.bf_label_end_311
+    isub  t0 9
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_312
+.bf_label_start_312
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_312
+.bf_label_end_312
+    iadd  t0 9
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_313
+.bf_label_end_313
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_331
+.bf_label_start_331
+    iadd  t0 3
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_314
+.bf_label_start_314
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_314
+.bf_label_end_314
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_320
+.bf_label_start_320
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_315
+.bf_label_start_315
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_315
+.bf_label_end_315
+    isub  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_319
+.bf_label_start_319
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 13
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_316
+.bf_label_start_316
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_316
+.bf_label_end_316
+    iadd  t0 4
+    str  t0 t3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 5
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_318
+.bf_label_start_318
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_318
+.bf_label_end_318
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_319
+.bf_label_end_319
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_320
+.bf_label_end_320
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_321
+.bf_label_start_321
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_321
+.bf_label_end_321
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_328
+.bf_label_start_328
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_322
+.bf_label_start_322
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_322
+.bf_label_end_322
+    isub  t0 3
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_327
+.bf_label_start_327
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 12
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_323
+.bf_label_start_323
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_323
+.bf_label_end_323
+    iadd  t0 3
+    str  t0 t3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 6
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_325
+.bf_label_start_325
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_325
+.bf_label_end_325
+    iadd  t0 1
+    str  t0 t3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_327
+.bf_label_end_327
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_328
+.bf_label_end_328
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_330
+.bf_label_start_330
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_329
+.bf_label_start_329
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_329
+.bf_label_end_329
+    isub  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_330
+.bf_label_end_330
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_331
+.bf_label_end_331
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_332
+.bf_label_start_332
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_332
+.bf_label_end_332
+    iadd  t0 3
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_333
+.bf_label_start_333
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_333
+.bf_label_end_333
+    isub  t0 3
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_345
+.bf_label_start_345
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 6
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_336
+.bf_label_start_336
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_334
+.bf_label_start_334
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_334
+.bf_label_end_334
+    isub  t0 3
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_335
+.bf_label_start_335
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_335
+.bf_label_end_335
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_336
+.bf_label_end_336
+    isub  t0 8
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_344
+.bf_label_start_344
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_340
+.bf_label_start_340
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_338
+.bf_label_start_338
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 10
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 12
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_337
+.bf_label_start_337
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_337
+.bf_label_end_337
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_338
+.bf_label_end_338
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_339
+.bf_label_start_339
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 10
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 12
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_339
+.bf_label_end_339
+    isub  t0 3
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_340
+.bf_label_end_340
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_342
+.bf_label_start_342
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_341
+.bf_label_start_341
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 10
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 12
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_341
+.bf_label_end_341
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_342
+.bf_label_end_342
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_343
+.bf_label_start_343
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_343
+.bf_label_end_343
+    isub  t0 13
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_344
+.bf_label_end_344
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_345
+.bf_label_end_345
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_346
+.bf_label_start_346
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_346
+.bf_label_end_346
+    isub  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_358
+.bf_label_start_358
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 5
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_349
+.bf_label_start_349
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_347
+.bf_label_start_347
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_347
+.bf_label_end_347
+    isub  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_348
+.bf_label_start_348
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_348
+.bf_label_end_348
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_349
+.bf_label_end_349
+    isub  t0 8
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_357
+.bf_label_start_357
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_353
+.bf_label_start_353
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_351
+.bf_label_start_351
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 10
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 11
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_350
+.bf_label_start_350
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_350
+.bf_label_end_350
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_351
+.bf_label_end_351
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_352
+.bf_label_start_352
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 10
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 11
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_352
+.bf_label_end_352
+    isub  t0 2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_353
+.bf_label_end_353
+    iadd  t0 3
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_355
+.bf_label_start_355
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_354
+.bf_label_start_354
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 10
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 11
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_354
+.bf_label_end_354
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_355
+.bf_label_end_355
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_356
+.bf_label_start_356
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_356
+.bf_label_end_356
+    isub  t0 12
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_357
+.bf_label_end_357
+    iadd  t0 5
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 5
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_358
+.bf_label_end_358
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_362
+.bf_label_start_362
+    iadd  t0 3
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_362
+.bf_label_end_362
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_363
+.bf_label_start_363
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_363
+.bf_label_end_363
+    iadd  t0 3
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 5
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_368
+.bf_label_start_368
+    iadd  t0 7
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_366
+.bf_label_start_366
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 6
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 6
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_366
+.bf_label_end_366
+    isub  t0 6
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_367
+.bf_label_start_367
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 6
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_367
+.bf_label_end_367
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_368
+.bf_label_end_368
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_369
+.bf_label_start_369
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_369
+.bf_label_end_369
+    iadd  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_370
+.bf_label_start_370
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 5
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_370
+.bf_label_end_370
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_373
+.bf_label_start_373
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 7
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_371
+.bf_label_start_371
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 5
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t2 t0
+    iadd  t2 2
+    str  t0 t2
+    isub  t0 4
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_371
+.bf_label_end_371
+    iadd  t0 5
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_372
+.bf_label_start_372
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 5
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 5
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_372
+.bf_label_end_372
+    isub  t0 1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_373
+.bf_label_end_373
+    isub  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_374
+.bf_label_start_374
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_374
+.bf_label_end_374
+    isub  t0 5
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_375
+.bf_label_start_375
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 5
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 5
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_375
+.bf_label_end_375
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_376
+.bf_label_start_376
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_376
+.bf_label_end_376
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_426
+.bf_label_start_426
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 5
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_394
+.bf_label_start_394
+    iadd  t0 3
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_377
+.bf_label_start_377
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_377
+.bf_label_end_377
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_383
+.bf_label_start_383
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_378
+.bf_label_start_378
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_378
+.bf_label_end_378
+    isub  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_382
+.bf_label_start_382
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 11
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_379
+.bf_label_start_379
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_379
+.bf_label_end_379
+    iadd  t0 4
+    str  t0 t3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 5
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_381
+.bf_label_start_381
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_381
+.bf_label_end_381
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_382
+.bf_label_end_382
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_383
+.bf_label_end_383
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_384
+.bf_label_start_384
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_384
+.bf_label_end_384
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_391
+.bf_label_start_391
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_385
+.bf_label_start_385
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_385
+.bf_label_end_385
+    isub  t0 3
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_390
+.bf_label_start_390
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 12
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_386
+.bf_label_start_386
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_386
+.bf_label_end_386
+    iadd  t0 3
+    str  t0 t3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 6
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_388
+.bf_label_start_388
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_388
+.bf_label_end_388
+    iadd  t0 1
+    str  t0 t3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_390
+.bf_label_end_390
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_391
+.bf_label_end_391
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_393
+.bf_label_start_393
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_392
+.bf_label_start_392
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_392
+.bf_label_end_392
+    isub  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_393
+.bf_label_end_393
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_394
+.bf_label_end_394
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_395
+.bf_label_start_395
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_395
+.bf_label_end_395
+    iadd  t0 3
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_396
+.bf_label_start_396
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_396
+.bf_label_end_396
+    isub  t0 3
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_411
+.bf_label_start_411
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 6
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_399
+.bf_label_start_399
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_397
+.bf_label_start_397
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_397
+.bf_label_end_397
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_398
+.bf_label_start_398
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_398
+.bf_label_end_398
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_399
+.bf_label_end_399
+    isub  t0 8
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_407
+.bf_label_start_407
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_403
+.bf_label_start_403
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_401
+.bf_label_start_401
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 13
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 10
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_400
+.bf_label_start_400
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_400
+.bf_label_end_400
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_401
+.bf_label_end_401
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_402
+.bf_label_start_402
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 13
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 10
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_402
+.bf_label_end_402
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_403
+.bf_label_end_403
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_405
+.bf_label_start_405
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_404
+.bf_label_start_404
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 13
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 10
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_404
+.bf_label_end_404
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_405
+.bf_label_end_405
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_406
+.bf_label_start_406
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_406
+.bf_label_end_406
+    isub  t0 11
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_407
+.bf_label_end_407
+    iadd  t0 5
+    str  t0 t3
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_409
+.bf_label_start_409
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 7
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 7
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_409
+.bf_label_end_409
+    isub  t0 7
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_410
+.bf_label_start_410
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 7
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 5
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_410
+.bf_label_end_410
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_411
+.bf_label_end_411
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_412
+.bf_label_start_412
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_412
+.bf_label_end_412
+    isub  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_424
+.bf_label_start_424
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 5
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_415
+.bf_label_start_415
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_413
+.bf_label_start_413
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_413
+.bf_label_end_413
+    isub  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_414
+.bf_label_start_414
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_414
+.bf_label_end_414
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_415
+.bf_label_end_415
+    isub  t0 8
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_423
+.bf_label_start_423
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_419
+.bf_label_start_419
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_417
+.bf_label_start_417
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 13
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 11
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_416
+.bf_label_start_416
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_416
+.bf_label_end_416
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_417
+.bf_label_end_417
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_418
+.bf_label_start_418
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 13
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 11
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_418
+.bf_label_end_418
+    isub  t0 2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_419
+.bf_label_end_419
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_421
+.bf_label_start_421
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_420
+.bf_label_start_420
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 13
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 11
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_420
+.bf_label_end_420
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_421
+.bf_label_end_421
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_422
+.bf_label_start_422
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_422
+.bf_label_end_422
+    isub  t0 12
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_423
+.bf_label_end_423
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_424
+.bf_label_end_424
+    iadd  t0 4
+    str  t0 t3
+    isub  t0 4
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_426
+.bf_label_end_426
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_427
+.bf_label_start_427
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_427
+.bf_label_end_427
+    isub  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_440
+.bf_label_start_440
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_429
+.bf_label_start_429
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 7
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 7
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_429
+.bf_label_end_429
+    isub  t0 7
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_430
+.bf_label_start_430
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 7
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 5
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_430
+.bf_label_end_430
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_431
+.bf_label_start_431
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_431
+.bf_label_end_431
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_439
+.bf_label_start_439
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_435
+.bf_label_start_435
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_433
+.bf_label_start_433
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 13
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 11
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_432
+.bf_label_start_432
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_432
+.bf_label_end_432
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_433
+.bf_label_end_433
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_434
+.bf_label_start_434
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 13
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 11
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_434
+.bf_label_end_434
+    isub  t0 2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_435
+.bf_label_end_435
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_437
+.bf_label_start_437
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_436
+.bf_label_start_436
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 13
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 11
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_436
+.bf_label_end_436
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_437
+.bf_label_end_437
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_438
+.bf_label_start_438
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_438
+.bf_label_end_438
+    isub  t0 12
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_439
+.bf_label_end_439
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_440
+.bf_label_end_440
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_443
+.bf_label_start_443
+    iadd  t0 2
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 6
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_443
+.bf_label_end_443
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_444
+.bf_label_start_444
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_444
+.bf_label_end_444
+    iadd  t0 3
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 5
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_449
+.bf_label_start_449
+    iadd  t0 5
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_447
+.bf_label_start_447
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_447
+.bf_label_end_447
+    isub  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_448
+.bf_label_start_448
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_448
+.bf_label_end_448
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_449
+.bf_label_end_449
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_450
+.bf_label_start_450
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_450
+.bf_label_end_450
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_453
+.bf_label_start_453
+    iadd  t0 6
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_451
+.bf_label_start_451
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 5
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 5
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_451
+.bf_label_end_451
+    isub  t0 5
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_452
+.bf_label_start_452
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 5
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_452
+.bf_label_end_452
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_453
+.bf_label_end_453
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_454
+.bf_label_start_454
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_454
+.bf_label_end_454
+    iadd  t0 9
+    load t2 t0
+    iadd  t2 15
+    str  t0 t2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_466
+.bf_label_start_466
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_455
+.bf_label_start_455
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_455
+.bf_label_end_455
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_465
+.bf_label_start_465
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_465
+.bf_label_end_465
+    iadd  t0 9
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_466
+.bf_label_end_466
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_467
+.bf_label_start_467
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_467
+.bf_label_end_467
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_468
+.bf_label_start_468
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_468
+.bf_label_end_468
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_479
+.bf_label_start_479
+    iadd  t0 1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_469
+.bf_label_start_469
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_469
+.bf_label_end_469
+    isub  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_474
+.bf_label_start_474
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 5
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_472
+.bf_label_start_472
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_470
+.bf_label_start_470
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_470
+.bf_label_end_470
+    isub  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_471
+.bf_label_start_471
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_471
+.bf_label_end_471
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_472
+.bf_label_end_472
+    isub  t0 8
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_473
+.bf_label_start_473
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_473
+.bf_label_end_473
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_474
+.bf_label_end_474
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_475
+.bf_label_start_475
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_475
+.bf_label_end_475
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_477
+.bf_label_start_477
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_476
+.bf_label_start_476
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 9
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_476
+.bf_label_end_476
+    isub  t0 10
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_477
+.bf_label_end_477
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_478
+.bf_label_start_478
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 9
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_478
+.bf_label_end_478
+    isub  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_479
+.bf_label_end_479
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_485
+.bf_label_start_485
+    iadd  t0 1
+    str  t0 t3
+    isub  t0 1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_483
+.bf_label_start_483
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_481
+.bf_label_start_481
+    isub  t0 1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 6
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 6
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_481
+.bf_label_end_481
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_482
+.bf_label_start_482
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_482
+.bf_label_end_482
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_483
+.bf_label_end_483
+    isub  t0 3
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_484
+.bf_label_start_484
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_484
+.bf_label_end_484
+    isub  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_485
+.bf_label_end_485
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_486
+.bf_label_start_486
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_486
+.bf_label_end_486
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_487
+.bf_label_start_487
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_487
+.bf_label_end_487
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_498
+.bf_label_start_498
+    iadd  t0 1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 5
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_488
+.bf_label_start_488
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 5
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 5
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_488
+.bf_label_end_488
+    isub  t0 5
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_493
+.bf_label_start_493
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 5
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 6
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_491
+.bf_label_start_491
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_489
+.bf_label_start_489
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_489
+.bf_label_end_489
+    isub  t0 3
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_490
+.bf_label_start_490
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_490
+.bf_label_end_490
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_491
+.bf_label_end_491
+    isub  t0 8
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_492
+.bf_label_start_492
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_492
+.bf_label_end_492
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_493
+.bf_label_end_493
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_494
+.bf_label_start_494
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_494
+.bf_label_end_494
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_496
+.bf_label_start_496
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_495
+.bf_label_start_495
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 9
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_495
+.bf_label_end_495
+    isub  t0 11
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_496
+.bf_label_end_496
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_497
+.bf_label_start_497
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 9
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_497
+.bf_label_end_497
+    isub  t0 2
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_498
+.bf_label_end_498
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_504
+.bf_label_start_504
+    iadd  t0 1
+    str  t0 t3
+    isub  t0 1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_502
+.bf_label_start_502
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_500
+.bf_label_start_500
+    isub  t0 1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 6
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 6
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_500
+.bf_label_end_500
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_501
+.bf_label_start_501
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_501
+.bf_label_end_501
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_502
+.bf_label_end_502
+    isub  t0 3
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_503
+.bf_label_start_503
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_503
+.bf_label_end_503
+    isub  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_504
+.bf_label_end_504
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_506
+.bf_label_start_506
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_505
+.bf_label_start_505
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    imov! t1 36
+    sub  t0 t1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    imov! t1 36
+    add  t0 t1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_505
+.bf_label_end_505
+    iadd  t0 5
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_506
+.bf_label_end_506
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_507
+.bf_label_start_507
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_507
+.bf_label_end_507
+    iadd  t0 9
+    load t2 t0
+    iadd  t2 15
+    str  t0 t2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_510
+.bf_label_start_510
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_508
+.bf_label_start_508
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_508
+.bf_label_end_508
+    isub  t0 9
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_509
+.bf_label_start_509
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_509
+.bf_label_end_509
+    iadd  t0 9
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_510
+.bf_label_end_510
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    imov! t1 21
+    add  t0 t1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_511
+.bf_label_start_511
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_511
+.bf_label_end_511
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_529
+.bf_label_start_529
+    iadd  t0 3
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_512
+.bf_label_start_512
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_512
+.bf_label_end_512
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_518
+.bf_label_start_518
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_513
+.bf_label_start_513
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_513
+.bf_label_end_513
+    isub  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_517
+.bf_label_start_517
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 13
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_514
+.bf_label_start_514
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_514
+.bf_label_end_514
+    iadd  t0 4
+    str  t0 t3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 5
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_516
+.bf_label_start_516
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_516
+.bf_label_end_516
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_517
+.bf_label_end_517
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_518
+.bf_label_end_518
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_519
+.bf_label_start_519
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_519
+.bf_label_end_519
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_526
+.bf_label_start_526
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_520
+.bf_label_start_520
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_520
+.bf_label_end_520
+    isub  t0 3
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_525
+.bf_label_start_525
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 12
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_521
+.bf_label_start_521
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_521
+.bf_label_end_521
+    iadd  t0 3
+    str  t0 t3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 6
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_523
+.bf_label_start_523
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_523
+.bf_label_end_523
+    iadd  t0 1
+    str  t0 t3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_525
+.bf_label_end_525
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_526
+.bf_label_end_526
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_528
+.bf_label_start_528
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_527
+.bf_label_start_527
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_527
+.bf_label_end_527
+    isub  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_528
+.bf_label_end_528
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_529
+.bf_label_end_529
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_530
+.bf_label_start_530
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_530
+.bf_label_end_530
+    iadd  t0 2
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_531
+.bf_label_start_531
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_531
+.bf_label_end_531
+    isub  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_533
+.bf_label_start_533
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 2
+    str  t0 t3
+    isub  t0 2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_533
+.bf_label_end_533
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_534
+.bf_label_end_534
+    isub  t0 2
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_535
+.bf_label_start_535
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_535
+.bf_label_end_535
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_536
+.bf_label_start_536
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 6
+    load p0 t0
+    call! .print_char
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_536
+.bf_label_end_536
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_537
+.bf_label_start_537
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 7
+    load p0 t0
+    call! .print_char
+    iadd  t0 7
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_537
+.bf_label_end_537
+    isub  t0 3
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 3
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_550
+.bf_label_start_550
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 1
+    str  t0 t3
+    iadd  t0 3
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_550
+.bf_label_end_550
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_551
+.bf_label_start_551
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_551
+.bf_label_end_551
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_553
+.bf_label_start_553
+    iadd  t0 5
+    str  t0 t3
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_553
+.bf_label_end_553
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_554
+.bf_label_start_554
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_554
+.bf_label_end_554
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 11
+    str  t0 t2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_556
+.bf_label_start_556
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_555
+.bf_label_start_555
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 9
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_555
+.bf_label_end_555
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_556
+.bf_label_end_556
+    iadd  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 9
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 14
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_557
+.bf_label_start_557
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_557
+.bf_label_end_557
+    iadd  t0 7
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_558
+.bf_label_start_558
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 7
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 7
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_558
+.bf_label_end_558
+    isub  t0 7
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_566
+.bf_label_start_566
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 7
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    str  t0 t3
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_560
+.bf_label_start_560
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_560
+.bf_label_end_560
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_565
+.bf_label_start_565
+    iadd  t0 7
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_561
+.bf_label_start_561
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 6
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 6
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_561
+.bf_label_end_561
+    isub  t0 6
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_564
+.bf_label_start_564
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 6
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 7
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_562
+.bf_label_start_562
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_562
+.bf_label_end_562
+    iadd  t0 7
+    str  t0 t3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_564
+.bf_label_end_564
+    isub  t0 10
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_565
+.bf_label_end_565
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_566
+.bf_label_end_566
+    iadd  t0 7
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_567
+.bf_label_start_567
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 7
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 7
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_567
+.bf_label_end_567
+    isub  t0 7
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_581
+.bf_label_start_581
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 7
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_570
+.bf_label_start_570
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_568
+.bf_label_start_568
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_568
+.bf_label_end_568
+    isub  t0 4
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_569
+.bf_label_start_569
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 4
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_569
+.bf_label_end_569
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_570
+.bf_label_end_570
+    isub  t0 2
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 7
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_572
+.bf_label_start_572
+    iadd  t0 5
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_571
+.bf_label_start_571
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_571
+.bf_label_end_571
+    isub  t0 14
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_572
+.bf_label_end_572
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_573
+.bf_label_start_573
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_573
+.bf_label_end_573
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_579
+.bf_label_start_579
+    iadd  t0 1
+    str  t0 t3
+    isub  t0 1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 7
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_577
+.bf_label_start_577
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 7
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_575
+.bf_label_start_575
+    isub  t0 1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_575
+.bf_label_end_575
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_576
+.bf_label_start_576
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_576
+.bf_label_end_576
+    iadd  t0 7
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_577
+.bf_label_end_577
+    isub  t0 6
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_578
+.bf_label_start_578
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 6
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 6
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_578
+.bf_label_end_578
+    isub  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_579
+.bf_label_end_579
+    iadd  t0 7
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 4
+    str  t0 t3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_581
+.bf_label_end_581
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 7
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_582
+.bf_label_start_582
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 7
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 7
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_582
+.bf_label_end_582
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 7
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_617
+.bf_label_start_617
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 7
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_584
+.bf_label_start_584
+    iadd  t0 5
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_583
+.bf_label_start_583
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_583
+.bf_label_end_583
+    iadd  t0 4
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_584
+.bf_label_end_584
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_590
+.bf_label_start_590
+    iadd  t0 1
+    str  t0 t3
+    isub  t0 1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 7
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_588
+.bf_label_start_588
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 7
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_586
+.bf_label_start_586
+    isub  t0 1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 3
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_586
+.bf_label_end_586
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_587
+.bf_label_start_587
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_587
+.bf_label_end_587
+    iadd  t0 7
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_588
+.bf_label_end_588
+    isub  t0 6
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_589
+.bf_label_start_589
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 6
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 6
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_589
+.bf_label_end_589
+    isub  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_590
+.bf_label_end_590
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 5
+    str  t0 t2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_592
+.bf_label_start_592
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_591
+.bf_label_start_591
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 9
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_591
+.bf_label_end_591
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_592
+.bf_label_end_592
+    iadd  t0 4
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 5
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_593
+.bf_label_start_593
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_593
+.bf_label_end_593
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_611
+.bf_label_start_611
+    iadd  t0 5
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_594
+.bf_label_start_594
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 5
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 5
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_594
+.bf_label_end_594
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 5
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_600
+.bf_label_start_600
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 5
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_595
+.bf_label_start_595
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 7
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 7
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_595
+.bf_label_end_595
+    isub  t0 7
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_599
+.bf_label_start_599
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 7
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    imov! t1 16
+    sub  t0 t1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_596
+.bf_label_start_596
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_596
+.bf_label_end_596
+    iadd  t0 4
+    str  t0 t3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 5
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_598
+.bf_label_start_598
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_598
+.bf_label_end_598
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_599
+.bf_label_end_599
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_600
+.bf_label_end_600
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 7
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_601
+.bf_label_start_601
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 7
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 7
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_601
+.bf_label_end_601
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 7
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_608
+.bf_label_start_608
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 7
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_602
+.bf_label_start_602
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 5
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 5
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_602
+.bf_label_end_602
+    isub  t0 5
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_607
+.bf_label_start_607
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 5
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 14
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_603
+.bf_label_start_603
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_603
+.bf_label_end_603
+    iadd  t0 3
+    str  t0 t3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 6
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_605
+.bf_label_start_605
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_605
+.bf_label_end_605
+    iadd  t0 1
+    str  t0 t3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_607
+.bf_label_end_607
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_608
+.bf_label_end_608
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_610
+.bf_label_start_610
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_609
+.bf_label_start_609
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_609
+.bf_label_end_609
+    isub  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_610
+.bf_label_end_610
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_611
+.bf_label_end_611
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_612
+.bf_label_start_612
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_612
+.bf_label_end_612
+    iadd  t0 4
+    str  t0 t3
+    isub  t0 3
+    load t2 t0
+    iadd  t2 5
+    str  t0 t2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_615
+.bf_label_start_615
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_614
+.bf_label_start_614
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 9
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_614
+.bf_label_end_614
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_615
+.bf_label_end_615
+    iadd  t0 4
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 5
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_616
+.bf_label_start_616
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_616
+.bf_label_end_616
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_617
+.bf_label_end_617
+    iadd  t0 3
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_618
+.bf_label_end_618
+    isub  t0 4
+    load p0 t0
+    call! .print_char
+    iadd  t0 10
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_620
+.bf_label_start_620
+    iadd  t0 6
+    str  t0 t3
+    iadd  t0 3
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_620
+.bf_label_end_620
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_621
+.bf_label_start_621
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_621
+.bf_label_end_621
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 10
+    str  t0 t2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_623
+.bf_label_start_623
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_622
+.bf_label_start_622
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 9
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_622
+.bf_label_end_622
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_623
+.bf_label_end_623
+    iadd  t0 5
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 9
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 15
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_624
+.bf_label_start_624
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_624
+.bf_label_end_624
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_625
+.bf_label_start_625
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 8
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_625
+.bf_label_end_625
+    isub  t0 8
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_633
+.bf_label_start_633
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 8
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    str  t0 t3
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_627
+.bf_label_start_627
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_627
+.bf_label_end_627
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_632
+.bf_label_start_632
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_628
+.bf_label_start_628
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 7
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 7
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_628
+.bf_label_end_628
+    isub  t0 7
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_631
+.bf_label_start_631
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 7
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 8
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_629
+.bf_label_start_629
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_629
+.bf_label_end_629
+    iadd  t0 8
+    str  t0 t3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_631
+.bf_label_end_631
+    isub  t0 10
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_632
+.bf_label_end_632
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_633
+.bf_label_end_633
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_634
+.bf_label_start_634
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 8
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_634
+.bf_label_end_634
+    isub  t0 8
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_648
+.bf_label_start_648
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 8
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_637
+.bf_label_start_637
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 5
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_635
+.bf_label_start_635
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 5
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 5
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_635
+.bf_label_end_635
+    isub  t0 5
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_636
+.bf_label_start_636
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 5
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 5
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_636
+.bf_label_end_636
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_637
+.bf_label_end_637
+    isub  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 8
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_639
+.bf_label_start_639
+    iadd  t0 6
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_638
+.bf_label_start_638
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_638
+.bf_label_end_638
+    isub  t0 15
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_639
+.bf_label_end_639
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_640
+.bf_label_start_640
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_640
+.bf_label_end_640
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_646
+.bf_label_start_646
+    iadd  t0 1
+    str  t0 t3
+    isub  t0 1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_644
+.bf_label_start_644
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 8
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_642
+.bf_label_start_642
+    isub  t0 1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_642
+.bf_label_end_642
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_643
+.bf_label_start_643
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_643
+.bf_label_end_643
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_644
+.bf_label_end_644
+    isub  t0 7
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_645
+.bf_label_start_645
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 7
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 7
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_645
+.bf_label_end_645
+    isub  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_646
+.bf_label_end_646
+    iadd  t0 8
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 5
+    str  t0 t3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 3
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_648
+.bf_label_end_648
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_649
+.bf_label_start_649
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 8
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_649
+.bf_label_end_649
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 8
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_684
+.bf_label_start_684
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 8
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_651
+.bf_label_start_651
+    iadd  t0 6
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_650
+.bf_label_start_650
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_650
+.bf_label_end_650
+    iadd  t0 3
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_651
+.bf_label_end_651
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_657
+.bf_label_start_657
+    iadd  t0 1
+    str  t0 t3
+    isub  t0 1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_655
+.bf_label_start_655
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 8
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_653
+.bf_label_start_653
+    isub  t0 1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_653
+.bf_label_end_653
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_654
+.bf_label_start_654
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_654
+.bf_label_end_654
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_655
+.bf_label_end_655
+    isub  t0 7
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_656
+.bf_label_start_656
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 7
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 7
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_656
+.bf_label_end_656
+    isub  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_657
+.bf_label_end_657
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 5
+    str  t0 t2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_659
+.bf_label_start_659
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_658
+.bf_label_start_658
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 9
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_658
+.bf_label_end_658
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_659
+.bf_label_end_659
+    iadd  t0 5
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    imov! t1 27
+    add  t0 t1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 6
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_660
+.bf_label_start_660
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_660
+.bf_label_end_660
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_678
+.bf_label_start_678
+    iadd  t0 6
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_661
+.bf_label_start_661
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 6
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 6
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_661
+.bf_label_end_661
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 6
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_667
+.bf_label_start_667
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 6
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_662
+.bf_label_start_662
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 8
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_662
+.bf_label_end_662
+    isub  t0 8
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_666
+.bf_label_start_666
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 8
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    imov! t1 17
+    sub  t0 t1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_663
+.bf_label_start_663
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_663
+.bf_label_end_663
+    iadd  t0 4
+    str  t0 t3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 5
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_665
+.bf_label_start_665
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_665
+.bf_label_end_665
+    iadd  t0 1
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_666
+.bf_label_end_666
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_667
+.bf_label_end_667
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_668
+.bf_label_start_668
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 8
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_668
+.bf_label_end_668
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 8
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_675
+.bf_label_start_675
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 8
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_669
+.bf_label_start_669
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 6
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 6
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_669
+.bf_label_end_669
+    isub  t0 6
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_674
+.bf_label_start_674
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 6
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 15
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_670
+.bf_label_start_670
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_670
+.bf_label_end_670
+    iadd  t0 3
+    str  t0 t3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 6
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_672
+.bf_label_start_672
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_672
+.bf_label_end_672
+    iadd  t0 1
+    str  t0 t3
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_674
+.bf_label_end_674
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_675
+.bf_label_end_675
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    iadd  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_677
+.bf_label_start_677
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 1
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_676
+.bf_label_start_676
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_676
+.bf_label_end_676
+    isub  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_677
+.bf_label_end_677
+    iadd  t0 8
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_678
+.bf_label_end_678
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_679
+.bf_label_start_679
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_679
+.bf_label_end_679
+    iadd  t0 4
+    str  t0 t3
+    isub  t0 3
+    load t2 t0
+    iadd  t2 5
+    str  t0 t2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_682
+.bf_label_start_682
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_681
+.bf_label_start_681
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    iadd  t0 9
+    load t2 t0
+    iadd  t2 1
+    str  t0 t2
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_681
+.bf_label_end_681
+    iadd  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_682
+.bf_label_end_682
+    iadd  t0 5
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    imov! t1 27
+    add  t0 t1
+    load t2 t0
+    isub  t2 1
+    str  t0 t2
+    isub  t0 6
+    load t1 t0
+    tst  t1
+    jz! .bf_label_end_683
+.bf_label_start_683
+    isub  t0 9
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_683
+.bf_label_end_683
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_684
+.bf_label_end_684
+    iadd  t0 3
+    load t1 t0
+    tst  t1
+    jnz! .bf_label_start_685
+.bf_label_end_685
+    jmpr

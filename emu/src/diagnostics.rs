@@ -1,7 +1,7 @@
 use std::sync::{Arc, Mutex};
 use std::time::{SystemTime, Duration};
 
-use crate::vga::VGA;
+use crate::vga::Vga;
 
 
 pub struct Diagnostics {
@@ -9,11 +9,11 @@ pub struct Diagnostics {
     prev_time: SystemTime,
     running_count: i64,
 
-    vga: Arc<Mutex<VGA>>
+    vga: Arc<Mutex<Vga>>
 }
 
 impl Diagnostics {
-    pub fn new(vga: Arc<Mutex<VGA>>, interval: Duration) -> Diagnostics {
+    pub fn new(vga: Arc<Mutex<Vga>>, interval: Duration) -> Diagnostics {
         Diagnostics { interval, prev_time: SystemTime::now(), vga, running_count: 0 }
     }
 

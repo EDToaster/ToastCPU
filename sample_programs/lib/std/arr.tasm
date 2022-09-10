@@ -28,6 +28,27 @@
 .arr_find_exit
     pop!  t2 t1 t0
     jmpr
-
-
 #end .arr_find
+
+
+.arr_memset # (WORD *arr, WORD val, WORD size) -> ()
+    push! t0 t1
+
+    imov  t0 0
+
+.arr_memset_loop
+    # if (t0 == size)
+    cmp   t0 p2
+    jz!   .arr_memset_exit
+
+    mov   t1 t0
+    add   t1 p0
+    str   t1 p1
+
+    iadd  t0 1
+    jmp!  .arr_memset_loop
+
+.arr_memset_exit
+    pop!  t1 t0
+    jmpr
+#end .arr_memset

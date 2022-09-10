@@ -14,7 +14,7 @@ use std::thread;
 use std::time::Duration;
 
 use regex::Regex;
-use vga::VGA;
+use vga::Vga;
 
 use crate::devices::Devices;
 use crate::diagnostics::Diagnostics;
@@ -224,7 +224,7 @@ fn main() {
     println!("rom is sized {}", rom.len());
 
     let ram: Rc<Vec<u16>> = Rc::new(vec![0; RAM_SIZE]);
-    let vga: Arc<Mutex<VGA>> = Arc::new(Mutex::new(VGA::new(VGA_WIDTH, VGA_HEIGHT, stdout())));
+    let vga: Arc<Mutex<Vga>> = Arc::new(Mutex::new(Vga::new(VGA_WIDTH, VGA_HEIGHT, stdout())));
     vga.lock().unwrap().reset();
     let key: Arc<Mutex<u16>> = Arc::new(Mutex::new(0));
     let irq: Arc<Mutex<bool>> = Arc::new(Mutex::new(false));

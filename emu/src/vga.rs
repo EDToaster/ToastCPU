@@ -16,16 +16,16 @@ const COLORS: [Color; 8] = [
     Color::Rgb { r: 255, g: 255, b: 255 },
 ];
 
-pub struct VGA {
+pub struct Vga {
     width: usize,
     height: usize,
     buffer: Vec<u16>,
     stdout: Stdout,
 }
 
-impl VGA {
-    pub fn new(width: usize, height: usize, stdout: Stdout) -> VGA {
-        VGA {
+impl Vga {
+    pub fn new(width: usize, height: usize, stdout: Stdout) -> Vga {
+        Vga {
             width, height, 
             buffer: vec![0; width*height],
             stdout,

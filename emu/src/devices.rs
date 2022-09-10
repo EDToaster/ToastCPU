@@ -1,10 +1,10 @@
 use std::{rc::Rc, sync::{Arc, Mutex}};
 
-use crate::vga::VGA;
+use crate::vga::Vga;
 
 pub struct Devices {
     rom: Rc<Vec<u16>>,
-    vga: Arc<Mutex<VGA>>,
+    vga: Arc<Mutex<Vga>>,
     ram: Rc<Vec<u16>>,
     key: Arc<Mutex<u16>>,
 }
@@ -12,7 +12,7 @@ pub struct Devices {
 impl Devices {
     pub fn new(
         rom: Rc<Vec<u16>>,
-        vga: Arc<Mutex<VGA>>,
+        vga: Arc<Mutex<Vga>>,
         ram: Rc<Vec<u16>>,
         key: Arc<Mutex<u16>>,
     ) -> Devices {

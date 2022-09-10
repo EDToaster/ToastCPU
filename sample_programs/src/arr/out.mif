@@ -4,61 +4,78 @@ ADDRESS_RADIX = HEX;          -- The radix for address values
 DATA_RADIX = HEX;             -- The radix for data values
 CONTENT                       -- start of (address : data pairs)
 BEGIN
-0000 : 2C32; -- . imov [imov! isr .isr]
+0000 : 2C47; -- . imov [imov! isr .isr]
 0001 : 3C00; -- ' imoh
-0002 : 2135; -- . imov [imov! p0 .arr]
-0003 : 3100; -- ' imoh
+0002 : 21FC; -- . imov [imov! p0 .arr]
+0003 : 31BF; -- ' imoh
 0004 : 22CD; -- . imov [imov! p1 0xABCD]
 0005 : 32AB; -- ' imoh
 0006 : 2304; -- . imov [imov! p2 4]
 0007 : 3300; -- ' imoh
-0008 : 2019; -- . imov r0 .arr_find  [call! .arr_find]
-0009 : 3000; -- | imoh r0 .arr_find
+0008 : 2036; -- . imov r0 .arr_memset  [call! .arr_memset]
+0009 : 3000; -- | imoh r0 .arr_memset
 000A : A010; -- ' jmpl
-000B : 2002; -- . imov [icmp! v0 2]
-000C : 3000; -- | imoh
-000D : 8507; -- ' cmp
-000E : 2015; -- . imov [jz!   .correct]
-000F : 3000; -- | imoh
-0010 : A001; -- ' j_op
-0011 : 7000; --   halt
-0012 : 7000; --   halt
-0013 : 7000; --   halt
-0014 : 7000; --   halt
+000B : 26FC; -- . imov [imov! t0 .arr]
+000C : 36BF; -- ' imoh
+000D : 9634; --   iadd  t0 3
+000E : 0660; --   load  t0 t0
+000F : 20CD; -- . imov [icmp! t0 0xABCD]
+0010 : 30AB; -- | imoh
+0011 : 8607; -- ' cmp
+0012 : 2019; -- . imov [jz!   .correct]
+0013 : 3000; -- | imoh
+0014 : A001; -- ' j_op
 0015 : 7000; --   halt
 0016 : 7000; --   halt
 0017 : 7000; --   halt
 0018 : 7000; --   halt
-0019 : 5D60; -- . push [push! t0 t1 t2]
-001A : 5D70; -- | push
-001B : 5D80; -- ' push
-001C : 2500; --   imov  v0 0
-001D : 8537; --   cmp   v0 p2
-001E : 202C; -- . imov [jz!   .arr_find_set_not_found]
-001F : 3000; -- | imoh
-0020 : A001; -- ' j_op
-0021 : 8716; --   mov   t1 p0
-0022 : 8754; --   add   t1 v0
-0023 : 0770; --   load  t1 t1
-0024 : 8727; --   cmp   t1 p1
-0025 : 202E; -- . imov [jz!   .arr_find_exit]
-0026 : 3000; -- | imoh
-0027 : A001; -- ' j_op
-0028 : 9514; --   iadd  v0 1
-0029 : 201D; -- . imov [jmp!  .arr_find_next]
+0019 : 7000; --   halt
+001A : 7000; --   halt
+001B : 7000; --   halt
+001C : 7000; --   halt
+001D : 5D60; -- . push [push! t0 t1 t2]
+001E : 5D70; -- | push
+001F : 5D80; -- ' push
+0020 : 2500; --   imov  v0 0
+0021 : 8537; --   cmp   v0 p2
+0022 : 2030; -- . imov [jz!   .arr_find_set_not_found]
+0023 : 3000; -- | imoh
+0024 : A001; -- ' j_op
+0025 : 8716; --   mov   t1 p0
+0026 : 8754; --   add   t1 v0
+0027 : 0770; --   load  t1 t1
+0028 : 8727; --   cmp   t1 p1
+0029 : 2032; -- . imov [jz!   .arr_find_exit]
 002A : 3000; -- | imoh
-002B : A000; -- ' j_op
-002C : 25FF; -- . imov [imov! v0 0xFFFF]
-002D : 35FF; -- ' imoh
-002E : 68D0; -- . pop [pop!  t2 t1 t0]
-002F : 67D0; -- | pop
-0030 : 66D0; -- ' pop
-0031 : A020; --   jmpr
-0032 : 5D00; -- · push r0 [isr!]
-0033 : 60D0; -- . pop r0 [rti!]
-0034 : C000; -- ' rti
-0035 : DEAD; -- 0xDEAD
-0036 : BEEF; -- 0xBEEF
-0037 : ABCD; -- 0xABCD
-0038 : DCBA; -- 0xDCBA
+002B : A001; -- ' j_op
+002C : 9514; --   iadd  v0 1
+002D : 2021; -- . imov [jmp!  .arr_find_next]
+002E : 3000; -- | imoh
+002F : A000; -- ' j_op
+0030 : 25FF; -- . imov [imov! v0 0xFFFF]
+0031 : 35FF; -- ' imoh
+0032 : 68D0; -- . pop [pop!  t2 t1 t0]
+0033 : 67D0; -- | pop
+0034 : 66D0; -- ' pop
+0035 : A020; --   jmpr
+0036 : 5D60; -- . push [push! t0 t1]
+0037 : 5D70; -- ' push
+0038 : 2600; --   imov  t0 0
+0039 : 8637; --   cmp   t0 p2
+003A : 2044; -- . imov [jz!   .arr_memset_exit]
+003B : 3000; -- | imoh
+003C : A001; -- ' j_op
+003D : 8766; --   mov   t1 t0
+003E : 8714; --   add   t1 p0
+003F : 1720; --   str   t1 p1
+0040 : 9614; --   iadd  t0 1
+0041 : 2039; -- . imov [jmp!  .arr_memset_loop]
+0042 : 3000; -- | imoh
+0043 : A000; -- ' j_op
+0044 : 67D0; -- . pop [pop!  t1 t0]
+0045 : 66D0; -- ' pop
+0046 : A020; --   jmpr
+0047 : 5D00; -- · push r0 [isr!]
+0048 : 60D0; -- . pop r0 [rti!]
+0049 : C000; -- ' rti
 END;

@@ -5,9 +5,12 @@
     imov! p1 0xABCD
     imov! p2 4
 
-    call! .arr_find
+    call! .arr_memset
 
-    icmp! v0 2
+    imov! t0 .arr
+    iadd  t0 3
+    load  t0 t0
+    icmp! t0 0xABCD
     jz!   .correct
 
     halt
@@ -26,8 +29,4 @@
     isr!
     rti!
 
-.arr
-    0xDEAD
-    0xBEEF
-    0xABCD
-    0xDCBA
+.arr [4]

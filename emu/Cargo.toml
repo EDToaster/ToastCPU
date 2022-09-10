@@ -8,3 +8,6 @@ edition = "2021"
 [dependencies]
 regex = "1.6.0"
 crossterm = "0.23"
+
+[profile.release]
+opt-level = 2

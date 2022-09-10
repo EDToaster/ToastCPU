@@ -29,6 +29,7 @@ module alu (
         ADD = 4'h4,
         SUB = 4'h5,
         MOV = 4'h6,
+        CMP = 4'h7,
         SHR = 4'h8,
         SSHR= 4'h9,
         SHL = 4'hA;
@@ -48,7 +49,7 @@ module alu (
         else begin 
             case(operation)
                 ADD: V = (a[15] == b[15]) & (a[15] ^ agg[15]);
-                SUB: V = (a[15] ^ b[15]) & (a[15] != agg[15]);
+                SUB, CMP: V = (a[15] ^ b[15]) & (a[15] != agg[15]);
                 default: V = 1'b0;
             endcase
         end
@@ -59,7 +60,7 @@ module alu (
         if (alu_output_override != alu_output_override_t::none) begin C = 1'b0; end
         else begin 
             case(operation)
-                ADD, SUB: C = inter_agg[16];
+                ADD, SUB, CMP: C = inter_agg[16];
                 default: C = 1'b0;
             endcase
         end
@@ -84,7 +85,7 @@ module alu (
                 OR : inter_agg = a | b;
                 XOR: inter_agg = a ^ b;
                 ADD: inter_agg = a + b;
-                SUB: inter_agg = a - b;
+                SUB, CMP: inter_agg = a - b;
                 MOV: inter_agg = b;
                 SHR: inter_agg = a >> b;
                 SSHR:inter_agg = a >>> b;

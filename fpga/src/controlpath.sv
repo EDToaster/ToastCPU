@@ -90,6 +90,7 @@ module controlpath(
     cpu_state curr_state, next_state;
     
     wire [3:0] opcode = instruction[15:12];
+    wire [3:0] aluop = instruction[3:0];
     wire [3:0] jop = instruction[3:0];
     wire override_b = instruction[3];
     wire link_jump = instruction[4];
@@ -250,7 +251,7 @@ module controlpath(
             end
             
             op_alu: begin
-                reg_write = 1'b1;
+                reg_write = aluop != 4'b0111;
                 alu_set_flags = 1'b1;
                 set_pc = 1'b1;
                 alu_override_imm4 = opcode == 4'b1001;

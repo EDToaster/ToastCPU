@@ -25,7 +25,7 @@ pub struct VGA {
 
 impl VGA {
     pub fn new(width: usize, height: usize, stdout: Stdout) -> VGA {
-        return VGA {
+        VGA {
             width, height, 
             buffer: vec![0; width*height],
             stdout,

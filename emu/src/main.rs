@@ -117,7 +117,7 @@ impl IndexMut<u16> for Registers {
     }
 }
 
-fn parse_program(prog: &String) -> Vec<u16> {
+fn parse_program(prog: &str) -> Vec<u16> {
     let mut program: Vec<u16> = vec![0; ROM_SIZE];
 
     /*
@@ -136,7 +136,7 @@ fn parse_program(prog: &String) -> Vec<u16> {
 
     for line in prog.lines() {
         let cap_opt = line_matcher.captures(line);
-        if let None = cap_opt {
+        if cap_opt.is_none() {
             continue;
         }
 
@@ -198,8 +198,7 @@ fn alu(op: u16, a: i32, b: i32, sr: &mut StatusRegister) -> u16 {
         _ => (),
     }
 
-    let ret = (agg & 0xFFFF) as u16;
-    ret
+    (agg & 0xFFFF) as u16
 }
 
 #[allow(unused_variables)]

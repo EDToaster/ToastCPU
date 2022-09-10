@@ -67,7 +67,7 @@ impl Key {
                     code: KeyCode::Char(c),
                     modifiers: KeyModifiers::NONE,
                 }) => {
-                    if c >= 'a' && c <= 'z' {
+                    if ('a'..='z').contains(&c) {
                         self.irq(self.convert_to_scan_code(c as u8));
                     }
                 }

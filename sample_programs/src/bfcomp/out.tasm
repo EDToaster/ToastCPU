@@ -19,6 +19,7 @@
     imov! t0 .memory_table
     imov! t1 0
     
+    iadd  t0 1
     load t2 t0
     iadd  t2 13
     str  t0 t2
@@ -7348,7 +7349,7 @@
 .bf_label_end_554
     iadd  t0 1
     load t2 t0
-    iadd  t2 11
+    iadd  t2 10
     str  t0 t2
     load t1 t0
     tst  t1
@@ -8258,7 +8259,7 @@
 .bf_label_end_621
     iadd  t0 1
     load t2 t0
-    iadd  t2 10
+    iadd  t2 9
     str  t0 t2
     load t1 t0
     tst  t1
@@ -9151,4 +9152,5 @@
     tst  t1
     jnz! .bf_label_start_685
 .bf_label_end_685
+    isub  t0 3
     jmpr

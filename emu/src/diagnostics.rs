@@ -27,7 +27,9 @@ impl Diagnostics {
             self.prev_time = now;
             self.running_count = 0;
 
-            self.vga.lock().unwrap().put_dianostics(0, format!("{per_second} i/s").as_str());
+            let count = self.vga.lock().unwrap().write_count;
+
+            self.vga.lock().unwrap().put_dianostics(0, format!("{per_second} i/s {count}").as_str());
         }
     }
 }

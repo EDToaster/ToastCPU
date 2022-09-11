@@ -21,6 +21,8 @@ pub struct Vga {
     height: usize,
     buffer: Vec<u16>,
     stdout: Stdout,
+
+    pub write_count: u16,
 }
 
 impl Vga {
@@ -29,6 +31,7 @@ impl Vga {
             width, height, 
             buffer: vec![0; width*height],
             stdout,
+            write_count: 0
         }
     }
 
@@ -75,6 +78,7 @@ impl Vga {
         ).expect("Something went wrong writing to the virtual terminal!");
 
         self.buffer[offset] = val;
+        self.write_count += 1;
     }
 
     

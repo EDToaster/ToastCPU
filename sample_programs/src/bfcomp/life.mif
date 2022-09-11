@@ -1,0 +1,3017 @@
+DEPTH = 32768;                -- The size of memory in words
+WIDTH = 16;                   -- The size of data in bits
+ADDRESS_RADIX = HEX;          -- The radix for address values
+DATA_RADIX = HEX;             -- The radix for data values
+CONTENT                       -- start of (address : data pairs)
+BEGIN
+0000 : 2C09; -- . imov [imov! isr .isr]
+0001 : 3C00; -- ' imoh
+0002 : 200C; -- . imov r0 .print_init  [call! .print_init]
+0003 : 3000; -- | imoh r0 .print_init
+0004 : A010; -- ' jmpl
+0005 : 2087; -- . imov r0 .main  [call! .main]
+0006 : 3000; -- | imoh r0 .main
+0007 : A010; -- ' jmpl
+0008 : 7000; --   halt
+0009 : 5D00; -- · push r0 [isr!]
+000A : 60D0; -- . pop r0 [rti!]
+000B : C000; -- ' rti
+000C : 2600; --   imov    t0 0
+000D : 20FF; -- . imov [str!    .ptr_counter t0]
+000E : 30BF; -- | imoh
+000F : 1060; -- ' str
+0010 : 2664; -- . imov [imov!   t0 100]
+0011 : 3600; -- ' imoh
+0012 : 20FE; -- . imov [str!    .ptr_line_counter t0]
+0013 : 30BF; -- | imoh
+0014 : 1060; -- ' str
+0015 : A020; --   jmpr
+0016 : 5D60; -- . push [push!   t0 t1 p0]
+0017 : 5D70; -- | push
+0018 : 5D10; -- ' push
+0019 : 8616; --   mov     t0 p0   # t0 = str
+001A : 0760; --   load    t1 t0
+001B : 9704; --   iadd    t1 0    # if (t0 == '\0')
+001C : 2027; -- . imov [jz!     .print_string_exit]
+001D : 3000; -- | imoh
+001E : A001; -- ' j_op
+001F : 8176; --   mov     p0 t1
+0020 : 202B; -- . imov r0 .print_char  [call!   .print_char]
+0021 : 3000; -- | imoh r0 .print_char
+0022 : A010; -- ' jmpl
+0023 : 9614; --   iadd    t0 1    # t0++
+0024 : 201A; -- . imov [jmp!    .print_string_loop]
+0025 : 3000; -- | imoh
+0026 : A000; -- ' j_op
+0027 : 61D0; -- . pop [pop!    p0 t1 t0]
+0028 : 67D0; -- | pop
+0029 : 66D0; -- ' pop
+002A : A020; --   jmpr
+002B : 5D60; -- . push [push!   t0 t1 t2]
+002C : 5D70; -- | push
+002D : 5D80; -- ' push
+002E : 8616; --   mov     t0 p0                   # t0 = c
+002F : 96A7; --   icmp    t0 0x0A                 # if (t0 == '\n')
+0030 : 2042; -- . imov [jnz!    .print_char_keep_going]
+0031 : 3000; -- | imoh
+0032 : A002; -- ' j_op
+0033 : 27FF; -- . imov [load!   t1 .ptr_counter]
+0034 : 37BF; -- | imoh
+0035 : 0770; -- ' load
+0036 : 28FE; -- . imov [load!   t2 .ptr_line_counter]
+0037 : 38BF; -- | imoh
+0038 : 0880; -- ' load
+0039 : 8784; --   add     t1 t2
+003A : 20FF; -- . imov [str!    .ptr_counter t1]
+003B : 30BF; -- | imoh
+003C : 1070; -- ' str
+003D : 2864; -- . imov [imov!   t2 100]
+003E : 3800; -- ' imoh
+003F : 2056; -- . imov [jmp!    .print_char_store_and_exit]
+0040 : 3000; -- | imoh
+0041 : A000; -- ' j_op
+0042 : 28FF; -- . imov [load!   t2 .ptr_counter]
+0043 : 38BF; -- | imoh
+0044 : 0880; -- ' load
+0045 : 2738; --   imov    t1 0b00111000
+0046 : 978A; --   ishl    t1 8
+0047 : 8672; --   or      t0 t1
+0048 : 1860; --   str     t2 t0
+0049 : 9814; --   iadd    t2 1
+004A : 20FF; -- . imov [str!    .ptr_counter t2]
+004B : 30BF; -- | imoh
+004C : 1080; -- ' str
+004D : 28FE; -- . imov [load!   t2 .ptr_line_counter]
+004E : 38BF; -- | imoh
+004F : 0880; -- ' load
+0050 : 9815; --   isub    t2 1
+0051 : 2056; -- . imov [jnz!    .print_char_store_and_exit]
+0052 : 3000; -- | imoh
+0053 : A002; -- ' j_op
+0054 : 2864; -- . imov [imov!   t2 100]
+0055 : 3800; -- ' imoh
+0056 : 20FE; -- . imov [str!    .ptr_line_counter t2]
+0057 : 30BF; -- | imoh
+0058 : 1080; -- ' str
+0059 : 68D0; -- . pop [pop!    t2 t1 t0]
+005A : 67D0; -- | pop
+005B : 66D0; -- ' pop
+005C : A020; --   jmpr
+005D : 5D60; -- . push [push! t0 t1 t2]
+005E : 5D70; -- | push
+005F : 5D80; -- ' push
+0060 : 2500; --   imov  v0 0
+0061 : 8537; --   cmp   v0 p2
+0062 : 2070; -- . imov [jz!   .arr_find_set_not_found]
+0063 : 3000; -- | imoh
+0064 : A001; -- ' j_op
+0065 : 8716; --   mov   t1 p0
+0066 : 8754; --   add   t1 v0
+0067 : 0770; --   load  t1 t1
+0068 : 8727; --   cmp   t1 p1
+0069 : 2072; -- . imov [jz!   .arr_find_exit]
+006A : 3000; -- | imoh
+006B : A001; -- ' j_op
+006C : 9514; --   iadd  v0 1
+006D : 2061; -- . imov [jmp!  .arr_find_next]
+006E : 3000; -- | imoh
+006F : A000; -- ' j_op
+0070 : 25FF; -- . imov [imov! v0 0xFFFF]
+0071 : 35FF; -- ' imoh
+0072 : 68D0; -- . pop [pop!  t2 t1 t0]
+0073 : 67D0; -- | pop
+0074 : 66D0; -- ' pop
+0075 : A020; --   jmpr
+0076 : 5D60; -- . push [push! t0 t1]
+0077 : 5D70; -- ' push
+0078 : 2600; --   imov  t0 0
+0079 : 8637; --   cmp   t0 p2
+007A : 2084; -- . imov [jz!   .arr_memset_exit]
+007B : 3000; -- | imoh
+007C : A001; -- ' j_op
+007D : 8766; --   mov   t1 t0
+007E : 8714; --   add   t1 p0
+007F : 1720; --   str   t1 p1
+0080 : 9614; --   iadd  t0 1
+0081 : 2079; -- . imov [jmp!  .arr_memset_loop]
+0082 : 3000; -- | imoh
+0083 : A000; -- ' j_op
+0084 : 67D0; -- . pop [pop!  t1 t0]
+0085 : 66D0; -- ' pop
+0086 : A020; --   jmpr
+0087 : 26FE; -- . imov [imov! t0 .memory_table]
+0088 : 3697; -- ' imoh
+0089 : 2700; -- . imov [imov! t1 0]
+008A : 3700; -- ' imoh
+008B : 0860; --   load t2 t0
+008C : 9814; --   iadd  t2 1
+008D : 1680; --   str  t0 t2
+008E : 9624; --   iadd  t0 2
+008F : 0860; --   load t2 t0
+0090 : 9844; --   iadd  t2 4
+0091 : 1680; --   str  t0 t2
+0092 : 0760; --   load t1 t0
+0093 : 9707; --   tst  t1
+0094 : 20A4; -- . imov [jz! .bf_label_end_0]
+0095 : 3000; -- | imoh
+0096 : A001; -- ' j_op
+0097 : 9615; --   isub  t0 1
+0098 : 0860; --   load t2 t0
+0099 : 9844; --   iadd  t2 4
+009A : 1680; --   str  t0 t2
+009B : 9614; --   iadd  t0 1
+009C : 0860; --   load t2 t0
+009D : 9815; --   isub  t2 1
+009E : 1680; --   str  t0 t2
+009F : 0760; --   load t1 t0
+00A0 : 9707; --   tst  t1
+00A1 : 2097; -- . imov [jnz! .bf_label_start_0]
+00A2 : 3000; -- | imoh
+00A3 : A002; -- ' j_op
+00A4 : 9615; --   isub  t0 1
+00A5 : 0760; --   load t1 t0
+00A6 : 9707; --   tst  t1
+00A7 : 20B7; -- . imov [jz! .bf_label_end_1]
+00A8 : 3000; -- | imoh
+00A9 : A001; -- ' j_op
+00AA : 9615; --   isub  t0 1
+00AB : 0860; --   load t2 t0
+00AC : 9864; --   iadd  t2 6
+00AD : 1680; --   str  t0 t2
+00AE : 9614; --   iadd  t0 1
+00AF : 0860; --   load t2 t0
+00B0 : 9815; --   isub  t2 1
+00B1 : 1680; --   str  t0 t2
+00B2 : 0760; --   load t1 t0
+00B3 : 9707; --   tst  t1
+00B4 : 20AA; -- . imov [jnz! .bf_label_start_1]
+00B5 : 3000; -- | imoh
+00B6 : A002; -- ' j_op
+00B7 : 0860; --   load t2 t0
+00B8 : 9814; --   iadd  t2 1
+00B9 : 1680; --   str  t0 t2
+00BA : 0760; --   load t1 t0
+00BB : 9707; --   tst  t1
+00BC : 20C1; -- . imov [jz! .bf_label_end_157]
+00BD : 300B; -- | imoh
+00BE : A001; -- ' j_op
+00BF : 9615; --   isub  t0 1
+00C0 : 0760; --   load t1 t0
+00C1 : 9707; --   tst  t1
+00C2 : 20D2; -- . imov [jz! .bf_label_end_2]
+00C3 : 3000; -- | imoh
+00C4 : A001; -- ' j_op
+00C5 : 9644; --   iadd  t0 4
+00C6 : 0860; --   load t2 t0
+00C7 : 9814; --   iadd  t2 1
+00C8 : 1680; --   str  t0 t2
+00C9 : 9645; --   isub  t0 4
+00CA : 0860; --   load t2 t0
+00CB : 9815; --   isub  t2 1
+00CC : 1680; --   str  t0 t2
+00CD : 0760; --   load t1 t0
+00CE : 9707; --   tst  t1
+00CF : 20C5; -- . imov [jnz! .bf_label_start_2]
+00D0 : 3000; -- | imoh
+00D1 : A002; -- ' j_op
+00D2 : 9644; --   iadd  t0 4
+00D3 : 0760; --   load t1 t0
+00D4 : 9707; --   tst  t1
+00D5 : 20E9; -- . imov [jz! .bf_label_end_3]
+00D6 : 3000; -- | imoh
+00D7 : A001; -- ' j_op
+00D8 : 9645; --   isub  t0 4
+00D9 : 0860; --   load t2 t0
+00DA : 9814; --   iadd  t2 1
+00DB : 1680; --   str  t0 t2
+00DC : 9664; --   iadd  t0 6
+00DD : 0860; --   load t2 t0
+00DE : 9814; --   iadd  t2 1
+00DF : 1680; --   str  t0 t2
+00E0 : 9625; --   isub  t0 2
+00E1 : 0860; --   load t2 t0
+00E2 : 9815; --   isub  t2 1
+00E3 : 1680; --   str  t0 t2
+00E4 : 0760; --   load t1 t0
+00E5 : 9707; --   tst  t1
+00E6 : 20D8; -- . imov [jnz! .bf_label_start_3]
+00E7 : 3000; -- | imoh
+00E8 : A002; -- ' j_op
+00E9 : 9615; --   isub  t0 1
+00EA : 0860; --   load t2 t0
+00EB : 9844; --   iadd  t2 4
+00EC : 1680; --   str  t0 t2
+00ED : 0760; --   load t1 t0
+00EE : 9707; --   tst  t1
+00EF : 20FF; -- . imov [jz! .bf_label_end_4]
+00F0 : 3000; -- | imoh
+00F1 : A001; -- ' j_op
+00F2 : 9614; --   iadd  t0 1
+00F3 : 0860; --   load t2 t0
+00F4 : 9884; --   iadd  t2 8
+00F5 : 1680; --   str  t0 t2
+00F6 : 9615; --   isub  t0 1
+00F7 : 0860; --   load t2 t0
+00F8 : 9815; --   isub  t2 1
+00F9 : 1680; --   str  t0 t2
+00FA : 0760; --   load t1 t0
+00FB : 9707; --   tst  t1
+00FC : 20F2; -- . imov [jnz! .bf_label_start_4]
+00FD : 3000; -- | imoh
+00FE : A002; -- ' j_op
+00FF : 9614; --   iadd  t0 1
+0100 : 0160; --   load p0 t0
+0101 : 202B; -- . imov r0 .print_char  [call! .print_char]
+0102 : 3000; -- | imoh r0 .print_char
+0103 : A010; -- ' jmpl
+0104 : 1690; --   str  t0 t3
+0105 : 9615; --   isub  t0 1
+0106 : 0860; --   load t2 t0
+0107 : 9834; --   iadd  t2 3
+0108 : 1680; --   str  t0 t2
+0109 : 0760; --   load t1 t0
+010A : 9707; --   tst  t1
+010B : 201B; -- . imov [jz! .bf_label_end_6]
+010C : 3001; -- | imoh
+010D : A001; -- ' j_op
+010E : 9614; --   iadd  t0 1
+010F : 0860; --   load t2 t0
+0110 : 9834; --   iadd  t2 3
+0111 : 1680; --   str  t0 t2
+0112 : 9615; --   isub  t0 1
+0113 : 0860; --   load t2 t0
+0114 : 9815; --   isub  t2 1
+0115 : 1680; --   str  t0 t2
+0116 : 0760; --   load t1 t0
+0117 : 9707; --   tst  t1
+0118 : 200E; -- . imov [jnz! .bf_label_start_6]
+0119 : 3001; -- | imoh
+011A : A002; -- ' j_op
+011B : 9614; --   iadd  t0 1
+011C : 0860; --   load t2 t0
+011D : 9814; --   iadd  t2 1
+011E : 1680; --   str  t0 t2
+011F : 0760; --   load t1 t0
+0120 : 9707; --   tst  t1
+0121 : 2035; -- . imov [jz! .bf_label_end_7]
+0122 : 3001; -- | imoh
+0123 : A001; -- ' j_op
+0124 : 9624; --   iadd  t0 2
+0125 : 0160; --   load p0 t0
+0126 : 202B; -- . imov r0 .print_char  [call! .print_char]
+0127 : 3000; -- | imoh r0 .print_char
+0128 : A010; -- ' jmpl
+0129 : 0860; --   load t2 t0
+012A : 9814; --   iadd  t2 1
+012B : 1680; --   str  t0 t2
+012C : 9625; --   isub  t0 2
+012D : 0860; --   load t2 t0
+012E : 9815; --   isub  t2 1
+012F : 1680; --   str  t0 t2
+0130 : 0760; --   load t1 t0
+0131 : 9707; --   tst  t1
+0132 : 2024; -- . imov [jnz! .bf_label_start_7]
+0133 : 3001; -- | imoh
+0134 : A002; -- ' j_op
+0135 : 9624; --   iadd  t0 2
+0136 : 1690; --   str  t0 t3
+0137 : 9635; --   isub  t0 3
+0138 : 0860; --   load t2 t0
+0139 : 9824; --   iadd  t2 2
+013A : 1680; --   str  t0 t2
+013B : 0760; --   load t1 t0
+013C : 9707; --   tst  t1
+013D : 204D; -- . imov [jz! .bf_label_end_9]
+013E : 3001; -- | imoh
+013F : A001; -- ' j_op
+0140 : 9615; --   isub  t0 1
+0141 : 0860; --   load t2 t0
+0142 : 9854; --   iadd  t2 5
+0143 : 1680; --   str  t0 t2
+0144 : 9614; --   iadd  t0 1
+0145 : 0860; --   load t2 t0
+0146 : 9815; --   isub  t2 1
+0147 : 1680; --   str  t0 t2
+0148 : 0760; --   load t1 t0
+0149 : 9707; --   tst  t1
+014A : 2040; -- . imov [jnz! .bf_label_start_9]
+014B : 3001; -- | imoh
+014C : A002; -- ' j_op
+014D : 9615; --   isub  t0 1
+014E : 0160; --   load p0 t0
+014F : 202B; -- . imov r0 .print_char  [call! .print_char]
+0150 : 3000; -- | imoh r0 .print_char
+0151 : A010; -- ' jmpl
+0152 : 9625; --   isub  t0 2
+0153 : 0760; --   load t1 t0
+0154 : 9707; --   tst  t1
+0155 : 2065; -- . imov [jz! .bf_label_end_10]
+0156 : 3001; -- | imoh
+0157 : A001; -- ' j_op
+0158 : 9644; --   iadd  t0 4
+0159 : 0860; --   load t2 t0
+015A : 9814; --   iadd  t2 1
+015B : 1680; --   str  t0 t2
+015C : 9645; --   isub  t0 4
+015D : 0860; --   load t2 t0
+015E : 9815; --   isub  t2 1
+015F : 1680; --   str  t0 t2
+0160 : 0760; --   load t1 t0
+0161 : 9707; --   tst  t1
+0162 : 2058; -- . imov [jnz! .bf_label_start_10]
+0163 : 3001; -- | imoh
+0164 : A002; -- ' j_op
+0165 : 9644; --   iadd  t0 4
+0166 : 0760; --   load t1 t0
+0167 : 9707; --   tst  t1
+0168 : 207C; -- . imov [jz! .bf_label_end_11]
+0169 : 3001; -- | imoh
+016A : A001; -- ' j_op
+016B : 9645; --   isub  t0 4
+016C : 0860; --   load t2 t0
+016D : 9814; --   iadd  t2 1
+016E : 1680; --   str  t0 t2
+016F : 9664; --   iadd  t0 6
+0170 : 0860; --   load t2 t0
+0171 : 9814; --   iadd  t2 1
+0172 : 1680; --   str  t0 t2
+0173 : 9625; --   isub  t0 2
+0174 : 0860; --   load t2 t0
+0175 : 9815; --   isub  t2 1
+0176 : 1680; --   str  t0 t2
+0177 : 0760; --   load t1 t0
+0178 : 9707; --   tst  t1
+0179 : 206B; -- . imov [jnz! .bf_label_start_11]
+017A : 3001; -- | imoh
+017B : A002; -- ' j_op
+017C : 9625; --   isub  t0 2
+017D : 0760; --   load t1 t0
+017E : 9707; --   tst  t1
+017F : 20EF; -- . imov [jz! .bf_label_end_31]
+0180 : 3002; -- | imoh
+0181 : A001; -- ' j_op
+0182 : 9644; --   iadd  t0 4
+0183 : 0160; --   load p0 t0
+0184 : 202B; -- . imov r0 .print_char  [call! .print_char]
+0185 : 3000; -- | imoh r0 .print_char
+0186 : A010; -- ' jmpl
+0187 : 0860; --   load t2 t0
+0188 : 9814; --   iadd  t2 1
+0189 : 1680; --   str  t0 t2
+018A : 9635; --   isub  t0 3
+018B : 0860; --   load t2 t0
+018C : 98A4; --   iadd  t2 10
+018D : 1680; --   str  t0 t2
+018E : 0760; --   load t1 t0
+018F : 9707; --   tst  t1
+0190 : 20DE; -- . imov [jz! .bf_label_end_29]
+0191 : 3002; -- | imoh
+0192 : A001; -- ' j_op
+0193 : 9615; --   isub  t0 1
+0194 : 0760; --   load t1 t0
+0195 : 9707; --   tst  t1
+0196 : 20A6; -- . imov [jz! .bf_label_end_12]
+0197 : 3001; -- | imoh
+0198 : A001; -- ' j_op
+0199 : 9624; --   iadd  t0 2
+019A : 0860; --   load t2 t0
+019B : 9814; --   iadd  t2 1
+019C : 1680; --   str  t0 t2
+019D : 9625; --   isub  t0 2
+019E : 0860; --   load t2 t0
+019F : 9815; --   isub  t2 1
+01A0 : 1680; --   str  t0 t2
+01A1 : 0760; --   load t1 t0
+01A2 : 9707; --   tst  t1
+01A3 : 2099; -- . imov [jnz! .bf_label_start_12]
+01A4 : 3001; -- | imoh
+01A5 : A002; -- ' j_op
+01A6 : 9624; --   iadd  t0 2
+01A7 : 0760; --   load t1 t0
+01A8 : 9707; --   tst  t1
+01A9 : 20BD; -- . imov [jz! .bf_label_end_13]
+01AA : 3001; -- | imoh
+01AB : A001; -- ' j_op
+01AC : 9625; --   isub  t0 2
+01AD : 0860; --   load t2 t0
+01AE : 9814; --   iadd  t2 1
+01AF : 1680; --   str  t0 t2
+01B0 : 9654; --   iadd  t0 5
+01B1 : 0860; --   load t2 t0
+01B2 : 98B4; --   iadd  t2 11
+01B3 : 1680; --   str  t0 t2
+01B4 : 9635; --   isub  t0 3
+01B5 : 0860; --   load t2 t0
+01B6 : 9815; --   isub  t2 1
+01B7 : 1680; --   str  t0 t2
+01B8 : 0760; --   load t1 t0
+01B9 : 9707; --   tst  t1
+01BA : 20AC; -- . imov [jnz! .bf_label_start_13]
+01BB : 3001; -- | imoh
+01BC : A002; -- ' j_op
+01BD : 9615; --   isub  t0 1
+01BE : 0760; --   load t1 t0
+01BF : 9707; --   tst  t1
+01C0 : 20D0; -- . imov [jz! .bf_label_end_14]
+01C1 : 3001; -- | imoh
+01C2 : A001; -- ' j_op
+01C3 : 9614; --   iadd  t0 1
+01C4 : 0860; --   load t2 t0
+01C5 : 9814; --   iadd  t2 1
+01C6 : 1680; --   str  t0 t2
+01C7 : 9615; --   isub  t0 1
+01C8 : 0860; --   load t2 t0
+01C9 : 9815; --   isub  t2 1
+01CA : 1680; --   str  t0 t2
+01CB : 0760; --   load t1 t0
+01CC : 9707; --   tst  t1
+01CD : 20C3; -- . imov [jnz! .bf_label_start_14]
+01CE : 3001; -- | imoh
+01CF : A002; -- ' j_op
+01D0 : 9614; --   iadd  t0 1
+01D1 : 0760; --   load t1 t0
+01D2 : 9707; --   tst  t1
+01D3 : 20E7; -- . imov [jz! .bf_label_end_15]
+01D4 : 3001; -- | imoh
+01D5 : A001; -- ' j_op
+01D6 : 9615; --   isub  t0 1
+01D7 : 0860; --   load t2 t0
+01D8 : 9814; --   iadd  t2 1
+01D9 : 1680; --   str  t0 t2
+01DA : 9644; --   iadd  t0 4
+01DB : 0860; --   load t2 t0
+01DC : 9814; --   iadd  t2 1
+01DD : 1680; --   str  t0 t2
+01DE : 9635; --   isub  t0 3
+01DF : 0860; --   load t2 t0
+01E0 : 9815; --   isub  t2 1
+01E1 : 1680; --   str  t0 t2
+01E2 : 0760; --   load t1 t0
+01E3 : 9707; --   tst  t1
+01E4 : 20D6; -- . imov [jnz! .bf_label_start_15]
+01E5 : 3001; -- | imoh
+01E6 : A002; -- ' j_op
+01E7 : 9634; --   iadd  t0 3
+01E8 : 0760; --   load t1 t0
+01E9 : 9707; --   tst  t1
+01EA : 20FE; -- . imov [jz! .bf_label_end_16]
+01EB : 3001; -- | imoh
+01EC : A001; -- ' j_op
+01ED : 96C4; --   iadd  t0 12
+01EE : 0860; --   load t2 t0
+01EF : 9814; --   iadd  t2 1
+01F0 : 1680; --   str  t0 t2
+01F1 : 9614; --   iadd  t0 1
+01F2 : 0860; --   load t2 t0
+01F3 : 9814; --   iadd  t2 1
+01F4 : 1680; --   str  t0 t2
+01F5 : 96D5; --   isub  t0 13
+01F6 : 0860; --   load t2 t0
+01F7 : 9815; --   isub  t2 1
+01F8 : 1680; --   str  t0 t2
+01F9 : 0760; --   load t1 t0
+01FA : 9707; --   tst  t1
+01FB : 20ED; -- . imov [jnz! .bf_label_start_16]
+01FC : 3001; -- | imoh
+01FD : A002; -- ' j_op
+01FE : 96C4; --   iadd  t0 12
+01FF : 0760; --   load t1 t0
+0200 : 9707; --   tst  t1
+0201 : 2032; -- . imov [jz! .bf_label_end_19]
+0202 : 3002; -- | imoh
+0203 : A001; -- ' j_op
+0204 : 0860; --   load t2 t0
+0205 : 9815; --   isub  t2 1
+0206 : 1680; --   str  t0 t2
+0207 : 0760; --   load t1 t0
+0208 : 9707; --   tst  t1
+0209 : 2019; -- . imov [jz! .bf_label_end_17]
+020A : 3002; -- | imoh
+020B : A001; -- ' j_op
+020C : 9644; --   iadd  t0 4
+020D : 0860; --   load t2 t0
+020E : 9814; --   iadd  t2 1
+020F : 1680; --   str  t0 t2
+0210 : 9645; --   isub  t0 4
+0211 : 0860; --   load t2 t0
+0212 : 9815; --   isub  t2 1
+0213 : 1680; --   str  t0 t2
+0214 : 0760; --   load t1 t0
+0215 : 9707; --   tst  t1
+0216 : 200C; -- . imov [jnz! .bf_label_start_17]
+0217 : 3002; -- | imoh
+0218 : A002; -- ' j_op
+0219 : 9614; --   iadd  t0 1
+021A : 0760; --   load t1 t0
+021B : 9707; --   tst  t1
+021C : 202C; -- . imov [jz! .bf_label_end_18]
+021D : 3002; -- | imoh
+021E : A001; -- ' j_op
+021F : 9644; --   iadd  t0 4
+0220 : 0860; --   load t2 t0
+0221 : 9814; --   iadd  t2 1
+0222 : 1680; --   str  t0 t2
+0223 : 9645; --   isub  t0 4
+0224 : 0860; --   load t2 t0
+0225 : 9815; --   isub  t2 1
+0226 : 1680; --   str  t0 t2
+0227 : 0760; --   load t1 t0
+0228 : 9707; --   tst  t1
+0229 : 201F; -- . imov [jnz! .bf_label_start_18]
+022A : 3002; -- | imoh
+022B : A002; -- ' j_op
+022C : 9634; --   iadd  t0 3
+022D : 0760; --   load t1 t0
+022E : 9707; --   tst  t1
+022F : 2004; -- . imov [jnz! .bf_label_start_19]
+0230 : 3002; -- | imoh
+0231 : A002; -- ' j_op
+0232 : 9634; --   iadd  t0 3
+0233 : 0760; --   load t1 t0
+0234 : 9707; --   tst  t1
+0235 : 2045; -- . imov [jz! .bf_label_end_20]
+0236 : 3002; -- | imoh
+0237 : A001; -- ' j_op
+0238 : 9635; --   isub  t0 3
+0239 : 0860; --   load t2 t0
+023A : 9814; --   iadd  t2 1
+023B : 1680; --   str  t0 t2
+023C : 9634; --   iadd  t0 3
+023D : 0860; --   load t2 t0
+023E : 9815; --   isub  t2 1
+023F : 1680; --   str  t0 t2
+0240 : 0760; --   load t1 t0
+0241 : 9707; --   tst  t1
+0242 : 2038; -- . imov [jnz! .bf_label_start_20]
+0243 : 3002; -- | imoh
+0244 : A002; -- ' j_op
+0245 : 9635; --   isub  t0 3
+0246 : 0760; --   load t1 t0
+0247 : 9707; --   tst  t1
+0248 : 205C; -- . imov [jz! .bf_label_end_21]
+0249 : 3002; -- | imoh
+024A : A001; -- ' j_op
+024B : 9624; --   iadd  t0 2
+024C : 0860; --   load t2 t0
+024D : 9814; --   iadd  t2 1
+024E : 1680; --   str  t0 t2
+024F : 9614; --   iadd  t0 1
+0250 : 0860; --   load t2 t0
+0251 : 9814; --   iadd  t2 1
+0252 : 1680; --   str  t0 t2
+0253 : 9635; --   isub  t0 3
+0254 : 0860; --   load t2 t0
+0255 : 9815; --   isub  t2 1
+0256 : 1680; --   str  t0 t2
+0257 : 0760; --   load t1 t0
+0258 : 9707; --   tst  t1
+0259 : 204B; -- . imov [jnz! .bf_label_start_21]
+025A : 3002; -- | imoh
+025B : A002; -- ' j_op
+025C : 9614; --   iadd  t0 1
+025D : 0760; --   load t1 t0
+025E : 9707; --   tst  t1
+025F : 2091; -- . imov [jz! .bf_label_end_24]
+0260 : 3002; -- | imoh
+0261 : A001; -- ' j_op
+0262 : 0860; --   load t2 t0
+0263 : 9815; --   isub  t2 1
+0264 : 1680; --   str  t0 t2
+0265 : 9614; --   iadd  t0 1
+0266 : 0760; --   load t1 t0
+0267 : 9707; --   tst  t1
+0268 : 2078; -- . imov [jz! .bf_label_end_22]
+0269 : 3002; -- | imoh
+026A : A001; -- ' j_op
+026B : 9645; --   isub  t0 4
+026C : 0860; --   load t2 t0
+026D : 9814; --   iadd  t2 1
+026E : 1680; --   str  t0 t2
+026F : 9644; --   iadd  t0 4
+0270 : 0860; --   load t2 t0
+0271 : 9815; --   isub  t2 1
+0272 : 1680; --   str  t0 t2
+0273 : 0760; --   load t1 t0
+0274 : 9707; --   tst  t1
+0275 : 206B; -- . imov [jnz! .bf_label_start_22]
+0276 : 3002; -- | imoh
+0277 : A002; -- ' j_op
+0278 : 9615; --   isub  t0 1
+0279 : 0760; --   load t1 t0
+027A : 9707; --   tst  t1
+027B : 208B; -- . imov [jz! .bf_label_end_23]
+027C : 3002; -- | imoh
+027D : A001; -- ' j_op
+027E : 9645; --   isub  t0 4
+027F : 0860; --   load t2 t0
+0280 : 9814; --   iadd  t2 1
+0281 : 1680; --   str  t0 t2
+0282 : 9644; --   iadd  t0 4
+0283 : 0860; --   load t2 t0
+0284 : 9815; --   isub  t2 1
+0285 : 1680; --   str  t0 t2
+0286 : 0760; --   load t1 t0
+0287 : 9707; --   tst  t1
+0288 : 207E; -- . imov [jnz! .bf_label_start_23]
+0289 : 3002; -- | imoh
+028A : A002; -- ' j_op
+028B : 9645; --   isub  t0 4
+028C : 0760; --   load t1 t0
+028D : 9707; --   tst  t1
+028E : 2062; -- . imov [jnz! .bf_label_start_24]
+028F : 3002; -- | imoh
+0290 : A002; -- ' j_op
+0291 : 9615; --   isub  t0 1
+0292 : 0860; --   load t2 t0
+0293 : 9894; --   iadd  t2 9
+0294 : 1680; --   str  t0 t2
+0295 : 0760; --   load t1 t0
+0296 : 9707; --   tst  t1
+0297 : 20A7; -- . imov [jz! .bf_label_end_25]
+0298 : 3002; -- | imoh
+0299 : A001; -- ' j_op
+029A : 9614; --   iadd  t0 1
+029B : 0860; --   load t2 t0
+029C : 9854; --   iadd  t2 5
+029D : 1680; --   str  t0 t2
+029E : 9615; --   isub  t0 1
+029F : 0860; --   load t2 t0
+02A0 : 9815; --   isub  t2 1
+02A1 : 1680; --   str  t0 t2
+02A2 : 0760; --   load t1 t0
+02A3 : 9707; --   tst  t1
+02A4 : 209A; -- . imov [jnz! .bf_label_start_25]
+02A5 : 3002; -- | imoh
+02A6 : A002; -- ' j_op
+02A7 : 9624; --   iadd  t0 2
+02A8 : 0760; --   load t1 t0
+02A9 : 9707; --   tst  t1
+02AA : 20BA; -- . imov [jz! .bf_label_end_26]
+02AB : 3002; -- | imoh
+02AC : A001; -- ' j_op
+02AD : 9625; --   isub  t0 2
+02AE : 0860; --   load t2 t0
+02AF : 9814; --   iadd  t2 1
+02B0 : 1680; --   str  t0 t2
+02B1 : 9624; --   iadd  t0 2
+02B2 : 0860; --   load t2 t0
+02B3 : 9815; --   isub  t2 1
+02B4 : 1680; --   str  t0 t2
+02B5 : 0760; --   load t1 t0
+02B6 : 9707; --   tst  t1
+02B7 : 20AD; -- . imov [jnz! .bf_label_start_26]
+02B8 : 3002; -- | imoh
+02B9 : A002; -- ' j_op
+02BA : 9625; --   isub  t0 2
+02BB : 0760; --   load t1 t0
+02BC : 9707; --   tst  t1
+02BD : 20CD; -- . imov [jz! .bf_label_end_27]
+02BE : 3002; -- | imoh
+02BF : A001; -- ' j_op
+02C0 : 9614; --   iadd  t0 1
+02C1 : 0860; --   load t2 t0
+02C2 : 9835; --   isub  t2 3
+02C3 : 1680; --   str  t0 t2
+02C4 : 9615; --   isub  t0 1
+02C5 : 0860; --   load t2 t0
+02C6 : 9815; --   isub  t2 1
+02C7 : 1680; --   str  t0 t2
+02C8 : 0760; --   load t1 t0
+02C9 : 9707; --   tst  t1
+02CA : 20C0; -- . imov [jnz! .bf_label_start_27]
+02CB : 3002; -- | imoh
+02CC : A002; -- ' j_op
+02CD : 9614; --   iadd  t0 1
+02CE : 0160; --   load p0 t0
+02CF : 202B; -- . imov r0 .print_char  [call! .print_char]
+02D0 : 3000; -- | imoh r0 .print_char
+02D1 : A010; -- ' jmpl
+02D2 : 1690; --   str  t0 t3
+02D3 : 2711; -- . imov [imov! t1 17]
+02D4 : 3700; -- ' imoh
+02D5 : 8675; --   sub  t0 t1
+02D6 : 0860; --   load t2 t0
+02D7 : 9815; --   isub  t2 1
+02D8 : 1680; --   str  t0 t2
+02D9 : 0760; --   load t1 t0
+02DA : 9707; --   tst  t1
+02DB : 2093; -- . imov [jnz! .bf_label_start_29]
+02DC : 3001; -- | imoh
+02DD : A002; -- ' j_op
+02DE : 0860; --   load t2 t0
+02DF : 98A4; --   iadd  t2 10
+02E0 : 1680; --   str  t0 t2
+02E1 : 0160; --   load p0 t0
+02E2 : 202B; -- . imov r0 .print_char  [call! .print_char]
+02E3 : 3000; -- | imoh r0 .print_char
+02E4 : A010; -- ' jmpl
+02E5 : 1690; --   str  t0 t3
+02E6 : 9615; --   isub  t0 1
+02E7 : 0860; --   load t2 t0
+02E8 : 9815; --   isub  t2 1
+02E9 : 1680; --   str  t0 t2
+02EA : 0760; --   load t1 t0
+02EB : 9707; --   tst  t1
+02EC : 2082; -- . imov [jnz! .bf_label_start_31]
+02ED : 3001; -- | imoh
+02EE : A002; -- ' j_op
+02EF : 9644; --   iadd  t0 4
+02F0 : 1690; --   str  t0 t3
+02F1 : 9615; --   isub  t0 1
+02F2 : 1690; --   str  t0 t3
+02F3 : 0860; --   load t2 t0
+02F4 : 9884; --   iadd  t2 8
+02F5 : 1680; --   str  t0 t2
+02F6 : 0760; --   load t1 t0
+02F7 : 9707; --   tst  t1
+02F8 : 2008; -- . imov [jz! .bf_label_end_34]
+02F9 : 3003; -- | imoh
+02FA : A001; -- ' j_op
+02FB : 9614; --   iadd  t0 1
+02FC : 0860; --   load t2 t0
+02FD : 9884; --   iadd  t2 8
+02FE : 1680; --   str  t0 t2
+02FF : 9615; --   isub  t0 1
+0300 : 0860; --   load t2 t0
+0301 : 9815; --   isub  t2 1
+0302 : 1680; --   str  t0 t2
+0303 : 0760; --   load t1 t0
+0304 : 9707; --   tst  t1
+0305 : 20FB; -- . imov [jnz! .bf_label_start_34]
+0306 : 3002; -- | imoh
+0307 : A002; -- ' j_op
+0308 : 9614; --   iadd  t0 1
+0309 : 0860; --   load t2 t0
+030A : 9825; --   isub  t2 2
+030B : 1680; --   str  t0 t2
+030C : 0160; --   load p0 t0
+030D : 202B; -- . imov r0 .print_char  [call! .print_char]
+030E : 3000; -- | imoh r0 .print_char
+030F : A010; -- ' jmpl
+0310 : 1690; --   str  t0 t3
+0311 : 9615; --   isub  t0 1
+0312 : 0860; --   load t2 t0
+0313 : 98A5; --   isub  t2 10
+0314 : 1680; --   str  t0 t2
+0315 : 0760; --   load t1 t0
+0316 : 9707; --   tst  t1
+0317 : 2027; -- . imov [jz! .bf_label_end_36]
+0318 : 3003; -- | imoh
+0319 : A001; -- ' j_op
+031A : 9615; --   isub  t0 1
+031B : 0860; --   load t2 t0
+031C : 9814; --   iadd  t2 1
+031D : 1680; --   str  t0 t2
+031E : 9614; --   iadd  t0 1
+031F : 0860; --   load t2 t0
+0320 : 9815; --   isub  t2 1
+0321 : 1680; --   str  t0 t2
+0322 : 0760; --   load t1 t0
+0323 : 9707; --   tst  t1
+0324 : 201A; -- . imov [jnz! .bf_label_start_36]
+0325 : 3003; -- | imoh
+0326 : A002; -- ' j_op
+0327 : 9664; --   iadd  t0 6
+0328 : 0860; --   load t2 t0
+0329 : 9814; --   iadd  t2 1
+032A : 1680; --   str  t0 t2
+032B : 9675; --   isub  t0 7
+032C : 0760; --   load t1 t0
+032D : 9707; --   tst  t1
+032E : 2044; -- . imov [jz! .bf_label_end_38]
+032F : 3003; -- | imoh
+0330 : A001; -- ' j_op
+0331 : 9614; --   iadd  t0 1
+0332 : 0860; --   load t2 t0
+0333 : 9814; --   iadd  t2 1
+0334 : 1680; --   str  t0 t2
+0335 : 9654; --   iadd  t0 5
+0336 : 0860; --   load t2 t0
+0337 : 9814; --   iadd  t2 1
+0338 : 1680; --   str  t0 t2
+0339 : 9614; --   iadd  t0 1
+033A : 1690; --   str  t0 t3
+033B : 9675; --   isub  t0 7
+033C : 0860; --   load t2 t0
+033D : 9815; --   isub  t2 1
+033E : 1680; --   str  t0 t2
+033F : 0760; --   load t1 t0
+0340 : 9707; --   tst  t1
+0341 : 2031; -- . imov [jnz! .bf_label_start_38]
+0342 : 3003; -- | imoh
+0343 : A002; -- ' j_op
+0344 : 9614; --   iadd  t0 1
+0345 : 0860; --   load t2 t0
+0346 : 98A4; --   iadd  t2 10
+0347 : 1680; --   str  t0 t2
+0348 : 9654; --   iadd  t0 5
+0349 : 0760; --   load t1 t0
+034A : 9707; --   tst  t1
+034B : 20E6; -- . imov [jz! .bf_label_end_61]
+034C : 3004; -- | imoh
+034D : A001; -- ' j_op
+034E : 1690; --   str  t0 t3
+034F : 9695; --   isub  t0 9
+0350 : 0860; --   load t2 t0
+0351 : 9815; --   isub  t2 1
+0352 : 1680; --   str  t0 t2
+0353 : 9674; --   iadd  t0 7
+0354 : 0760; --   load t1 t0
+0355 : 9707; --   tst  t1
+0356 : 2066; -- . imov [jz! .bf_label_end_40]
+0357 : 3003; -- | imoh
+0358 : A001; -- ' j_op
+0359 : 9645; --   isub  t0 4
+035A : 0860; --   load t2 t0
+035B : 9814; --   iadd  t2 1
+035C : 1680; --   str  t0 t2
+035D : 9644; --   iadd  t0 4
+035E : 0860; --   load t2 t0
+035F : 9815; --   isub  t2 1
+0360 : 1680; --   str  t0 t2
+0361 : 0760; --   load t1 t0
+0362 : 9707; --   tst  t1
+0363 : 2059; -- . imov [jnz! .bf_label_start_40]
+0364 : 3003; -- | imoh
+0365 : A002; -- ' j_op
+0366 : 9645; --   isub  t0 4
+0367 : 0760; --   load t1 t0
+0368 : 9707; --   tst  t1
+0369 : 207D; -- . imov [jz! .bf_label_end_41]
+036A : 3003; -- | imoh
+036B : A001; -- ' j_op
+036C : 9644; --   iadd  t0 4
+036D : 0860; --   load t2 t0
+036E : 9814; --   iadd  t2 1
+036F : 1680; --   str  t0 t2
+0370 : 9614; --   iadd  t0 1
+0371 : 0860; --   load t2 t0
+0372 : 9814; --   iadd  t2 1
+0373 : 1680; --   str  t0 t2
+0374 : 9655; --   isub  t0 5
+0375 : 0860; --   load t2 t0
+0376 : 9815; --   isub  t2 1
+0377 : 1680; --   str  t0 t2
+0378 : 0760; --   load t1 t0
+0379 : 9707; --   tst  t1
+037A : 206C; -- . imov [jnz! .bf_label_start_41]
+037B : 3003; -- | imoh
+037C : A002; -- ' j_op
+037D : 9654; --   iadd  t0 5
+037E : 0860; --   load t2 t0
+037F : 98A5; --   isub  t2 10
+0380 : 1680; --   str  t0 t2
+0381 : 0760; --   load t1 t0
+0382 : 9707; --   tst  t1
+0383 : 20E0; -- . imov [jz! .bf_label_end_60]
+0384 : 3004; -- | imoh
+0385 : A001; -- ' j_op
+0386 : 9685; --   isub  t0 8
+0387 : 0860; --   load t2 t0
+0388 : 9814; --   iadd  t2 1
+0389 : 1680; --   str  t0 t2
+038A : 9615; --   isub  t0 1
+038B : 0760; --   load t1 t0
+038C : 9707; --   tst  t1
+038D : 209D; -- . imov [jz! .bf_label_end_42]
+038E : 3003; -- | imoh
+038F : A001; -- ' j_op
+0390 : 9644; --   iadd  t0 4
+0391 : 0860; --   load t2 t0
+0392 : 9814; --   iadd  t2 1
+0393 : 1680; --   str  t0 t2
+0394 : 9645; --   isub  t0 4
+0395 : 0860; --   load t2 t0
+0396 : 9815; --   isub  t2 1
+0397 : 1680; --   str  t0 t2
+0398 : 0760; --   load t1 t0
+0399 : 9707; --   tst  t1
+039A : 2090; -- . imov [jnz! .bf_label_start_42]
+039B : 3003; -- | imoh
+039C : A002; -- ' j_op
+039D : 9644; --   iadd  t0 4
+039E : 0760; --   load t1 t0
+039F : 9707; --   tst  t1
+03A0 : 20B4; -- . imov [jz! .bf_label_end_43]
+03A1 : 3003; -- | imoh
+03A2 : A001; -- ' j_op
+03A3 : 9645; --   isub  t0 4
+03A4 : 0860; --   load t2 t0
+03A5 : 9814; --   iadd  t2 1
+03A6 : 1680; --   str  t0 t2
+03A7 : 9664; --   iadd  t0 6
+03A8 : 0860; --   load t2 t0
+03A9 : 9814; --   iadd  t2 1
+03AA : 1680; --   str  t0 t2
+03AB : 9625; --   isub  t0 2
+03AC : 0860; --   load t2 t0
+03AD : 9815; --   isub  t2 1
+03AE : 1680; --   str  t0 t2
+03AF : 0760; --   load t1 t0
+03B0 : 9707; --   tst  t1
+03B1 : 20A3; -- . imov [jnz! .bf_label_start_43]
+03B2 : 3003; -- | imoh
+03B3 : A002; -- ' j_op
+03B4 : 9614; --   iadd  t0 1
+03B5 : 0760; --   load t1 t0
+03B6 : 9707; --   tst  t1
+03B7 : 20C7; -- . imov [jz! .bf_label_end_44]
+03B8 : 3003; -- | imoh
+03B9 : A001; -- ' j_op
+03BA : 9614; --   iadd  t0 1
+03BB : 0860; --   load t2 t0
+03BC : 9815; --   isub  t2 1
+03BD : 1680; --   str  t0 t2
+03BE : 9615; --   isub  t0 1
+03BF : 0860; --   load t2 t0
+03C0 : 9815; --   isub  t2 1
+03C1 : 1680; --   str  t0 t2
+03C2 : 0760; --   load t1 t0
+03C3 : 9707; --   tst  t1
+03C4 : 20BA; -- . imov [jnz! .bf_label_start_44]
+03C5 : 3003; -- | imoh
+03C6 : A002; -- ' j_op
+03C7 : 9614; --   iadd  t0 1
+03C8 : 0860; --   load t2 t0
+03C9 : 98A4; --   iadd  t2 10
+03CA : 1680; --   str  t0 t2
+03CB : 0760; --   load t1 t0
+03CC : 9707; --   tst  t1
+03CD : 20DD; -- . imov [jz! .bf_label_end_45]
+03CE : 3003; -- | imoh
+03CF : A001; -- ' j_op
+03D0 : 9614; --   iadd  t0 1
+03D1 : 0860; --   load t2 t0
+03D2 : 98B4; --   iadd  t2 11
+03D3 : 1680; --   str  t0 t2
+03D4 : 9615; --   isub  t0 1
+03D5 : 0860; --   load t2 t0
+03D6 : 9815; --   isub  t2 1
+03D7 : 1680; --   str  t0 t2
+03D8 : 0760; --   load t1 t0
+03D9 : 9707; --   tst  t1
+03DA : 20D0; -- . imov [jnz! .bf_label_start_45]
+03DB : 3003; -- | imoh
+03DC : A002; -- ' j_op
+03DD : 9665; --   isub  t0 6
+03DE : 0760; --   load t1 t0
+03DF : 9707; --   tst  t1
+03E0 : 20F0; -- . imov [jz! .bf_label_end_46]
+03E1 : 3003; -- | imoh
+03E2 : A001; -- ' j_op
+03E3 : 9644; --   iadd  t0 4
+03E4 : 0860; --   load t2 t0
+03E5 : 9814; --   iadd  t2 1
+03E6 : 1680; --   str  t0 t2
+03E7 : 9645; --   isub  t0 4
+03E8 : 0860; --   load t2 t0
+03E9 : 9815; --   isub  t2 1
+03EA : 1680; --   str  t0 t2
+03EB : 0760; --   load t1 t0
+03EC : 9707; --   tst  t1
+03ED : 20E3; -- . imov [jnz! .bf_label_start_46]
+03EE : 3003; -- | imoh
+03EF : A002; -- ' j_op
+03F0 : 9644; --   iadd  t0 4
+03F1 : 0760; --   load t1 t0
+03F2 : 9707; --   tst  t1
+03F3 : 2007; -- . imov [jz! .bf_label_end_47]
+03F4 : 3004; -- | imoh
+03F5 : A001; -- ' j_op
+03F6 : 9645; --   isub  t0 4
+03F7 : 0860; --   load t2 t0
+03F8 : 9814; --   iadd  t2 1
+03F9 : 1680; --   str  t0 t2
+03FA : 9664; --   iadd  t0 6
+03FB : 0860; --   load t2 t0
+03FC : 9814; --   iadd  t2 1
+03FD : 1680; --   str  t0 t2
+03FE : 9625; --   isub  t0 2
+03FF : 0860; --   load t2 t0
+0400 : 9815; --   isub  t2 1
+0401 : 1680; --   str  t0 t2
+0402 : 0760; --   load t1 t0
+0403 : 9707; --   tst  t1
+0404 : 20F6; -- . imov [jnz! .bf_label_start_47]
+0405 : 3003; -- | imoh
+0406 : A002; -- ' j_op
+0407 : 9644; --   iadd  t0 4
+0408 : 0760; --   load t1 t0
+0409 : 9707; --   tst  t1
+040A : 201A; -- . imov [jz! .bf_label_end_48]
+040B : 3004; -- | imoh
+040C : A001; -- ' j_op
+040D : 9625; --   isub  t0 2
+040E : 0860; --   load t2 t0
+040F : 9815; --   isub  t2 1
+0410 : 1680; --   str  t0 t2
+0411 : 9624; --   iadd  t0 2
+0412 : 0860; --   load t2 t0
+0413 : 9815; --   isub  t2 1
+0414 : 1680; --   str  t0 t2
+0415 : 0760; --   load t1 t0
+0416 : 9707; --   tst  t1
+0417 : 200D; -- . imov [jnz! .bf_label_start_48]
+0418 : 3004; -- | imoh
+0419 : A002; -- ' j_op
+041A : 9625; --   isub  t0 2
+041B : 0860; --   load t2 t0
+041C : 98A4; --   iadd  t2 10
+041D : 1680; --   str  t0 t2
+041E : 0760; --   load t1 t0
+041F : 9707; --   tst  t1
+0420 : 2030; -- . imov [jz! .bf_label_end_49]
+0421 : 3004; -- | imoh
+0422 : A001; -- ' j_op
+0423 : 9614; --   iadd  t0 1
+0424 : 0860; --   load t2 t0
+0425 : 9814; --   iadd  t2 1
+0426 : 1680; --   str  t0 t2
+0427 : 9615; --   isub  t0 1
+0428 : 0860; --   load t2 t0
+0429 : 9815; --   isub  t2 1
+042A : 1680; --   str  t0 t2
+042B : 0760; --   load t1 t0
+042C : 9707; --   tst  t1
+042D : 2023; -- . imov [jnz! .bf_label_start_49]
+042E : 3004; -- | imoh
+042F : A002; -- ' j_op
+0430 : 9614; --   iadd  t0 1
+0431 : 0760; --   load t1 t0
+0432 : 9707; --   tst  t1
+0433 : 2047; -- . imov [jz! .bf_label_end_50]
+0434 : 3004; -- | imoh
+0435 : A001; -- ' j_op
+0436 : 96C4; --   iadd  t0 12
+0437 : 0860; --   load t2 t0
+0438 : 9814; --   iadd  t2 1
+0439 : 1680; --   str  t0 t2
+043A : 9614; --   iadd  t0 1
+043B : 0860; --   load t2 t0
+043C : 9814; --   iadd  t2 1
+043D : 1680; --   str  t0 t2
+043E : 96D5; --   isub  t0 13
+043F : 0860; --   load t2 t0
+0440 : 9815; --   isub  t2 1
+0441 : 1680; --   str  t0 t2
+0442 : 0760; --   load t1 t0
+0443 : 9707; --   tst  t1
+0444 : 2036; -- . imov [jnz! .bf_label_start_50]
+0445 : 3004; -- | imoh
+0446 : A002; -- ' j_op
+0447 : 96C4; --   iadd  t0 12
+0448 : 0760; --   load t1 t0
+0449 : 9707; --   tst  t1
+044A : 207B; -- . imov [jz! .bf_label_end_53]
+044B : 3004; -- | imoh
+044C : A001; -- ' j_op
+044D : 0860; --   load t2 t0
+044E : 9815; --   isub  t2 1
+044F : 1680; --   str  t0 t2
+0450 : 0760; --   load t1 t0
+0451 : 9707; --   tst  t1
+0452 : 2062; -- . imov [jz! .bf_label_end_51]
+0453 : 3004; -- | imoh
+0454 : A001; -- ' j_op
+0455 : 9644; --   iadd  t0 4
+0456 : 0860; --   load t2 t0
+0457 : 9814; --   iadd  t2 1
+0458 : 1680; --   str  t0 t2
+0459 : 9645; --   isub  t0 4
+045A : 0860; --   load t2 t0
+045B : 9815; --   isub  t2 1
+045C : 1680; --   str  t0 t2
+045D : 0760; --   load t1 t0
+045E : 9707; --   tst  t1
+045F : 2055; -- . imov [jnz! .bf_label_start_51]
+0460 : 3004; -- | imoh
+0461 : A002; -- ' j_op
+0462 : 9614; --   iadd  t0 1
+0463 : 0760; --   load t1 t0
+0464 : 9707; --   tst  t1
+0465 : 2075; -- . imov [jz! .bf_label_end_52]
+0466 : 3004; -- | imoh
+0467 : A001; -- ' j_op
+0468 : 9644; --   iadd  t0 4
+0469 : 0860; --   load t2 t0
+046A : 9814; --   iadd  t2 1
+046B : 1680; --   str  t0 t2
+046C : 9645; --   isub  t0 4
+046D : 0860; --   load t2 t0
+046E : 9815; --   isub  t2 1
+046F : 1680; --   str  t0 t2
+0470 : 0760; --   load t1 t0
+0471 : 9707; --   tst  t1
+0472 : 2068; -- . imov [jnz! .bf_label_start_52]
+0473 : 3004; -- | imoh
+0474 : A002; -- ' j_op
+0475 : 9634; --   iadd  t0 3
+0476 : 0760; --   load t1 t0
+0477 : 9707; --   tst  t1
+0478 : 204D; -- . imov [jnz! .bf_label_start_53]
+0479 : 3004; -- | imoh
+047A : A002; -- ' j_op
+047B : 9634; --   iadd  t0 3
+047C : 0760; --   load t1 t0
+047D : 9707; --   tst  t1
+047E : 208E; -- . imov [jz! .bf_label_end_54]
+047F : 3004; -- | imoh
+0480 : A001; -- ' j_op
+0481 : 9635; --   isub  t0 3
+0482 : 0860; --   load t2 t0
+0483 : 9814; --   iadd  t2 1
+0484 : 1680; --   str  t0 t2
+0485 : 9634; --   iadd  t0 3
+0486 : 0860; --   load t2 t0
+0487 : 9815; --   isub  t2 1
+0488 : 1680; --   str  t0 t2
+0489 : 0760; --   load t1 t0
+048A : 9707; --   tst  t1
+048B : 2081; -- . imov [jnz! .bf_label_start_54]
+048C : 3004; -- | imoh
+048D : A002; -- ' j_op
+048E : 0860; --   load t2 t0
+048F : 9814; --   iadd  t2 1
+0490 : 1680; --   str  t0 t2
+0491 : 9635; --   isub  t0 3
+0492 : 0760; --   load t1 t0
+0493 : 9707; --   tst  t1
+0494 : 20A4; -- . imov [jz! .bf_label_end_55]
+0495 : 3004; -- | imoh
+0496 : A001; -- ' j_op
+0497 : 9634; --   iadd  t0 3
+0498 : 0860; --   load t2 t0
+0499 : 9815; --   isub  t2 1
+049A : 1680; --   str  t0 t2
+049B : 9635; --   isub  t0 3
+049C : 0860; --   load t2 t0
+049D : 9815; --   isub  t2 1
+049E : 1680; --   str  t0 t2
+049F : 0760; --   load t1 t0
+04A0 : 9707; --   tst  t1
+04A1 : 2097; -- . imov [jnz! .bf_label_start_55]
+04A2 : 3004; -- | imoh
+04A3 : A002; -- ' j_op
+04A4 : 9614; --   iadd  t0 1
+04A5 : 0760; --   load t1 t0
+04A6 : 9707; --   tst  t1
+04A7 : 20D9; -- . imov [jz! .bf_label_end_58]
+04A8 : 3004; -- | imoh
+04A9 : A001; -- ' j_op
+04AA : 0860; --   load t2 t0
+04AB : 9815; --   isub  t2 1
+04AC : 1680; --   str  t0 t2
+04AD : 9614; --   iadd  t0 1
+04AE : 0760; --   load t1 t0
+04AF : 9707; --   tst  t1
+04B0 : 20C0; -- . imov [jz! .bf_label_end_56]
+04B1 : 3004; -- | imoh
+04B2 : A001; -- ' j_op
+04B3 : 9645; --   isub  t0 4
+04B4 : 0860; --   load t2 t0
+04B5 : 9814; --   iadd  t2 1
+04B6 : 1680; --   str  t0 t2
+04B7 : 9644; --   iadd  t0 4
+04B8 : 0860; --   load t2 t0
+04B9 : 9815; --   isub  t2 1
+04BA : 1680; --   str  t0 t2
+04BB : 0760; --   load t1 t0
+04BC : 9707; --   tst  t1
+04BD : 20B3; -- . imov [jnz! .bf_label_start_56]
+04BE : 3004; -- | imoh
+04BF : A002; -- ' j_op
+04C0 : 9615; --   isub  t0 1
+04C1 : 0760; --   load t1 t0
+04C2 : 9707; --   tst  t1
+04C3 : 20D3; -- . imov [jz! .bf_label_end_57]
+04C4 : 3004; -- | imoh
+04C5 : A001; -- ' j_op
+04C6 : 9645; --   isub  t0 4
+04C7 : 0860; --   load t2 t0
+04C8 : 9814; --   iadd  t2 1
+04C9 : 1680; --   str  t0 t2
+04CA : 9644; --   iadd  t0 4
+04CB : 0860; --   load t2 t0
+04CC : 9815; --   isub  t2 1
+04CD : 1680; --   str  t0 t2
+04CE : 0760; --   load t1 t0
+04CF : 9707; --   tst  t1
+04D0 : 20C6; -- . imov [jnz! .bf_label_start_57]
+04D1 : 3004; -- | imoh
+04D2 : A002; -- ' j_op
+04D3 : 9645; --   isub  t0 4
+04D4 : 0760; --   load t1 t0
+04D5 : 9707; --   tst  t1
+04D6 : 20AA; -- . imov [jnz! .bf_label_start_58]
+04D7 : 3004; -- | imoh
+04D8 : A002; -- ' j_op
+04D9 : 96B5; --   isub  t0 11
+04DA : 1690; --   str  t0 t3
+04DB : 0760; --   load t1 t0
+04DC : 9707; --   tst  t1
+04DD : 2086; -- . imov [jnz! .bf_label_start_60]
+04DE : 3003; -- | imoh
+04DF : A002; -- ' j_op
+04E0 : 9614; --   iadd  t0 1
+04E1 : 0760; --   load t1 t0
+04E2 : 9707; --   tst  t1
+04E3 : 204E; -- . imov [jnz! .bf_label_start_61]
+04E4 : 3003; -- | imoh
+04E5 : A002; -- ' j_op
+04E6 : 9614; --   iadd  t0 1
+04E7 : 0760; --   load t1 t0
+04E8 : 9707; --   tst  t1
+04E9 : 20BB; -- . imov [jz! .bf_label_end_156]
+04EA : 300B; -- | imoh
+04EB : A001; -- ' j_op
+04EC : 0860; --   load t2 t0
+04ED : 98A4; --   iadd  t2 10
+04EE : 1680; --   str  t0 t2
+04EF : 0760; --   load t1 t0
+04F0 : 9707; --   tst  t1
+04F1 : 2005; -- . imov [jz! .bf_label_end_62]
+04F2 : 3005; -- | imoh
+04F3 : A001; -- ' j_op
+04F4 : 9614; --   iadd  t0 1
+04F5 : 0860; --   load t2 t0
+04F6 : 98B4; --   iadd  t2 11
+04F7 : 1680; --   str  t0 t2
+04F8 : 9614; --   iadd  t0 1
+04F9 : 0860; --   load t2 t0
+04FA : 98B4; --   iadd  t2 11
+04FB : 1680; --   str  t0 t2
+04FC : 9625; --   isub  t0 2
+04FD : 0860; --   load t2 t0
+04FE : 9815; --   isub  t2 1
+04FF : 1680; --   str  t0 t2
+0500 : 0760; --   load t1 t0
+0501 : 9707; --   tst  t1
+0502 : 20F4; -- . imov [jnz! .bf_label_start_62]
+0503 : 3004; -- | imoh
+0504 : A002; -- ' j_op
+0505 : 9614; --   iadd  t0 1
+0506 : 0760; --   load t1 t0
+0507 : 9707; --   tst  t1
+0508 : 20AD; -- . imov [jz! .bf_label_end_85]
+0509 : 3006; -- | imoh
+050A : A001; -- ' j_op
+050B : 0860; --   load t2 t0
+050C : 9815; --   isub  t2 1
+050D : 1680; --   str  t0 t2
+050E : 0760; --   load t1 t0
+050F : 9707; --   tst  t1
+0510 : 2020; -- . imov [jz! .bf_label_end_63]
+0511 : 3005; -- | imoh
+0512 : A001; -- ' j_op
+0513 : 9634; --   iadd  t0 3
+0514 : 0860; --   load t2 t0
+0515 : 9814; --   iadd  t2 1
+0516 : 1680; --   str  t0 t2
+0517 : 9635; --   isub  t0 3
+0518 : 0860; --   load t2 t0
+0519 : 9815; --   isub  t2 1
+051A : 1680; --   str  t0 t2
+051B : 0760; --   load t1 t0
+051C : 9707; --   tst  t1
+051D : 2013; -- . imov [jnz! .bf_label_start_63]
+051E : 3005; -- | imoh
+051F : A002; -- ' j_op
+0520 : 9634; --   iadd  t0 3
+0521 : 0760; --   load t1 t0
+0522 : 9707; --   tst  t1
+0523 : 203B; -- . imov [jz! .bf_label_end_64]
+0524 : 3005; -- | imoh
+0525 : A001; -- ' j_op
+0526 : 9635; --   isub  t0 3
+0527 : 0860; --   load t2 t0
+0528 : 9814; --   iadd  t2 1
+0529 : 1680; --   str  t0 t2
+052A : 9674; --   iadd  t0 7
+052B : 0860; --   load t2 t0
+052C : 9814; --   iadd  t2 1
+052D : 1680; --   str  t0 t2
+052E : 9614; --   iadd  t0 1
+052F : 0860; --   load t2 t0
+0530 : 9814; --   iadd  t2 1
+0531 : 1680; --   str  t0 t2
+0532 : 9655; --   isub  t0 5
+0533 : 0860; --   load t2 t0
+0534 : 9815; --   isub  t2 1
+0535 : 1680; --   str  t0 t2
+0536 : 0760; --   load t1 t0
+0537 : 9707; --   tst  t1
+0538 : 2026; -- . imov [jnz! .bf_label_start_64]
+0539 : 3005; -- | imoh
+053A : A002; -- ' j_op
+053B : 9644; --   iadd  t0 4
+053C : 0760; --   load t1 t0
+053D : 9707; --   tst  t1
+053E : 206F; -- . imov [jz! .bf_label_end_67]
+053F : 3005; -- | imoh
+0540 : A001; -- ' j_op
+0541 : 0860; --   load t2 t0
+0542 : 9815; --   isub  t2 1
+0543 : 1680; --   str  t0 t2
+0544 : 0760; --   load t1 t0
+0545 : 9707; --   tst  t1
+0546 : 2056; -- . imov [jz! .bf_label_end_65]
+0547 : 3005; -- | imoh
+0548 : A001; -- ' j_op
+0549 : 9644; --   iadd  t0 4
+054A : 0860; --   load t2 t0
+054B : 9814; --   iadd  t2 1
+054C : 1680; --   str  t0 t2
+054D : 9645; --   isub  t0 4
+054E : 0860; --   load t2 t0
+054F : 9815; --   isub  t2 1
+0550 : 1680; --   str  t0 t2
+0551 : 0760; --   load t1 t0
+0552 : 9707; --   tst  t1
+0553 : 2049; -- . imov [jnz! .bf_label_start_65]
+0554 : 3005; -- | imoh
+0555 : A002; -- ' j_op
+0556 : 9614; --   iadd  t0 1
+0557 : 0760; --   load t1 t0
+0558 : 9707; --   tst  t1
+0559 : 2069; -- . imov [jz! .bf_label_end_66]
+055A : 3005; -- | imoh
+055B : A001; -- ' j_op
+055C : 9644; --   iadd  t0 4
+055D : 0860; --   load t2 t0
+055E : 9814; --   iadd  t2 1
+055F : 1680; --   str  t0 t2
+0560 : 9645; --   isub  t0 4
+0561 : 0860; --   load t2 t0
+0562 : 9815; --   isub  t2 1
+0563 : 1680; --   str  t0 t2
+0564 : 0760; --   load t1 t0
+0565 : 9707; --   tst  t1
+0566 : 205C; -- . imov [jnz! .bf_label_start_66]
+0567 : 3005; -- | imoh
+0568 : A002; -- ' j_op
+0569 : 9634; --   iadd  t0 3
+056A : 0760; --   load t1 t0
+056B : 9707; --   tst  t1
+056C : 2041; -- . imov [jnz! .bf_label_start_67]
+056D : 3005; -- | imoh
+056E : A002; -- ' j_op
+056F : 9634; --   iadd  t0 3
+0570 : 0760; --   load t1 t0
+0571 : 9707; --   tst  t1
+0572 : 2082; -- . imov [jz! .bf_label_end_68]
+0573 : 3005; -- | imoh
+0574 : A001; -- ' j_op
+0575 : 9635; --   isub  t0 3
+0576 : 0860; --   load t2 t0
+0577 : 9814; --   iadd  t2 1
+0578 : 1680; --   str  t0 t2
+0579 : 9634; --   iadd  t0 3
+057A : 0860; --   load t2 t0
+057B : 9815; --   isub  t2 1
+057C : 1680; --   str  t0 t2
+057D : 0760; --   load t1 t0
+057E : 9707; --   tst  t1
+057F : 2075; -- . imov [jnz! .bf_label_start_68]
+0580 : 3005; -- | imoh
+0581 : A002; -- ' j_op
+0582 : 9635; --   isub  t0 3
+0583 : 0760; --   load t1 t0
+0584 : 9707; --   tst  t1
+0585 : 2099; -- . imov [jz! .bf_label_end_69]
+0586 : 3005; -- | imoh
+0587 : A001; -- ' j_op
+0588 : 9624; --   iadd  t0 2
+0589 : 0860; --   load t2 t0
+058A : 9814; --   iadd  t2 1
+058B : 1680; --   str  t0 t2
+058C : 9614; --   iadd  t0 1
+058D : 0860; --   load t2 t0
+058E : 9814; --   iadd  t2 1
+058F : 1680; --   str  t0 t2
+0590 : 9635; --   isub  t0 3
+0591 : 0860; --   load t2 t0
+0592 : 9815; --   isub  t2 1
+0593 : 1680; --   str  t0 t2
+0594 : 0760; --   load t1 t0
+0595 : 9707; --   tst  t1
+0596 : 2088; -- . imov [jnz! .bf_label_start_69]
+0597 : 3005; -- | imoh
+0598 : A002; -- ' j_op
+0599 : 9614; --   iadd  t0 1
+059A : 0760; --   load t1 t0
+059B : 9707; --   tst  t1
+059C : 20CE; -- . imov [jz! .bf_label_end_72]
+059D : 3005; -- | imoh
+059E : A001; -- ' j_op
+059F : 0860; --   load t2 t0
+05A0 : 9815; --   isub  t2 1
+05A1 : 1680; --   str  t0 t2
+05A2 : 9614; --   iadd  t0 1
+05A3 : 0760; --   load t1 t0
+05A4 : 9707; --   tst  t1
+05A5 : 20B5; -- . imov [jz! .bf_label_end_70]
+05A6 : 3005; -- | imoh
+05A7 : A001; -- ' j_op
+05A8 : 9645; --   isub  t0 4
+05A9 : 0860; --   load t2 t0
+05AA : 9814; --   iadd  t2 1
+05AB : 1680; --   str  t0 t2
+05AC : 9644; --   iadd  t0 4
+05AD : 0860; --   load t2 t0
+05AE : 9815; --   isub  t2 1
+05AF : 1680; --   str  t0 t2
+05B0 : 0760; --   load t1 t0
+05B1 : 9707; --   tst  t1
+05B2 : 20A8; -- . imov [jnz! .bf_label_start_70]
+05B3 : 3005; -- | imoh
+05B4 : A002; -- ' j_op
+05B5 : 9615; --   isub  t0 1
+05B6 : 0760; --   load t1 t0
+05B7 : 9707; --   tst  t1
+05B8 : 20C8; -- . imov [jz! .bf_label_end_71]
+05B9 : 3005; -- | imoh
+05BA : A001; -- ' j_op
+05BB : 9645; --   isub  t0 4
+05BC : 0860; --   load t2 t0
+05BD : 9814; --   iadd  t2 1
+05BE : 1680; --   str  t0 t2
+05BF : 9644; --   iadd  t0 4
+05C0 : 0860; --   load t2 t0
+05C1 : 9815; --   isub  t2 1
+05C2 : 1680; --   str  t0 t2
+05C3 : 0760; --   load t1 t0
+05C4 : 9707; --   tst  t1
+05C5 : 20BB; -- . imov [jnz! .bf_label_start_71]
+05C6 : 3005; -- | imoh
+05C7 : A002; -- ' j_op
+05C8 : 9645; --   isub  t0 4
+05C9 : 0760; --   load t1 t0
+05CA : 9707; --   tst  t1
+05CB : 209F; -- . imov [jnz! .bf_label_start_72]
+05CC : 3005; -- | imoh
+05CD : A002; -- ' j_op
+05CE : 9685; --   isub  t0 8
+05CF : 0760; --   load t1 t0
+05D0 : 9707; --   tst  t1
+05D1 : 20E1; -- . imov [jz! .bf_label_end_73]
+05D2 : 3005; -- | imoh
+05D3 : A001; -- ' j_op
+05D4 : 9634; --   iadd  t0 3
+05D5 : 0860; --   load t2 t0
+05D6 : 9814; --   iadd  t2 1
+05D7 : 1680; --   str  t0 t2
+05D8 : 9635; --   isub  t0 3
+05D9 : 0860; --   load t2 t0
+05DA : 9815; --   isub  t2 1
+05DB : 1680; --   str  t0 t2
+05DC : 0760; --   load t1 t0
+05DD : 9707; --   tst  t1
+05DE : 20D4; -- . imov [jnz! .bf_label_start_73]
+05DF : 3005; -- | imoh
+05E0 : A002; -- ' j_op
+05E1 : 9634; --   iadd  t0 3
+05E2 : 0760; --   load t1 t0
+05E3 : 9707; --   tst  t1
+05E4 : 20FC; -- . imov [jz! .bf_label_end_74]
+05E5 : 3005; -- | imoh
+05E6 : A001; -- ' j_op
+05E7 : 9635; --   isub  t0 3
+05E8 : 0860; --   load t2 t0
+05E9 : 9814; --   iadd  t2 1
+05EA : 1680; --   str  t0 t2
+05EB : 9674; --   iadd  t0 7
+05EC : 0860; --   load t2 t0
+05ED : 9814; --   iadd  t2 1
+05EE : 1680; --   str  t0 t2
+05EF : 9614; --   iadd  t0 1
+05F0 : 0860; --   load t2 t0
+05F1 : 9814; --   iadd  t2 1
+05F2 : 1680; --   str  t0 t2
+05F3 : 9655; --   isub  t0 5
+05F4 : 0860; --   load t2 t0
+05F5 : 9815; --   isub  t2 1
+05F6 : 1680; --   str  t0 t2
+05F7 : 0760; --   load t1 t0
+05F8 : 9707; --   tst  t1
+05F9 : 20E7; -- . imov [jnz! .bf_label_start_74]
+05FA : 3005; -- | imoh
+05FB : A002; -- ' j_op
+05FC : 9625; --   isub  t0 2
+05FD : 0760; --   load t1 t0
+05FE : 9707; --   tst  t1
+05FF : 200F; -- . imov [jz! .bf_label_end_75]
+0600 : 3006; -- | imoh
+0601 : A001; -- ' j_op
+0602 : 9624; --   iadd  t0 2
+0603 : 0860; --   load t2 t0
+0604 : 9814; --   iadd  t2 1
+0605 : 1680; --   str  t0 t2
+0606 : 9625; --   isub  t0 2
+0607 : 0860; --   load t2 t0
+0608 : 9815; --   isub  t2 1
+0609 : 1680; --   str  t0 t2
+060A : 0760; --   load t1 t0
+060B : 9707; --   tst  t1
+060C : 2002; -- . imov [jnz! .bf_label_start_75]
+060D : 3006; -- | imoh
+060E : A002; -- ' j_op
+060F : 9624; --   iadd  t0 2
+0610 : 0760; --   load t1 t0
+0611 : 9707; --   tst  t1
+0612 : 202A; -- . imov [jz! .bf_label_end_76]
+0613 : 3006; -- | imoh
+0614 : A001; -- ' j_op
+0615 : 9625; --   isub  t0 2
+0616 : 0860; --   load t2 t0
+0617 : 9814; --   iadd  t2 1
+0618 : 1680; --   str  t0 t2
+0619 : 9664; --   iadd  t0 6
+061A : 0860; --   load t2 t0
+061B : 9814; --   iadd  t2 1
+061C : 1680; --   str  t0 t2
+061D : 9614; --   iadd  t0 1
+061E : 0860; --   load t2 t0
+061F : 9814; --   iadd  t2 1
+0620 : 1680; --   str  t0 t2
+0621 : 9655; --   isub  t0 5
+0622 : 0860; --   load t2 t0
+0623 : 9815; --   isub  t2 1
+0624 : 1680; --   str  t0 t2
+0625 : 0760; --   load t1 t0
+0626 : 9707; --   tst  t1
+0627 : 2015; -- . imov [jnz! .bf_label_start_76]
+0628 : 3006; -- | imoh
+0629 : A002; -- ' j_op
+062A : 9644; --   iadd  t0 4
+062B : 0760; --   load t1 t0
+062C : 9707; --   tst  t1
+062D : 2071; -- . imov [jz! .bf_label_end_80]
+062E : 3006; -- | imoh
+062F : A001; -- ' j_op
+0630 : 0860; --   load t2 t0
+0631 : 9815; --   isub  t2 1
+0632 : 1680; --   str  t0 t2
+0633 : 0760; --   load t1 t0
+0634 : 9707; --   tst  t1
+0635 : 2045; -- . imov [jz! .bf_label_end_77]
+0636 : 3006; -- | imoh
+0637 : A001; -- ' j_op
+0638 : 9644; --   iadd  t0 4
+0639 : 0860; --   load t2 t0
+063A : 9814; --   iadd  t2 1
+063B : 1680; --   str  t0 t2
+063C : 9645; --   isub  t0 4
+063D : 0860; --   load t2 t0
+063E : 9815; --   isub  t2 1
+063F : 1680; --   str  t0 t2
+0640 : 0760; --   load t1 t0
+0641 : 9707; --   tst  t1
+0642 : 2038; -- . imov [jnz! .bf_label_start_77]
+0643 : 3006; -- | imoh
+0644 : A002; -- ' j_op
+0645 : 9614; --   iadd  t0 1
+0646 : 0760; --   load t1 t0
+0647 : 9707; --   tst  t1
+0648 : 2058; -- . imov [jz! .bf_label_end_78]
+0649 : 3006; -- | imoh
+064A : A001; -- ' j_op
+064B : 9644; --   iadd  t0 4
+064C : 0860; --   load t2 t0
+064D : 9814; --   iadd  t2 1
+064E : 1680; --   str  t0 t2
+064F : 9645; --   isub  t0 4
+0650 : 0860; --   load t2 t0
+0651 : 9815; --   isub  t2 1
+0652 : 1680; --   str  t0 t2
+0653 : 0760; --   load t1 t0
+0654 : 9707; --   tst  t1
+0655 : 204B; -- . imov [jnz! .bf_label_start_78]
+0656 : 3006; -- | imoh
+0657 : A002; -- ' j_op
+0658 : 9614; --   iadd  t0 1
+0659 : 0760; --   load t1 t0
+065A : 9707; --   tst  t1
+065B : 206B; -- . imov [jz! .bf_label_end_79]
+065C : 3006; -- | imoh
+065D : A001; -- ' j_op
+065E : 9644; --   iadd  t0 4
+065F : 0860; --   load t2 t0
+0660 : 9814; --   iadd  t2 1
+0661 : 1680; --   str  t0 t2
+0662 : 9645; --   isub  t0 4
+0663 : 0860; --   load t2 t0
+0664 : 9815; --   isub  t2 1
+0665 : 1680; --   str  t0 t2
+0666 : 0760; --   load t1 t0
+0667 : 9707; --   tst  t1
+0668 : 205E; -- . imov [jnz! .bf_label_start_79]
+0669 : 3006; -- | imoh
+066A : A002; -- ' j_op
+066B : 9624; --   iadd  t0 2
+066C : 0760; --   load t1 t0
+066D : 9707; --   tst  t1
+066E : 2030; -- . imov [jnz! .bf_label_start_80]
+066F : 3006; -- | imoh
+0670 : A002; -- ' j_op
+0671 : 9634; --   iadd  t0 3
+0672 : 1690; --   str  t0 t3
+0673 : 9615; --   isub  t0 1
+0674 : 0760; --   load t1 t0
+0675 : 9707; --   tst  t1
+0676 : 2086; -- . imov [jz! .bf_label_end_82]
+0677 : 3006; -- | imoh
+0678 : A001; -- ' j_op
+0679 : 9614; --   iadd  t0 1
+067A : 0860; --   load t2 t0
+067B : 9814; --   iadd  t2 1
+067C : 1680; --   str  t0 t2
+067D : 9615; --   isub  t0 1
+067E : 0860; --   load t2 t0
+067F : 9815; --   isub  t2 1
+0680 : 1680; --   str  t0 t2
+0681 : 0760; --   load t1 t0
+0682 : 9707; --   tst  t1
+0683 : 2079; -- . imov [jnz! .bf_label_start_82]
+0684 : 3006; -- | imoh
+0685 : A002; -- ' j_op
+0686 : 9615; --   isub  t0 1
+0687 : 0760; --   load t1 t0
+0688 : 9707; --   tst  t1
+0689 : 20A7; -- . imov [jz! .bf_label_end_84]
+068A : 3006; -- | imoh
+068B : A001; -- ' j_op
+068C : 0860; --   load t2 t0
+068D : 9815; --   isub  t2 1
+068E : 1680; --   str  t0 t2
+068F : 0760; --   load t1 t0
+0690 : 9707; --   tst  t1
+0691 : 20A1; -- . imov [jz! .bf_label_end_83]
+0692 : 3006; -- | imoh
+0693 : A001; -- ' j_op
+0694 : 9645; --   isub  t0 4
+0695 : 0860; --   load t2 t0
+0696 : 9814; --   iadd  t2 1
+0697 : 1680; --   str  t0 t2
+0698 : 9644; --   iadd  t0 4
+0699 : 0860; --   load t2 t0
+069A : 9815; --   isub  t2 1
+069B : 1680; --   str  t0 t2
+069C : 0760; --   load t1 t0
+069D : 9707; --   tst  t1
+069E : 2094; -- . imov [jnz! .bf_label_start_83]
+069F : 3006; -- | imoh
+06A0 : A002; -- ' j_op
+06A1 : 9645; --   isub  t0 4
+06A2 : 0760; --   load t1 t0
+06A3 : 9707; --   tst  t1
+06A4 : 208C; -- . imov [jnz! .bf_label_start_84]
+06A5 : 3006; -- | imoh
+06A6 : A002; -- ' j_op
+06A7 : 9685; --   isub  t0 8
+06A8 : 0760; --   load t1 t0
+06A9 : 9707; --   tst  t1
+06AA : 200B; -- . imov [jnz! .bf_label_start_85]
+06AB : 3005; -- | imoh
+06AC : A002; -- ' j_op
+06AD : 96A5; --   isub  t0 10
+06AE : 0860; --   load t2 t0
+06AF : 98A4; --   iadd  t2 10
+06B0 : 1680; --   str  t0 t2
+06B1 : 0760; --   load t1 t0
+06B2 : 9707; --   tst  t1
+06B3 : 20B3; -- . imov [jz! .bf_label_end_154]
+06B4 : 300B; -- | imoh
+06B5 : A001; -- ' j_op
+06B6 : 9614; --   iadd  t0 1
+06B7 : 0860; --   load t2 t0
+06B8 : 98A4; --   iadd  t2 10
+06B9 : 1680; --   str  t0 t2
+06BA : 0760; --   load t1 t0
+06BB : 9707; --   tst  t1
+06BC : 20AA; -- . imov [jz! .bf_label_end_153]
+06BD : 300B; -- | imoh
+06BE : A001; -- ' j_op
+06BF : 9615; --   isub  t0 1
+06C0 : 0760; --   load t1 t0
+06C1 : 9707; --   tst  t1
+06C2 : 20D2; -- . imov [jz! .bf_label_end_86]
+06C3 : 3006; -- | imoh
+06C4 : A001; -- ' j_op
+06C5 : 9624; --   iadd  t0 2
+06C6 : 0860; --   load t2 t0
+06C7 : 9814; --   iadd  t2 1
+06C8 : 1680; --   str  t0 t2
+06C9 : 9625; --   isub  t0 2
+06CA : 0860; --   load t2 t0
+06CB : 9815; --   isub  t2 1
+06CC : 1680; --   str  t0 t2
+06CD : 0760; --   load t1 t0
+06CE : 9707; --   tst  t1
+06CF : 20C5; -- . imov [jnz! .bf_label_start_86]
+06D0 : 3006; -- | imoh
+06D1 : A002; -- ' j_op
+06D2 : 9624; --   iadd  t0 2
+06D3 : 0760; --   load t1 t0
+06D4 : 9707; --   tst  t1
+06D5 : 20E9; -- . imov [jz! .bf_label_end_87]
+06D6 : 3006; -- | imoh
+06D7 : A001; -- ' j_op
+06D8 : 9625; --   isub  t0 2
+06D9 : 0860; --   load t2 t0
+06DA : 9814; --   iadd  t2 1
+06DB : 1680; --   str  t0 t2
+06DC : 9654; --   iadd  t0 5
+06DD : 0860; --   load t2 t0
+06DE : 98B4; --   iadd  t2 11
+06DF : 1680; --   str  t0 t2
+06E0 : 9635; --   isub  t0 3
+06E1 : 0860; --   load t2 t0
+06E2 : 9815; --   isub  t2 1
+06E3 : 1680; --   str  t0 t2
+06E4 : 0760; --   load t1 t0
+06E5 : 9707; --   tst  t1
+06E6 : 20D8; -- . imov [jnz! .bf_label_start_87]
+06E7 : 3006; -- | imoh
+06E8 : A002; -- ' j_op
+06E9 : 9615; --   isub  t0 1
+06EA : 0760; --   load t1 t0
+06EB : 9707; --   tst  t1
+06EC : 20FC; -- . imov [jz! .bf_label_end_88]
+06ED : 3006; -- | imoh
+06EE : A001; -- ' j_op
+06EF : 9614; --   iadd  t0 1
+06F0 : 0860; --   load t2 t0
+06F1 : 9814; --   iadd  t2 1
+06F2 : 1680; --   str  t0 t2
+06F3 : 9615; --   isub  t0 1
+06F4 : 0860; --   load t2 t0
+06F5 : 9815; --   isub  t2 1
+06F6 : 1680; --   str  t0 t2
+06F7 : 0760; --   load t1 t0
+06F8 : 9707; --   tst  t1
+06F9 : 20EF; -- . imov [jnz! .bf_label_start_88]
+06FA : 3006; -- | imoh
+06FB : A002; -- ' j_op
+06FC : 9614; --   iadd  t0 1
+06FD : 0760; --   load t1 t0
+06FE : 9707; --   tst  t1
+06FF : 2013; -- . imov [jz! .bf_label_end_89]
+0700 : 3007; -- | imoh
+0701 : A001; -- ' j_op
+0702 : 9615; --   isub  t0 1
+0703 : 0860; --   load t2 t0
+0704 : 9814; --   iadd  t2 1
+0705 : 1680; --   str  t0 t2
+0706 : 9644; --   iadd  t0 4
+0707 : 0860; --   load t2 t0
+0708 : 9814; --   iadd  t2 1
+0709 : 1680; --   str  t0 t2
+070A : 9635; --   isub  t0 3
+070B : 0860; --   load t2 t0
+070C : 9815; --   isub  t2 1
+070D : 1680; --   str  t0 t2
+070E : 0760; --   load t1 t0
+070F : 9707; --   tst  t1
+0710 : 2002; -- . imov [jnz! .bf_label_start_89]
+0711 : 3007; -- | imoh
+0712 : A002; -- ' j_op
+0713 : 9634; --   iadd  t0 3
+0714 : 0760; --   load t1 t0
+0715 : 9707; --   tst  t1
+0716 : 2026; -- . imov [jz! .bf_label_end_90]
+0717 : 3007; -- | imoh
+0718 : A001; -- ' j_op
+0719 : 9635; --   isub  t0 3
+071A : 0860; --   load t2 t0
+071B : 9814; --   iadd  t2 1
+071C : 1680; --   str  t0 t2
+071D : 9634; --   iadd  t0 3
+071E : 0860; --   load t2 t0
+071F : 9815; --   isub  t2 1
+0720 : 1680; --   str  t0 t2
+0721 : 0760; --   load t1 t0
+0722 : 9707; --   tst  t1
+0723 : 2019; -- . imov [jnz! .bf_label_start_90]
+0724 : 3007; -- | imoh
+0725 : A002; -- ' j_op
+0726 : 9635; --   isub  t0 3
+0727 : 0760; --   load t1 t0
+0728 : 9707; --   tst  t1
+0729 : 203D; -- . imov [jz! .bf_label_end_91]
+072A : 3007; -- | imoh
+072B : A001; -- ' j_op
+072C : 9634; --   iadd  t0 3
+072D : 0860; --   load t2 t0
+072E : 9814; --   iadd  t2 1
+072F : 1680; --   str  t0 t2
+0730 : 9654; --   iadd  t0 5
+0731 : 0860; --   load t2 t0
+0732 : 9814; --   iadd  t2 1
+0733 : 1680; --   str  t0 t2
+0734 : 9685; --   isub  t0 8
+0735 : 0860; --   load t2 t0
+0736 : 9815; --   isub  t2 1
+0737 : 1680; --   str  t0 t2
+0738 : 0760; --   load t1 t0
+0739 : 9707; --   tst  t1
+073A : 202C; -- . imov [jnz! .bf_label_start_91]
+073B : 3007; -- | imoh
+073C : A002; -- ' j_op
+073D : 9694; --   iadd  t0 9
+073E : 0760; --   load t1 t0
+073F : 9707; --   tst  t1
+0740 : 2050; -- . imov [jz! .bf_label_end_92]
+0741 : 3007; -- | imoh
+0742 : A001; -- ' j_op
+0743 : 9624; --   iadd  t0 2
+0744 : 0860; --   load t2 t0
+0745 : 9814; --   iadd  t2 1
+0746 : 1680; --   str  t0 t2
+0747 : 9625; --   isub  t0 2
+0748 : 0860; --   load t2 t0
+0749 : 9815; --   isub  t2 1
+074A : 1680; --   str  t0 t2
+074B : 0760; --   load t1 t0
+074C : 9707; --   tst  t1
+074D : 2043; -- . imov [jnz! .bf_label_start_92]
+074E : 3007; -- | imoh
+074F : A002; -- ' j_op
+0750 : 9624; --   iadd  t0 2
+0751 : 0760; --   load t1 t0
+0752 : 9707; --   tst  t1
+0753 : 2067; -- . imov [jz! .bf_label_end_93]
+0754 : 3007; -- | imoh
+0755 : A001; -- ' j_op
+0756 : 9625; --   isub  t0 2
+0757 : 0860; --   load t2 t0
+0758 : 9814; --   iadd  t2 1
+0759 : 1680; --   str  t0 t2
+075A : 9615; --   isub  t0 1
+075B : 0860; --   load t2 t0
+075C : 9814; --   iadd  t2 1
+075D : 1680; --   str  t0 t2
+075E : 9634; --   iadd  t0 3
+075F : 0860; --   load t2 t0
+0760 : 9815; --   isub  t2 1
+0761 : 1680; --   str  t0 t2
+0762 : 0760; --   load t1 t0
+0763 : 9707; --   tst  t1
+0764 : 2056; -- . imov [jnz! .bf_label_start_93]
+0765 : 3007; -- | imoh
+0766 : A002; -- ' j_op
+0767 : 9635; --   isub  t0 3
+0768 : 0860; --   load t2 t0
+0769 : 98C5; --   isub  t2 12
+076A : 1680; --   str  t0 t2
+076B : 0760; --   load t1 t0
+076C : 9707; --   tst  t1
+076D : 207D; -- . imov [jz! .bf_label_end_94]
+076E : 3007; -- | imoh
+076F : A001; -- ' j_op
+0770 : 9634; --   iadd  t0 3
+0771 : 0860; --   load t2 t0
+0772 : 9814; --   iadd  t2 1
+0773 : 1680; --   str  t0 t2
+0774 : 9635; --   isub  t0 3
+0775 : 0860; --   load t2 t0
+0776 : 9815; --   isub  t2 1
+0777 : 1680; --   str  t0 t2
+0778 : 0760; --   load t1 t0
+0779 : 9707; --   tst  t1
+077A : 2070; -- . imov [jnz! .bf_label_start_94]
+077B : 3007; -- | imoh
+077C : A002; -- ' j_op
+077D : 9634; --   iadd  t0 3
+077E : 0760; --   load t1 t0
+077F : 9707; --   tst  t1
+0780 : 2098; -- . imov [jz! .bf_label_end_95]
+0781 : 3007; -- | imoh
+0782 : A001; -- ' j_op
+0783 : 9635; --   isub  t0 3
+0784 : 0860; --   load t2 t0
+0785 : 9814; --   iadd  t2 1
+0786 : 1680; --   str  t0 t2
+0787 : 9674; --   iadd  t0 7
+0788 : 0860; --   load t2 t0
+0789 : 9814; --   iadd  t2 1
+078A : 1680; --   str  t0 t2
+078B : 9614; --   iadd  t0 1
+078C : 0860; --   load t2 t0
+078D : 9814; --   iadd  t2 1
+078E : 1680; --   str  t0 t2
+078F : 9655; --   isub  t0 5
+0790 : 0860; --   load t2 t0
+0791 : 9815; --   isub  t2 1
+0792 : 1680; --   str  t0 t2
+0793 : 0760; --   load t1 t0
+0794 : 9707; --   tst  t1
+0795 : 2083; -- . imov [jnz! .bf_label_start_95]
+0796 : 3007; -- | imoh
+0797 : A002; -- ' j_op
+0798 : 9644; --   iadd  t0 4
+0799 : 0760; --   load t1 t0
+079A : 9707; --   tst  t1
+079B : 20CC; -- . imov [jz! .bf_label_end_98]
+079C : 3007; -- | imoh
+079D : A001; -- ' j_op
+079E : 0860; --   load t2 t0
+079F : 9815; --   isub  t2 1
+07A0 : 1680; --   str  t0 t2
+07A1 : 0760; --   load t1 t0
+07A2 : 9707; --   tst  t1
+07A3 : 20B3; -- . imov [jz! .bf_label_end_96]
+07A4 : 3007; -- | imoh
+07A5 : A001; -- ' j_op
+07A6 : 9644; --   iadd  t0 4
+07A7 : 0860; --   load t2 t0
+07A8 : 9814; --   iadd  t2 1
+07A9 : 1680; --   str  t0 t2
+07AA : 9645; --   isub  t0 4
+07AB : 0860; --   load t2 t0
+07AC : 9815; --   isub  t2 1
+07AD : 1680; --   str  t0 t2
+07AE : 0760; --   load t1 t0
+07AF : 9707; --   tst  t1
+07B0 : 20A6; -- . imov [jnz! .bf_label_start_96]
+07B1 : 3007; -- | imoh
+07B2 : A002; -- ' j_op
+07B3 : 9614; --   iadd  t0 1
+07B4 : 0760; --   load t1 t0
+07B5 : 9707; --   tst  t1
+07B6 : 20C6; -- . imov [jz! .bf_label_end_97]
+07B7 : 3007; -- | imoh
+07B8 : A001; -- ' j_op
+07B9 : 9644; --   iadd  t0 4
+07BA : 0860; --   load t2 t0
+07BB : 9814; --   iadd  t2 1
+07BC : 1680; --   str  t0 t2
+07BD : 9645; --   isub  t0 4
+07BE : 0860; --   load t2 t0
+07BF : 9815; --   isub  t2 1
+07C0 : 1680; --   str  t0 t2
+07C1 : 0760; --   load t1 t0
+07C2 : 9707; --   tst  t1
+07C3 : 20B9; -- . imov [jnz! .bf_label_start_97]
+07C4 : 3007; -- | imoh
+07C5 : A002; -- ' j_op
+07C6 : 9634; --   iadd  t0 3
+07C7 : 0760; --   load t1 t0
+07C8 : 9707; --   tst  t1
+07C9 : 209E; -- . imov [jnz! .bf_label_start_98]
+07CA : 3007; -- | imoh
+07CB : A002; -- ' j_op
+07CC : 9634; --   iadd  t0 3
+07CD : 0760; --   load t1 t0
+07CE : 9707; --   tst  t1
+07CF : 20DF; -- . imov [jz! .bf_label_end_99]
+07D0 : 3007; -- | imoh
+07D1 : A001; -- ' j_op
+07D2 : 9635; --   isub  t0 3
+07D3 : 0860; --   load t2 t0
+07D4 : 9814; --   iadd  t2 1
+07D5 : 1680; --   str  t0 t2
+07D6 : 9634; --   iadd  t0 3
+07D7 : 0860; --   load t2 t0
+07D8 : 9815; --   isub  t2 1
+07D9 : 1680; --   str  t0 t2
+07DA : 0760; --   load t1 t0
+07DB : 9707; --   tst  t1
+07DC : 20D2; -- . imov [jnz! .bf_label_start_99]
+07DD : 3007; -- | imoh
+07DE : A002; -- ' j_op
+07DF : 9635; --   isub  t0 3
+07E0 : 0760; --   load t1 t0
+07E1 : 9707; --   tst  t1
+07E2 : 20F6; -- . imov [jz! .bf_label_end_100]
+07E3 : 3007; -- | imoh
+07E4 : A001; -- ' j_op
+07E5 : 9624; --   iadd  t0 2
+07E6 : 0860; --   load t2 t0
+07E7 : 9814; --   iadd  t2 1
+07E8 : 1680; --   str  t0 t2
+07E9 : 9614; --   iadd  t0 1
+07EA : 0860; --   load t2 t0
+07EB : 9814; --   iadd  t2 1
+07EC : 1680; --   str  t0 t2
+07ED : 9635; --   isub  t0 3
+07EE : 0860; --   load t2 t0
+07EF : 9815; --   isub  t2 1
+07F0 : 1680; --   str  t0 t2
+07F1 : 0760; --   load t1 t0
+07F2 : 9707; --   tst  t1
+07F3 : 20E5; -- . imov [jnz! .bf_label_start_100]
+07F4 : 3007; -- | imoh
+07F5 : A002; -- ' j_op
+07F6 : 9674; --   iadd  t0 7
+07F7 : 0760; --   load t1 t0
+07F8 : 9707; --   tst  t1
+07F9 : 2009; -- . imov [jz! .bf_label_end_101]
+07FA : 3008; -- | imoh
+07FB : A001; -- ' j_op
+07FC : 9635; --   isub  t0 3
+07FD : 0860; --   load t2 t0
+07FE : 9814; --   iadd  t2 1
+07FF : 1680; --   str  t0 t2
+0800 : 9634; --   iadd  t0 3
+0801 : 0860; --   load t2 t0
+0802 : 9815; --   isub  t2 1
+0803 : 1680; --   str  t0 t2
+0804 : 0760; --   load t1 t0
+0805 : 9707; --   tst  t1
+0806 : 20FC; -- . imov [jnz! .bf_label_start_101]
+0807 : 3007; -- | imoh
+0808 : A002; -- ' j_op
+0809 : 9635; --   isub  t0 3
+080A : 0760; --   load t1 t0
+080B : 9707; --   tst  t1
+080C : 2020; -- . imov [jz! .bf_label_end_102]
+080D : 3008; -- | imoh
+080E : A001; -- ' j_op
+080F : 9634; --   iadd  t0 3
+0810 : 0860; --   load t2 t0
+0811 : 9814; --   iadd  t2 1
+0812 : 1680; --   str  t0 t2
+0813 : 9655; --   isub  t0 5
+0814 : 0860; --   load t2 t0
+0815 : 9814; --   iadd  t2 1
+0816 : 1680; --   str  t0 t2
+0817 : 9624; --   iadd  t0 2
+0818 : 0860; --   load t2 t0
+0819 : 9815; --   isub  t2 1
+081A : 1680; --   str  t0 t2
+081B : 0760; --   load t1 t0
+081C : 9707; --   tst  t1
+081D : 200F; -- . imov [jnz! .bf_label_start_102]
+081E : 3008; -- | imoh
+081F : A002; -- ' j_op
+0820 : 9674; --   iadd  t0 7
+0821 : 0760; --   load t1 t0
+0822 : 9707; --   tst  t1
+0823 : 2033; -- . imov [jz! .bf_label_end_103]
+0824 : 3008; -- | imoh
+0825 : A001; -- ' j_op
+0826 : 9635; --   isub  t0 3
+0827 : 0860; --   load t2 t0
+0828 : 9814; --   iadd  t2 1
+0829 : 1680; --   str  t0 t2
+082A : 9634; --   iadd  t0 3
+082B : 0860; --   load t2 t0
+082C : 9815; --   isub  t2 1
+082D : 1680; --   str  t0 t2
+082E : 0760; --   load t1 t0
+082F : 9707; --   tst  t1
+0830 : 2026; -- . imov [jnz! .bf_label_start_103]
+0831 : 3008; -- | imoh
+0832 : A002; -- ' j_op
+0833 : 9635; --   isub  t0 3
+0834 : 0760; --   load t1 t0
+0835 : 9707; --   tst  t1
+0836 : 204A; -- . imov [jz! .bf_label_end_104]
+0837 : 3008; -- | imoh
+0838 : A001; -- ' j_op
+0839 : 9634; --   iadd  t0 3
+083A : 0860; --   load t2 t0
+083B : 9814; --   iadd  t2 1
+083C : 1680; --   str  t0 t2
+083D : 9695; --   isub  t0 9
+083E : 0860; --   load t2 t0
+083F : 9814; --   iadd  t2 1
+0840 : 1680; --   str  t0 t2
+0841 : 9664; --   iadd  t0 6
+0842 : 0860; --   load t2 t0
+0843 : 9815; --   isub  t2 1
+0844 : 1680; --   str  t0 t2
+0845 : 0760; --   load t1 t0
+0846 : 9707; --   tst  t1
+0847 : 2039; -- . imov [jnz! .bf_label_start_104]
+0848 : 3008; -- | imoh
+0849 : A002; -- ' j_op
+084A : 9675; --   isub  t0 7
+084B : 0760; --   load t1 t0
+084C : 9707; --   tst  t1
+084D : 207F; -- . imov [jz! .bf_label_end_107]
+084E : 3008; -- | imoh
+084F : A001; -- ' j_op
+0850 : 0860; --   load t2 t0
+0851 : 9815; --   isub  t2 1
+0852 : 1680; --   str  t0 t2
+0853 : 9614; --   iadd  t0 1
+0854 : 0760; --   load t1 t0
+0855 : 9707; --   tst  t1
+0856 : 2066; -- . imov [jz! .bf_label_end_105]
+0857 : 3008; -- | imoh
+0858 : A001; -- ' j_op
+0859 : 9645; --   isub  t0 4
+085A : 0860; --   load t2 t0
+085B : 9814; --   iadd  t2 1
+085C : 1680; --   str  t0 t2
+085D : 9644; --   iadd  t0 4
+085E : 0860; --   load t2 t0
+085F : 9815; --   isub  t2 1
+0860 : 1680; --   str  t0 t2
+0861 : 0760; --   load t1 t0
+0862 : 9707; --   tst  t1
+0863 : 2059; -- . imov [jnz! .bf_label_start_105]
+0864 : 3008; -- | imoh
+0865 : A002; -- ' j_op
+0866 : 9615; --   isub  t0 1
+0867 : 0760; --   load t1 t0
+0868 : 9707; --   tst  t1
+0869 : 2079; -- . imov [jz! .bf_label_end_106]
+086A : 3008; -- | imoh
+086B : A001; -- ' j_op
+086C : 9645; --   isub  t0 4
+086D : 0860; --   load t2 t0
+086E : 9814; --   iadd  t2 1
+086F : 1680; --   str  t0 t2
+0870 : 9644; --   iadd  t0 4
+0871 : 0860; --   load t2 t0
+0872 : 9815; --   isub  t2 1
+0873 : 1680; --   str  t0 t2
+0874 : 0760; --   load t1 t0
+0875 : 9707; --   tst  t1
+0876 : 206C; -- . imov [jnz! .bf_label_start_106]
+0877 : 3008; -- | imoh
+0878 : A002; -- ' j_op
+0879 : 9645; --   isub  t0 4
+087A : 0760; --   load t1 t0
+087B : 9707; --   tst  t1
+087C : 2050; -- . imov [jnz! .bf_label_start_107]
+087D : 3008; -- | imoh
+087E : A002; -- ' j_op
+087F : 9614; --   iadd  t0 1
+0880 : 0760; --   load t1 t0
+0881 : 9707; --   tst  t1
+0882 : 2092; -- . imov [jz! .bf_label_end_108]
+0883 : 3008; -- | imoh
+0884 : A001; -- ' j_op
+0885 : 9675; --   isub  t0 7
+0886 : 0860; --   load t2 t0
+0887 : 9814; --   iadd  t2 1
+0888 : 1680; --   str  t0 t2
+0889 : 9674; --   iadd  t0 7
+088A : 0860; --   load t2 t0
+088B : 9815; --   isub  t2 1
+088C : 1680; --   str  t0 t2
+088D : 0760; --   load t1 t0
+088E : 9707; --   tst  t1
+088F : 2085; -- . imov [jnz! .bf_label_start_108]
+0890 : 3008; -- | imoh
+0891 : A002; -- ' j_op
+0892 : 9695; --   isub  t0 9
+0893 : 0860; --   load t2 t0
+0894 : 98B4; --   iadd  t2 11
+0895 : 1680; --   str  t0 t2
+0896 : 0760; --   load t1 t0
+0897 : 9707; --   tst  t1
+0898 : 20A8; -- . imov [jz! .bf_label_end_109]
+0899 : 3008; -- | imoh
+089A : A001; -- ' j_op
+089B : 9634; --   iadd  t0 3
+089C : 0860; --   load t2 t0
+089D : 9814; --   iadd  t2 1
+089E : 1680; --   str  t0 t2
+089F : 9635; --   isub  t0 3
+08A0 : 0860; --   load t2 t0
+08A1 : 9815; --   isub  t2 1
+08A2 : 1680; --   str  t0 t2
+08A3 : 0760; --   load t1 t0
+08A4 : 9707; --   tst  t1
+08A5 : 209B; -- . imov [jnz! .bf_label_start_109]
+08A6 : 3008; -- | imoh
+08A7 : A002; -- ' j_op
+08A8 : 9634; --   iadd  t0 3
+08A9 : 0760; --   load t1 t0
+08AA : 9707; --   tst  t1
+08AB : 20C3; -- . imov [jz! .bf_label_end_110]
+08AC : 3008; -- | imoh
+08AD : A001; -- ' j_op
+08AE : 9635; --   isub  t0 3
+08AF : 0860; --   load t2 t0
+08B0 : 9814; --   iadd  t2 1
+08B1 : 1680; --   str  t0 t2
+08B2 : 9674; --   iadd  t0 7
+08B3 : 0860; --   load t2 t0
+08B4 : 9814; --   iadd  t2 1
+08B5 : 1680; --   str  t0 t2
+08B6 : 9614; --   iadd  t0 1
+08B7 : 0860; --   load t2 t0
+08B8 : 9814; --   iadd  t2 1
+08B9 : 1680; --   str  t0 t2
+08BA : 9655; --   isub  t0 5
+08BB : 0860; --   load t2 t0
+08BC : 9815; --   isub  t2 1
+08BD : 1680; --   str  t0 t2
+08BE : 0760; --   load t1 t0
+08BF : 9707; --   tst  t1
+08C0 : 20AE; -- . imov [jnz! .bf_label_start_110]
+08C1 : 3008; -- | imoh
+08C2 : A002; -- ' j_op
+08C3 : 9644; --   iadd  t0 4
+08C4 : 0760; --   load t1 t0
+08C5 : 9707; --   tst  t1
+08C6 : 20F7; -- . imov [jz! .bf_label_end_113]
+08C7 : 3008; -- | imoh
+08C8 : A001; -- ' j_op
+08C9 : 0860; --   load t2 t0
+08CA : 9815; --   isub  t2 1
+08CB : 1680; --   str  t0 t2
+08CC : 0760; --   load t1 t0
+08CD : 9707; --   tst  t1
+08CE : 20DE; -- . imov [jz! .bf_label_end_111]
+08CF : 3008; -- | imoh
+08D0 : A001; -- ' j_op
+08D1 : 9644; --   iadd  t0 4
+08D2 : 0860; --   load t2 t0
+08D3 : 9814; --   iadd  t2 1
+08D4 : 1680; --   str  t0 t2
+08D5 : 9645; --   isub  t0 4
+08D6 : 0860; --   load t2 t0
+08D7 : 9815; --   isub  t2 1
+08D8 : 1680; --   str  t0 t2
+08D9 : 0760; --   load t1 t0
+08DA : 9707; --   tst  t1
+08DB : 20D1; -- . imov [jnz! .bf_label_start_111]
+08DC : 3008; -- | imoh
+08DD : A002; -- ' j_op
+08DE : 9614; --   iadd  t0 1
+08DF : 0760; --   load t1 t0
+08E0 : 9707; --   tst  t1
+08E1 : 20F1; -- . imov [jz! .bf_label_end_112]
+08E2 : 3008; -- | imoh
+08E3 : A001; -- ' j_op
+08E4 : 9644; --   iadd  t0 4
+08E5 : 0860; --   load t2 t0
+08E6 : 9814; --   iadd  t2 1
+08E7 : 1680; --   str  t0 t2
+08E8 : 9645; --   isub  t0 4
+08E9 : 0860; --   load t2 t0
+08EA : 9815; --   isub  t2 1
+08EB : 1680; --   str  t0 t2
+08EC : 0760; --   load t1 t0
+08ED : 9707; --   tst  t1
+08EE : 20E4; -- . imov [jnz! .bf_label_start_112]
+08EF : 3008; -- | imoh
+08F0 : A002; -- ' j_op
+08F1 : 9634; --   iadd  t0 3
+08F2 : 0760; --   load t1 t0
+08F3 : 9707; --   tst  t1
+08F4 : 20C9; -- . imov [jnz! .bf_label_start_113]
+08F5 : 3008; -- | imoh
+08F6 : A002; -- ' j_op
+08F7 : 9634; --   iadd  t0 3
+08F8 : 0760; --   load t1 t0
+08F9 : 9707; --   tst  t1
+08FA : 200A; -- . imov [jz! .bf_label_end_114]
+08FB : 3009; -- | imoh
+08FC : A001; -- ' j_op
+08FD : 9635; --   isub  t0 3
+08FE : 0860; --   load t2 t0
+08FF : 9814; --   iadd  t2 1
+0900 : 1680; --   str  t0 t2
+0901 : 9634; --   iadd  t0 3
+0902 : 0860; --   load t2 t0
+0903 : 9815; --   isub  t2 1
+0904 : 1680; --   str  t0 t2
+0905 : 0760; --   load t1 t0
+0906 : 9707; --   tst  t1
+0907 : 20FD; -- . imov [jnz! .bf_label_start_114]
+0908 : 3008; -- | imoh
+0909 : A002; -- ' j_op
+090A : 9635; --   isub  t0 3
+090B : 0760; --   load t1 t0
+090C : 9707; --   tst  t1
+090D : 2021; -- . imov [jz! .bf_label_end_115]
+090E : 3009; -- | imoh
+090F : A001; -- ' j_op
+0910 : 9624; --   iadd  t0 2
+0911 : 0860; --   load t2 t0
+0912 : 9814; --   iadd  t2 1
+0913 : 1680; --   str  t0 t2
+0914 : 9614; --   iadd  t0 1
+0915 : 0860; --   load t2 t0
+0916 : 9814; --   iadd  t2 1
+0917 : 1680; --   str  t0 t2
+0918 : 9635; --   isub  t0 3
+0919 : 0860; --   load t2 t0
+091A : 9815; --   isub  t2 1
+091B : 1680; --   str  t0 t2
+091C : 0760; --   load t1 t0
+091D : 9707; --   tst  t1
+091E : 2010; -- . imov [jnz! .bf_label_start_115]
+091F : 3009; -- | imoh
+0920 : A002; -- ' j_op
+0921 : 9674; --   iadd  t0 7
+0922 : 0760; --   load t1 t0
+0923 : 9707; --   tst  t1
+0924 : 2034; -- . imov [jz! .bf_label_end_116]
+0925 : 3009; -- | imoh
+0926 : A001; -- ' j_op
+0927 : 9635; --   isub  t0 3
+0928 : 0860; --   load t2 t0
+0929 : 9814; --   iadd  t2 1
+092A : 1680; --   str  t0 t2
+092B : 9634; --   iadd  t0 3
+092C : 0860; --   load t2 t0
+092D : 9815; --   isub  t2 1
+092E : 1680; --   str  t0 t2
+092F : 0760; --   load t1 t0
+0930 : 9707; --   tst  t1
+0931 : 2027; -- . imov [jnz! .bf_label_start_116]
+0932 : 3009; -- | imoh
+0933 : A002; -- ' j_op
+0934 : 9635; --   isub  t0 3
+0935 : 0760; --   load t1 t0
+0936 : 9707; --   tst  t1
+0937 : 204B; -- . imov [jz! .bf_label_end_117]
+0938 : 3009; -- | imoh
+0939 : A001; -- ' j_op
+093A : 9634; --   iadd  t0 3
+093B : 0860; --   load t2 t0
+093C : 9814; --   iadd  t2 1
+093D : 1680; --   str  t0 t2
+093E : 9655; --   isub  t0 5
+093F : 0860; --   load t2 t0
+0940 : 9814; --   iadd  t2 1
+0941 : 1680; --   str  t0 t2
+0942 : 9624; --   iadd  t0 2
+0943 : 0860; --   load t2 t0
+0944 : 9815; --   isub  t2 1
+0945 : 1680; --   str  t0 t2
+0946 : 0760; --   load t1 t0
+0947 : 9707; --   tst  t1
+0948 : 203A; -- . imov [jnz! .bf_label_start_117]
+0949 : 3009; -- | imoh
+094A : A002; -- ' j_op
+094B : 9674; --   iadd  t0 7
+094C : 0760; --   load t1 t0
+094D : 9707; --   tst  t1
+094E : 205E; -- . imov [jz! .bf_label_end_118]
+094F : 3009; -- | imoh
+0950 : A001; -- ' j_op
+0951 : 9635; --   isub  t0 3
+0952 : 0860; --   load t2 t0
+0953 : 9814; --   iadd  t2 1
+0954 : 1680; --   str  t0 t2
+0955 : 9634; --   iadd  t0 3
+0956 : 0860; --   load t2 t0
+0957 : 9815; --   isub  t2 1
+0958 : 1680; --   str  t0 t2
+0959 : 0760; --   load t1 t0
+095A : 9707; --   tst  t1
+095B : 2051; -- . imov [jnz! .bf_label_start_118]
+095C : 3009; -- | imoh
+095D : A002; -- ' j_op
+095E : 9635; --   isub  t0 3
+095F : 0760; --   load t1 t0
+0960 : 9707; --   tst  t1
+0961 : 2075; -- . imov [jz! .bf_label_end_119]
+0962 : 3009; -- | imoh
+0963 : A001; -- ' j_op
+0964 : 9634; --   iadd  t0 3
+0965 : 0860; --   load t2 t0
+0966 : 9814; --   iadd  t2 1
+0967 : 1680; --   str  t0 t2
+0968 : 9695; --   isub  t0 9
+0969 : 0860; --   load t2 t0
+096A : 9814; --   iadd  t2 1
+096B : 1680; --   str  t0 t2
+096C : 9664; --   iadd  t0 6
+096D : 0860; --   load t2 t0
+096E : 9815; --   isub  t2 1
+096F : 1680; --   str  t0 t2
+0970 : 0760; --   load t1 t0
+0971 : 9707; --   tst  t1
+0972 : 2064; -- . imov [jnz! .bf_label_start_119]
+0973 : 3009; -- | imoh
+0974 : A002; -- ' j_op
+0975 : 9675; --   isub  t0 7
+0976 : 0760; --   load t1 t0
+0977 : 9707; --   tst  t1
+0978 : 20AA; -- . imov [jz! .bf_label_end_122]
+0979 : 3009; -- | imoh
+097A : A001; -- ' j_op
+097B : 0860; --   load t2 t0
+097C : 9815; --   isub  t2 1
+097D : 1680; --   str  t0 t2
+097E : 9614; --   iadd  t0 1
+097F : 0760; --   load t1 t0
+0980 : 9707; --   tst  t1
+0981 : 2091; -- . imov [jz! .bf_label_end_120]
+0982 : 3009; -- | imoh
+0983 : A001; -- ' j_op
+0984 : 9645; --   isub  t0 4
+0985 : 0860; --   load t2 t0
+0986 : 9814; --   iadd  t2 1
+0987 : 1680; --   str  t0 t2
+0988 : 9644; --   iadd  t0 4
+0989 : 0860; --   load t2 t0
+098A : 9815; --   isub  t2 1
+098B : 1680; --   str  t0 t2
+098C : 0760; --   load t1 t0
+098D : 9707; --   tst  t1
+098E : 2084; -- . imov [jnz! .bf_label_start_120]
+098F : 3009; -- | imoh
+0990 : A002; -- ' j_op
+0991 : 9615; --   isub  t0 1
+0992 : 0760; --   load t1 t0
+0993 : 9707; --   tst  t1
+0994 : 20A4; -- . imov [jz! .bf_label_end_121]
+0995 : 3009; -- | imoh
+0996 : A001; -- ' j_op
+0997 : 9645; --   isub  t0 4
+0998 : 0860; --   load t2 t0
+0999 : 9814; --   iadd  t2 1
+099A : 1680; --   str  t0 t2
+099B : 9644; --   iadd  t0 4
+099C : 0860; --   load t2 t0
+099D : 9815; --   isub  t2 1
+099E : 1680; --   str  t0 t2
+099F : 0760; --   load t1 t0
+09A0 : 9707; --   tst  t1
+09A1 : 2097; -- . imov [jnz! .bf_label_start_121]
+09A2 : 3009; -- | imoh
+09A3 : A002; -- ' j_op
+09A4 : 9645; --   isub  t0 4
+09A5 : 0760; --   load t1 t0
+09A6 : 9707; --   tst  t1
+09A7 : 207B; -- . imov [jnz! .bf_label_start_122]
+09A8 : 3009; -- | imoh
+09A9 : A002; -- ' j_op
+09AA : 9614; --   iadd  t0 1
+09AB : 0760; --   load t1 t0
+09AC : 9707; --   tst  t1
+09AD : 20BD; -- . imov [jz! .bf_label_end_123]
+09AE : 3009; -- | imoh
+09AF : A001; -- ' j_op
+09B0 : 9675; --   isub  t0 7
+09B1 : 0860; --   load t2 t0
+09B2 : 9814; --   iadd  t2 1
+09B3 : 1680; --   str  t0 t2
+09B4 : 9674; --   iadd  t0 7
+09B5 : 0860; --   load t2 t0
+09B6 : 9815; --   isub  t2 1
+09B7 : 1680; --   str  t0 t2
+09B8 : 0760; --   load t1 t0
+09B9 : 9707; --   tst  t1
+09BA : 20B0; -- . imov [jnz! .bf_label_start_123]
+09BB : 3009; -- | imoh
+09BC : A002; -- ' j_op
+09BD : 9695; --   isub  t0 9
+09BE : 0860; --   load t2 t0
+09BF : 98B4; --   iadd  t2 11
+09C0 : 1680; --   str  t0 t2
+09C1 : 0760; --   load t1 t0
+09C2 : 9707; --   tst  t1
+09C3 : 20D7; -- . imov [jz! .bf_label_end_124]
+09C4 : 3009; -- | imoh
+09C5 : A001; -- ' j_op
+09C6 : 9674; --   iadd  t0 7
+09C7 : 0860; --   load t2 t0
+09C8 : 9814; --   iadd  t2 1
+09C9 : 1680; --   str  t0 t2
+09CA : 9614; --   iadd  t0 1
+09CB : 0860; --   load t2 t0
+09CC : 9814; --   iadd  t2 1
+09CD : 1680; --   str  t0 t2
+09CE : 9685; --   isub  t0 8
+09CF : 0860; --   load t2 t0
+09D0 : 9815; --   isub  t2 1
+09D1 : 1680; --   str  t0 t2
+09D2 : 0760; --   load t1 t0
+09D3 : 9707; --   tst  t1
+09D4 : 20C6; -- . imov [jnz! .bf_label_start_124]
+09D5 : 3009; -- | imoh
+09D6 : A002; -- ' j_op
+09D7 : 9674; --   iadd  t0 7
+09D8 : 0760; --   load t1 t0
+09D9 : 9707; --   tst  t1
+09DA : 200B; -- . imov [jz! .bf_label_end_127]
+09DB : 300A; -- | imoh
+09DC : A001; -- ' j_op
+09DD : 0860; --   load t2 t0
+09DE : 9815; --   isub  t2 1
+09DF : 1680; --   str  t0 t2
+09E0 : 0760; --   load t1 t0
+09E1 : 9707; --   tst  t1
+09E2 : 20F2; -- . imov [jz! .bf_label_end_125]
+09E3 : 3009; -- | imoh
+09E4 : A001; -- ' j_op
+09E5 : 9644; --   iadd  t0 4
+09E6 : 0860; --   load t2 t0
+09E7 : 9814; --   iadd  t2 1
+09E8 : 1680; --   str  t0 t2
+09E9 : 9645; --   isub  t0 4
+09EA : 0860; --   load t2 t0
+09EB : 9815; --   isub  t2 1
+09EC : 1680; --   str  t0 t2
+09ED : 0760; --   load t1 t0
+09EE : 9707; --   tst  t1
+09EF : 20E5; -- . imov [jnz! .bf_label_start_125]
+09F0 : 3009; -- | imoh
+09F1 : A002; -- ' j_op
+09F2 : 9614; --   iadd  t0 1
+09F3 : 0760; --   load t1 t0
+09F4 : 9707; --   tst  t1
+09F5 : 2005; -- . imov [jz! .bf_label_end_126]
+09F6 : 300A; -- | imoh
+09F7 : A001; -- ' j_op
+09F8 : 9644; --   iadd  t0 4
+09F9 : 0860; --   load t2 t0
+09FA : 9814; --   iadd  t2 1
+09FB : 1680; --   str  t0 t2
+09FC : 9645; --   isub  t0 4
+09FD : 0860; --   load t2 t0
+09FE : 9815; --   isub  t2 1
+09FF : 1680; --   str  t0 t2
+0A00 : 0760; --   load t1 t0
+0A01 : 9707; --   tst  t1
+0A02 : 20F8; -- . imov [jnz! .bf_label_start_126]
+0A03 : 3009; -- | imoh
+0A04 : A002; -- ' j_op
+0A05 : 9634; --   iadd  t0 3
+0A06 : 0760; --   load t1 t0
+0A07 : 9707; --   tst  t1
+0A08 : 20DD; -- . imov [jnz! .bf_label_start_127]
+0A09 : 3009; -- | imoh
+0A0A : A002; -- ' j_op
+0A0B : 9634; --   iadd  t0 3
+0A0C : 0760; --   load t1 t0
+0A0D : 9707; --   tst  t1
+0A0E : 201E; -- . imov [jz! .bf_label_end_128]
+0A0F : 300A; -- | imoh
+0A10 : A001; -- ' j_op
+0A11 : 9635; --   isub  t0 3
+0A12 : 0860; --   load t2 t0
+0A13 : 9814; --   iadd  t2 1
+0A14 : 1680; --   str  t0 t2
+0A15 : 9634; --   iadd  t0 3
+0A16 : 0860; --   load t2 t0
+0A17 : 9815; --   isub  t2 1
+0A18 : 1680; --   str  t0 t2
+0A19 : 0760; --   load t1 t0
+0A1A : 9707; --   tst  t1
+0A1B : 2011; -- . imov [jnz! .bf_label_start_128]
+0A1C : 300A; -- | imoh
+0A1D : A002; -- ' j_op
+0A1E : 9635; --   isub  t0 3
+0A1F : 0760; --   load t1 t0
+0A20 : 9707; --   tst  t1
+0A21 : 2035; -- . imov [jz! .bf_label_end_129]
+0A22 : 300A; -- | imoh
+0A23 : A001; -- ' j_op
+0A24 : 9624; --   iadd  t0 2
+0A25 : 0860; --   load t2 t0
+0A26 : 9814; --   iadd  t2 1
+0A27 : 1680; --   str  t0 t2
+0A28 : 9614; --   iadd  t0 1
+0A29 : 0860; --   load t2 t0
+0A2A : 9814; --   iadd  t2 1
+0A2B : 1680; --   str  t0 t2
+0A2C : 9635; --   isub  t0 3
+0A2D : 0860; --   load t2 t0
+0A2E : 9815; --   isub  t2 1
+0A2F : 1680; --   str  t0 t2
+0A30 : 0760; --   load t1 t0
+0A31 : 9707; --   tst  t1
+0A32 : 2024; -- . imov [jnz! .bf_label_start_129]
+0A33 : 300A; -- | imoh
+0A34 : A002; -- ' j_op
+0A35 : 9674; --   iadd  t0 7
+0A36 : 0760; --   load t1 t0
+0A37 : 9707; --   tst  t1
+0A38 : 2048; -- . imov [jz! .bf_label_end_130]
+0A39 : 300A; -- | imoh
+0A3A : A001; -- ' j_op
+0A3B : 9635; --   isub  t0 3
+0A3C : 0860; --   load t2 t0
+0A3D : 9814; --   iadd  t2 1
+0A3E : 1680; --   str  t0 t2
+0A3F : 9634; --   iadd  t0 3
+0A40 : 0860; --   load t2 t0
+0A41 : 9815; --   isub  t2 1
+0A42 : 1680; --   str  t0 t2
+0A43 : 0760; --   load t1 t0
+0A44 : 9707; --   tst  t1
+0A45 : 203B; -- . imov [jnz! .bf_label_start_130]
+0A46 : 300A; -- | imoh
+0A47 : A002; -- ' j_op
+0A48 : 9635; --   isub  t0 3
+0A49 : 0760; --   load t1 t0
+0A4A : 9707; --   tst  t1
+0A4B : 205F; -- . imov [jz! .bf_label_end_131]
+0A4C : 300A; -- | imoh
+0A4D : A001; -- ' j_op
+0A4E : 9634; --   iadd  t0 3
+0A4F : 0860; --   load t2 t0
+0A50 : 9814; --   iadd  t2 1
+0A51 : 1680; --   str  t0 t2
+0A52 : 9655; --   isub  t0 5
+0A53 : 0860; --   load t2 t0
+0A54 : 9814; --   iadd  t2 1
+0A55 : 1680; --   str  t0 t2
+0A56 : 9624; --   iadd  t0 2
+0A57 : 0860; --   load t2 t0
+0A58 : 9815; --   isub  t2 1
+0A59 : 1680; --   str  t0 t2
+0A5A : 0760; --   load t1 t0
+0A5B : 9707; --   tst  t1
+0A5C : 204E; -- . imov [jnz! .bf_label_start_131]
+0A5D : 300A; -- | imoh
+0A5E : A002; -- ' j_op
+0A5F : 9674; --   iadd  t0 7
+0A60 : 0760; --   load t1 t0
+0A61 : 9707; --   tst  t1
+0A62 : 2072; -- . imov [jz! .bf_label_end_132]
+0A63 : 300A; -- | imoh
+0A64 : A001; -- ' j_op
+0A65 : 9635; --   isub  t0 3
+0A66 : 0860; --   load t2 t0
+0A67 : 9814; --   iadd  t2 1
+0A68 : 1680; --   str  t0 t2
+0A69 : 9634; --   iadd  t0 3
+0A6A : 0860; --   load t2 t0
+0A6B : 9815; --   isub  t2 1
+0A6C : 1680; --   str  t0 t2
+0A6D : 0760; --   load t1 t0
+0A6E : 9707; --   tst  t1
+0A6F : 2065; -- . imov [jnz! .bf_label_start_132]
+0A70 : 300A; -- | imoh
+0A71 : A002; -- ' j_op
+0A72 : 9635; --   isub  t0 3
+0A73 : 0760; --   load t1 t0
+0A74 : 9707; --   tst  t1
+0A75 : 2089; -- . imov [jz! .bf_label_end_133]
+0A76 : 300A; -- | imoh
+0A77 : A001; -- ' j_op
+0A78 : 9634; --   iadd  t0 3
+0A79 : 0860; --   load t2 t0
+0A7A : 9814; --   iadd  t2 1
+0A7B : 1680; --   str  t0 t2
+0A7C : 9695; --   isub  t0 9
+0A7D : 0860; --   load t2 t0
+0A7E : 9814; --   iadd  t2 1
+0A7F : 1680; --   str  t0 t2
+0A80 : 9664; --   iadd  t0 6
+0A81 : 0860; --   load t2 t0
+0A82 : 9815; --   isub  t2 1
+0A83 : 1680; --   str  t0 t2
+0A84 : 0760; --   load t1 t0
+0A85 : 9707; --   tst  t1
+0A86 : 2078; -- . imov [jnz! .bf_label_start_133]
+0A87 : 300A; -- | imoh
+0A88 : A002; -- ' j_op
+0A89 : 9675; --   isub  t0 7
+0A8A : 0760; --   load t1 t0
+0A8B : 9707; --   tst  t1
+0A8C : 20BE; -- . imov [jz! .bf_label_end_136]
+0A8D : 300A; -- | imoh
+0A8E : A001; -- ' j_op
+0A8F : 0860; --   load t2 t0
+0A90 : 9815; --   isub  t2 1
+0A91 : 1680; --   str  t0 t2
+0A92 : 9614; --   iadd  t0 1
+0A93 : 0760; --   load t1 t0
+0A94 : 9707; --   tst  t1
+0A95 : 20A5; -- . imov [jz! .bf_label_end_134]
+0A96 : 300A; -- | imoh
+0A97 : A001; -- ' j_op
+0A98 : 9645; --   isub  t0 4
+0A99 : 0860; --   load t2 t0
+0A9A : 9814; --   iadd  t2 1
+0A9B : 1680; --   str  t0 t2
+0A9C : 9644; --   iadd  t0 4
+0A9D : 0860; --   load t2 t0
+0A9E : 9815; --   isub  t2 1
+0A9F : 1680; --   str  t0 t2
+0AA0 : 0760; --   load t1 t0
+0AA1 : 9707; --   tst  t1
+0AA2 : 2098; -- . imov [jnz! .bf_label_start_134]
+0AA3 : 300A; -- | imoh
+0AA4 : A002; -- ' j_op
+0AA5 : 9615; --   isub  t0 1
+0AA6 : 0760; --   load t1 t0
+0AA7 : 9707; --   tst  t1
+0AA8 : 20B8; -- . imov [jz! .bf_label_end_135]
+0AA9 : 300A; -- | imoh
+0AAA : A001; -- ' j_op
+0AAB : 9645; --   isub  t0 4
+0AAC : 0860; --   load t2 t0
+0AAD : 9814; --   iadd  t2 1
+0AAE : 1680; --   str  t0 t2
+0AAF : 9644; --   iadd  t0 4
+0AB0 : 0860; --   load t2 t0
+0AB1 : 9815; --   isub  t2 1
+0AB2 : 1680; --   str  t0 t2
+0AB3 : 0760; --   load t1 t0
+0AB4 : 9707; --   tst  t1
+0AB5 : 20AB; -- . imov [jnz! .bf_label_start_135]
+0AB6 : 300A; -- | imoh
+0AB7 : A002; -- ' j_op
+0AB8 : 9645; --   isub  t0 4
+0AB9 : 0760; --   load t1 t0
+0ABA : 9707; --   tst  t1
+0ABB : 208F; -- . imov [jnz! .bf_label_start_136]
+0ABC : 300A; -- | imoh
+0ABD : A002; -- ' j_op
+0ABE : 9614; --   iadd  t0 1
+0ABF : 0760; --   load t1 t0
+0AC0 : 9707; --   tst  t1
+0AC1 : 20D1; -- . imov [jz! .bf_label_end_137]
+0AC2 : 300A; -- | imoh
+0AC3 : A001; -- ' j_op
+0AC4 : 9675; --   isub  t0 7
+0AC5 : 0860; --   load t2 t0
+0AC6 : 9814; --   iadd  t2 1
+0AC7 : 1680; --   str  t0 t2
+0AC8 : 9674; --   iadd  t0 7
+0AC9 : 0860; --   load t2 t0
+0ACA : 9815; --   isub  t2 1
+0ACB : 1680; --   str  t0 t2
+0ACC : 0760; --   load t1 t0
+0ACD : 9707; --   tst  t1
+0ACE : 20C4; -- . imov [jnz! .bf_label_start_137]
+0ACF : 300A; -- | imoh
+0AD0 : A002; -- ' j_op
+0AD1 : 9675; --   isub  t0 7
+0AD2 : 0860; --   load t2 t0
+0AD3 : 9845; --   isub  t2 4
+0AD4 : 1680; --   str  t0 t2
+0AD5 : 0760; --   load t1 t0
+0AD6 : 9707; --   tst  t1
+0AD7 : 209F; -- . imov [jz! .bf_label_end_151]
+0AD8 : 300B; -- | imoh
+0AD9 : A001; -- ' j_op
+0ADA : 9674; --   iadd  t0 7
+0ADB : 0860; --   load t2 t0
+0ADC : 9814; --   iadd  t2 1
+0ADD : 1680; --   str  t0 t2
+0ADE : 9675; --   isub  t0 7
+0ADF : 0860; --   load t2 t0
+0AE0 : 9814; --   iadd  t2 1
+0AE1 : 1680; --   str  t0 t2
+0AE2 : 0760; --   load t1 t0
+0AE3 : 9707; --   tst  t1
+0AE4 : 20F2; -- . imov [jz! .bf_label_end_139]
+0AE5 : 300A; -- | imoh
+0AE6 : A001; -- ' j_op
+0AE7 : 9674; --   iadd  t0 7
+0AE8 : 0860; --   load t2 t0
+0AE9 : 9815; --   isub  t2 1
+0AEA : 1680; --   str  t0 t2
+0AEB : 9675; --   isub  t0 7
+0AEC : 1690; --   str  t0 t3
+0AED : 0760; --   load t1 t0
+0AEE : 9707; --   tst  t1
+0AEF : 20E7; -- . imov [jnz! .bf_label_start_139]
+0AF0 : 300A; -- | imoh
+0AF1 : A002; -- ' j_op
+0AF2 : 9675; --   isub  t0 7
+0AF3 : 0760; --   load t1 t0
+0AF4 : 9707; --   tst  t1
+0AF5 : 2009; -- . imov [jz! .bf_label_end_140]
+0AF6 : 300B; -- | imoh
+0AF7 : A001; -- ' j_op
+0AF8 : 96C4; --   iadd  t0 12
+0AF9 : 0860; --   load t2 t0
+0AFA : 9814; --   iadd  t2 1
+0AFB : 1680; --   str  t0 t2
+0AFC : 9614; --   iadd  t0 1
+0AFD : 0860; --   load t2 t0
+0AFE : 9814; --   iadd  t2 1
+0AFF : 1680; --   str  t0 t2
+0B00 : 96D5; --   isub  t0 13
+0B01 : 0860; --   load t2 t0
+0B02 : 9815; --   isub  t2 1
+0B03 : 1680; --   str  t0 t2
+0B04 : 0760; --   load t1 t0
+0B05 : 9707; --   tst  t1
+0B06 : 20F8; -- . imov [jnz! .bf_label_start_140]
+0B07 : 300A; -- | imoh
+0B08 : A002; -- ' j_op
+0B09 : 0760; --   load t1 t0
+0B0A : 9707; --   tst  t1
+0B0B : 201B; -- . imov [jz! .bf_label_end_141]
+0B0C : 300B; -- | imoh
+0B0D : A001; -- ' j_op
+0B0E : 0160; --   load p0 t0
+0B0F : 202B; -- . imov r0 .print_char  [call! .print_char]
+0B10 : 3000; -- | imoh r0 .print_char
+0B11 : A010; -- ' jmpl
+0B12 : 0160; --   load p0 t0
+0B13 : 202B; -- . imov r0 .print_char  [call! .print_char]
+0B14 : 3000; -- | imoh r0 .print_char
+0B15 : A010; -- ' jmpl
+0B16 : 0760; --   load t1 t0
+0B17 : 9707; --   tst  t1
+0B18 : 200E; -- . imov [jnz! .bf_label_start_141]
+0B19 : 300B; -- | imoh
+0B1A : A002; -- ' j_op
+0B1B : 96C4; --   iadd  t0 12
+0B1C : 0760; --   load t1 t0
+0B1D : 9707; --   tst  t1
+0B1E : 2062; -- . imov [jz! .bf_label_end_145]
+0B1F : 300B; -- | imoh
+0B20 : A001; -- ' j_op
+0B21 : 0860; --   load t2 t0
+0B22 : 9815; --   isub  t2 1
+0B23 : 1680; --   str  t0 t2
+0B24 : 0760; --   load t1 t0
+0B25 : 9707; --   tst  t1
+0B26 : 2036; -- . imov [jz! .bf_label_end_142]
+0B27 : 300B; -- | imoh
+0B28 : A001; -- ' j_op
+0B29 : 9644; --   iadd  t0 4
+0B2A : 0860; --   load t2 t0
+0B2B : 9814; --   iadd  t2 1
+0B2C : 1680; --   str  t0 t2
+0B2D : 9645; --   isub  t0 4
+0B2E : 0860; --   load t2 t0
+0B2F : 9815; --   isub  t2 1
+0B30 : 1680; --   str  t0 t2
+0B31 : 0760; --   load t1 t0
+0B32 : 9707; --   tst  t1
+0B33 : 2029; -- . imov [jnz! .bf_label_start_142]
+0B34 : 300B; -- | imoh
+0B35 : A002; -- ' j_op
+0B36 : 9614; --   iadd  t0 1
+0B37 : 0760; --   load t1 t0
+0B38 : 9707; --   tst  t1
+0B39 : 2049; -- . imov [jz! .bf_label_end_143]
+0B3A : 300B; -- | imoh
+0B3B : A001; -- ' j_op
+0B3C : 9644; --   iadd  t0 4
+0B3D : 0860; --   load t2 t0
+0B3E : 9814; --   iadd  t2 1
+0B3F : 1680; --   str  t0 t2
+0B40 : 9645; --   isub  t0 4
+0B41 : 0860; --   load t2 t0
+0B42 : 9815; --   isub  t2 1
+0B43 : 1680; --   str  t0 t2
+0B44 : 0760; --   load t1 t0
+0B45 : 9707; --   tst  t1
+0B46 : 203C; -- . imov [jnz! .bf_label_start_143]
+0B47 : 300B; -- | imoh
+0B48 : A002; -- ' j_op
+0B49 : 9614; --   iadd  t0 1
+0B4A : 0760; --   load t1 t0
+0B4B : 9707; --   tst  t1
+0B4C : 205C; -- . imov [jz! .bf_label_end_144]
+0B4D : 300B; -- | imoh
+0B4E : A001; -- ' j_op
+0B4F : 9644; --   iadd  t0 4
+0B50 : 0860; --   load t2 t0
+0B51 : 9814; --   iadd  t2 1
+0B52 : 1680; --   str  t0 t2
+0B53 : 9645; --   isub  t0 4
+0B54 : 0860; --   load t2 t0
+0B55 : 9815; --   isub  t2 1
+0B56 : 1680; --   str  t0 t2
+0B57 : 0760; --   load t1 t0
+0B58 : 9707; --   tst  t1
+0B59 : 204F; -- . imov [jnz! .bf_label_start_144]
+0B5A : 300B; -- | imoh
+0B5B : A002; -- ' j_op
+0B5C : 9624; --   iadd  t0 2
+0B5D : 0760; --   load t1 t0
+0B5E : 9707; --   tst  t1
+0B5F : 2021; -- . imov [jnz! .bf_label_start_145]
+0B60 : 300B; -- | imoh
+0B61 : A002; -- ' j_op
+0B62 : 9634; --   iadd  t0 3
+0B63 : 1690; --   str  t0 t3
+0B64 : 9615; --   isub  t0 1
+0B65 : 0760; --   load t1 t0
+0B66 : 9707; --   tst  t1
+0B67 : 2077; -- . imov [jz! .bf_label_end_147]
+0B68 : 300B; -- | imoh
+0B69 : A001; -- ' j_op
+0B6A : 9614; --   iadd  t0 1
+0B6B : 0860; --   load t2 t0
+0B6C : 9814; --   iadd  t2 1
+0B6D : 1680; --   str  t0 t2
+0B6E : 9615; --   isub  t0 1
+0B6F : 0860; --   load t2 t0
+0B70 : 9815; --   isub  t2 1
+0B71 : 1680; --   str  t0 t2
+0B72 : 0760; --   load t1 t0
+0B73 : 9707; --   tst  t1
+0B74 : 206A; -- . imov [jnz! .bf_label_start_147]
+0B75 : 300B; -- | imoh
+0B76 : A002; -- ' j_op
+0B77 : 9615; --   isub  t0 1
+0B78 : 0760; --   load t1 t0
+0B79 : 9707; --   tst  t1
+0B7A : 2098; -- . imov [jz! .bf_label_end_149]
+0B7B : 300B; -- | imoh
+0B7C : A001; -- ' j_op
+0B7D : 0860; --   load t2 t0
+0B7E : 9815; --   isub  t2 1
+0B7F : 1680; --   str  t0 t2
+0B80 : 0760; --   load t1 t0
+0B81 : 9707; --   tst  t1
+0B82 : 2092; -- . imov [jz! .bf_label_end_148]
+0B83 : 300B; -- | imoh
+0B84 : A001; -- ' j_op
+0B85 : 9645; --   isub  t0 4
+0B86 : 0860; --   load t2 t0
+0B87 : 9814; --   iadd  t2 1
+0B88 : 1680; --   str  t0 t2
+0B89 : 9644; --   iadd  t0 4
+0B8A : 0860; --   load t2 t0
+0B8B : 9815; --   isub  t2 1
+0B8C : 1680; --   str  t0 t2
+0B8D : 0760; --   load t1 t0
+0B8E : 9707; --   tst  t1
+0B8F : 2085; -- . imov [jnz! .bf_label_start_148]
+0B90 : 300B; -- | imoh
+0B91 : A002; -- ' j_op
+0B92 : 9645; --   isub  t0 4
+0B93 : 0760; --   load t1 t0
+0B94 : 9707; --   tst  t1
+0B95 : 207D; -- . imov [jnz! .bf_label_start_149]
+0B96 : 300B; -- | imoh
+0B97 : A002; -- ' j_op
+0B98 : 9665; --   isub  t0 6
+0B99 : 1690; --   str  t0 t3
+0B9A : 0760; --   load t1 t0
+0B9B : 9707; --   tst  t1
+0B9C : 20DA; -- . imov [jnz! .bf_label_start_151]
+0B9D : 300A; -- | imoh
+0B9E : A002; -- ' j_op
+0B9F : 9675; --   isub  t0 7
+0BA0 : 1690; --   str  t0 t3
+0BA1 : 9645; --   isub  t0 4
+0BA2 : 0860; --   load t2 t0
+0BA3 : 9815; --   isub  t2 1
+0BA4 : 1680; --   str  t0 t2
+0BA5 : 0760; --   load t1 t0
+0BA6 : 9707; --   tst  t1
+0BA7 : 20BF; -- . imov [jnz! .bf_label_start_153]
+0BA8 : 3006; -- | imoh
+0BA9 : A002; -- ' j_op
+0BAA : 9615; --   isub  t0 1
+0BAB : 0860; --   load t2 t0
+0BAC : 9815; --   isub  t2 1
+0BAD : 1680; --   str  t0 t2
+0BAE : 0760; --   load t1 t0
+0BAF : 9707; --   tst  t1
+0BB0 : 20B6; -- . imov [jnz! .bf_label_start_154]
+0BB1 : 3006; -- | imoh
+0BB2 : A002; -- ' j_op
+0BB3 : 96B4; --   iadd  t0 11
+0BB4 : 1690; --   str  t0 t3
+0BB5 : 9625; --   isub  t0 2
+0BB6 : 0760; --   load t1 t0
+0BB7 : 9707; --   tst  t1
+0BB8 : 20EC; -- . imov [jnz! .bf_label_start_156]
+0BB9 : 3004; -- | imoh
+0BBA : A002; -- ' j_op
+0BBB : 96A5; --   isub  t0 10
+0BBC : 0760; --   load t1 t0
+0BBD : 9707; --   tst  t1
+0BBE : 20BF; -- . imov [jnz! .bf_label_start_157]
+0BBF : 3000; -- | imoh
+0BC0 : A002; -- ' j_op
+0BC1 : A020; --   jmpr
+END;

@@ -1,3 +1,65 @@
+
+.key_buffer [16]
+
+.key_buffer_read_offset [1]
+.key_buffer_write_offset [1]
+
+.key_buffer_init # () -> ()
+    push! t0
+
+    imov t0 0
+    str!  .key_buffer_write_offset t0
+    str!  .key_buffer_read_offset t0
+
+    pop! t0
+#end .key_buffer_init
+
+
+.key_buffer_push # (WORD) -> ()
+    push! t0 t1
+
+    imov! t1 .key_buffer
+
+    # .key_buffer_write_offset = (.key_buffer_write_offset + 1) & 4'b1111
+    load! t0 .key_buffer_write_offset
+
+    # write
+    add   t1 t0
+    str   t1 p0
+
+    # increment offset
+    iadd  t0 1
+    iand  t0 0b1111
+    str!  .key_buffer_write_offset t0
+
+    pop!  t1 t0
+    jmpr
+#end .key_buffer_push
+
+.key_buffer_read # () -> WORD
+    push! t0 t1
+
+.key_buffer_read_loop
+    # get read and write ptr
+    load! t0 .key_buffer_read_offset
+    load! t1 .key_buffer_write_offset
+
+    cmp t0 t1
+    jz! .key_buffer_read_loop
+
+    imov! t1 .key_buffer
+    add   t1 t0
+    load  v0 t1
+
+    # add one to the read ptr
+    iadd t0 1
+    iand t0 0b1111
+    str! .key_buffer_read_offset t0
+
+    pop!  t1 t0
+    jmpr
+#end .key_buffer_read
+
 .ps2_scancode_ptr 0xFFFF
 
 .ps2_lut

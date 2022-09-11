@@ -195,6 +195,12 @@ def main():
 .memory_table   [10240]
 
 .main
+    # clear screen
+    imov  p0 0
+    imov  p1 0
+    imov! p2 6000
+    call! .arr_memset
+
     imov! p0 .memory_table
     imov  p1 0
     imov! p2 10240

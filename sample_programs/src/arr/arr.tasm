@@ -3,12 +3,13 @@
 
     imov! p0 .arr
     imov! p1 0xABCD
-    imov! p2 4
+    imov! p2 10240
 
     call! .arr_memset
 
+    imov! t1 10239
     imov! t0 .arr
-    iadd  t0 3
+    add   t0 t1
     load  t0 t0
     icmp! t0 0xABCD
     jz!   .correct
@@ -29,4 +30,4 @@
     isr!
     rti!
 
-.arr [4]
+.arr [10240]

@@ -365,9 +365,9 @@ fn main() {
         diagnostics.increment();
     }
 
-    diagnostics.halt();
+    let last_pc = registers.pc - 1;
+    diagnostics.halt(last_pc);
 
-    // let last_pc = registers.pc - 1;
     // let v0 = registers[5];
 
     // println!("Program halted at PC={last_pc:04x}");

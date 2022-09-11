@@ -33,7 +33,7 @@ impl Diagnostics {
         }
     }
 
-    pub fn halt(&mut self) {
-        self.vga.lock().unwrap().put_dianostics(0, format!("Halted!").as_str());
+    pub fn halt(&mut self, pc: u16) {
+        self.vga.lock().unwrap().put_dianostics(0, format!("Halted at {pc:04x}").as_str());
     }
 }

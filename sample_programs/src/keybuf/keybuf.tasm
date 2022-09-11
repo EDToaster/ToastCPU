@@ -23,9 +23,6 @@
 
 .main
 .loop
-    imov! p0 69
-    call! .print_char
-    
     call! .key_buffer_read
     mov p0 v0
     call! .print_char

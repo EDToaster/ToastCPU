@@ -32,4 +32,8 @@ impl Diagnostics {
             self.vga.lock().unwrap().put_dianostics(0, format!("{per_second} i/s {count}").as_str());
         }
     }
+
+    pub fn halt(&mut self) {
+        self.vga.lock().unwrap().put_dianostics(0, format!("Halted!").as_str());
+    }
 }

@@ -4,34 +4,6 @@ from asyncore import loop
 from dataclasses import dataclass
 from typing import List, Optional, Tuple, Union
 
-program = "+[+]+"
-
-output = """
-.reset
-    imov! isr .isr
-    call! .print_init
-    call! .main
-
-.isr
-    isr!
-    rti!
-
-#include<../../lib/std/print>
-#include<../../lib/std/arr>
-
-.memory_table   [10240]
-
-.main
-
-    imov! p0 .memory_table
-    imov  p1 0
-    imov! p2 10240
-    call! .arr_memset
-    
-    # t0 = mem_ptr
-    imov! t0 0
-    mov   t3 0  # always zero
-"""
 
 @dataclass
 class IncrementCell:
@@ -86,6 +58,17 @@ class IncrementPtr:
                 f"    imov! t1 {size}",
                 f"    {'sub' if neg else 'add'}  t0 t1",
             ]
+
+@dataclass
+class Input:
+    def merge(self, other):
+        return (self, other)
+
+    def translate(self) -> List[str]:
+        return [
+            "    call! .key_buffer_read",
+            "    str t0 v0",
+        ]
 
 @dataclass
 class Output:
@@ -151,6 +134,8 @@ def parse_op(c: str) -> Optional[Union[IncrementCell, IncrementPtr, Output, Loop
         return IncrementPtr(-1)
     elif c == ".":
         return Output()
+    elif c == ",":
+        return Input()
     elif c == "[":
         return LoopStart(None)
     elif c == "]":
@@ -188,23 +173,38 @@ def main():
 .reset
     imov! isr .isr
     call! .print_init
+    call! .key_buffer_init
     call! .main
     halt
 
 .isr
     isr!
+    push! p0 v0
+
+    call! .get_keyboard_ascii
+    mov p0 v0
+    call! .key_buffer_push
+    
+    pop! v0 p0
     rti!
 
 #include<../../lib/std/print>
+#include<../../lib/std/keyboard>
 #include<../../lib/std/arr>
 
 .memory_table   [10240]
 
 .main
+    imov! p0 .memory_table
+    imov  p1 0
+    imov! p2 10240
+    call! .arr_memset
+
     # t0 = mem_ptr
     imov! t0 .memory_table
     imov! t1 0
-    """
+    imov! t3 0
+"""
 
     import argparse
     parser = argparse.ArgumentParser(description="Assembles ToastCPU Architecture")

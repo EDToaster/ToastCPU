@@ -365,6 +365,8 @@ fn main() {
         diagnostics.increment();
     }
 
+    diagnostics.halt();
+
     // let last_pc = registers.pc - 1;
     // let v0 = registers[5];
 

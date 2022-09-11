@@ -12,6 +12,7 @@
     str!  .key_buffer_read_offset t0
 
     pop! t0
+    jmpr
 #end .key_buffer_init
 
 

@@ -67,6 +67,15 @@
     jnz!    .print_char_store_and_exit
     imov!   t2 100
 .print_char_store_and_exit
+
+    # if (.ptr_counter > 6000)
+    load!   t1 .ptr_counter
+    icmp!   t1 6000
+    jn!     .print_char_skip_reset
+    imov    t1 0
+    str!    .ptr_counter t1
+
+.print_char_skip_reset
     str!    .ptr_line_counter t2
 
     # restore registers and return

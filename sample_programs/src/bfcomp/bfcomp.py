@@ -118,6 +118,36 @@ class Memset:
             "    str  t0 t3"
         ]
 
+@dataclass
+class AddTo:
+    offset: int
+    do_add: bool
+    
+    def translate(self) -> List[str]:
+        neg = self.offset < 0
+        offset = -self.offset if neg else self.offset
+        
+        if offset < 16:           
+            return [
+                "    load t1 t0",
+                "    mov  t2 t0",
+                f"    {'isub' if neg else 'iadd'}  t2 {offset}",
+                "    load t4 t2",
+                f"    {'add' if self.do_add else 'sub'}  t4 t1",
+                "    str  t2 t4"
+            ]
+        else:
+            return [
+                "    load t1 t0",
+                "    mov  t2 t0",
+                f"    imov! t4 {offset}",
+                f"    {'sub' if neg else 'add'}  t2 t4",
+                "    load t4 t2",
+                f"    {'add' if self.do_add else 'sub'}  t4 t1",
+                "    str  t2 t4"
+            ]
+
+
 def slurp(file_name: str) -> str:
     with open(file_name) as f:
         return f.read()
@@ -144,6 +174,9 @@ def parse_op(c: str) -> Optional[Union[IncrementCell, IncrementPtr, Output, Loop
         return None
 
 def optimize_memset(prog):
+    """
+    [-] or [+] 
+    """
     new_prog = []
     skip = 0
     for i, op in enumerate(prog):
@@ -158,11 +191,57 @@ def optimize_memset(prog):
         loop_id = op.id
 
         if (isinstance(prog[i+1], IncrementCell) 
-                and prog[i+1].size == -1 
+                and (prog[i+1].size == -1 or prog[i+1].size == 1)
                 and isinstance(prog[i+2], LoopEnd)
                 and prog[i+2].id == loop_id):
             new_prog.append(Memset())
             skip = 2
+        else:
+            new_prog.append(op)
+    return new_prog
+
+def optimize_add_to(prog):
+    """
+        [ - > + < ]
+        offset = 1
+        addTo(offset) => mem[t0 + offset] += mem[t0] 
+        memset(t0)
+    """
+
+    new_prog = []
+    skip = 0
+    for i, op in enumerate(prog):
+        if skip > 0:
+            skip -= 1
+            continue
+
+        if not isinstance(op, LoopStart) or i > len(prog) - 6:
+            new_prog.append(op)
+            continue
+
+        loop_id = op.id
+
+        o1 = prog[i+1]
+        o2 = prog[i+2]
+        o3 = prog[i+3]
+        o4 = prog[i+4]
+        o5 = prog[i+5]
+
+        if (isinstance(o1, IncrementCell) and isinstance(o2, IncrementPtr) and 
+            isinstance(o3, IncrementCell) and isinstance(o4, IncrementPtr) and
+            isinstance(o5, LoopEnd) and
+            # check o1 and o3 size are -1 and 1
+            o1.size == -1 and (o3.size == -1 or o3.size == 1) and
+            # check > and < are equal
+            o2.size == -o4.size and
+            loop_id == o5.id):
+
+            do_add = o3.size > 0
+            offset = o2.size
+
+            new_prog.append(AddTo(offset, do_add))
+            new_prog.append(Memset())
+            skip = 5
         else:
             new_prog.append(op)
     return new_prog
@@ -208,8 +287,10 @@ def main():
 
     # t0 = mem_ptr
     imov! t0 .memory_table
-    imov! t1 0
-    imov! t3 0
+    imov t1 0
+    imov t2 0 # anything
+    imov t3 0 # always zero 
+    imov t4 0 # anything 
 """
 
     import argparse
@@ -258,6 +339,7 @@ def main():
 
     # remove [-] and replace with memset
     prog = optimize_memset(prog)
+    prog = optimize_add_to(prog)
 
     for op in prog:
         for line in op.translate():

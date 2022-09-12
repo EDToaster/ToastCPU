@@ -1,0 +1,58 @@
+
+.reset
+    imov! isr .isr
+    call! .print_init
+    call! .key_buffer_init
+    call! .main
+    halt
+
+.isr
+    isr!
+    push! p0 v0
+
+    call! .get_keyboard_ascii
+    mov p0 v0
+    call! .key_buffer_push
+    
+    pop! v0 p0
+    rti!
+
+#include<../../lib/std/print>
+#include<../../lib/std/keyboard>
+#include<../../lib/std/arr>
+
+.memory_table   [10240]
+
+.main
+    # clear screen
+    imov  p0 0
+    imov  p1 0
+    imov! p2 6000
+    call! .arr_memset
+
+    imov! p0 .memory_table
+    imov  p1 0
+    imov! p2 10240
+    call! .arr_memset
+
+    # t0 = mem_ptr
+    imov! t0 .memory_table
+    imov t1 0
+    imov t2 0 # anything
+    imov t3 0 # always zero 
+    imov t4 0 # anything 
+
+    load t1 t0
+    mov  t2 t0
+    iadd  t2 1
+    load t4 t2
+    add  t4 t1
+    str  t2 t4
+    load t1 t0
+    mov  t2 t0
+    iadd  t2 1
+    load t4 t2
+    add  t4 t1
+    str  t2 t4
+    str  t0 t3
+    jmpr

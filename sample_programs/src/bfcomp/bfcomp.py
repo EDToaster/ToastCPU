@@ -1,8 +1,5 @@
-
-
-from asyncore import loop
 from dataclasses import dataclass
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional, Tuple, Union, Callable
 
 
 @dataclass
@@ -147,7 +144,6 @@ class AddTo:
                 "    str  t2 t4"
             ]
 
-
 def slurp(file_name: str) -> str:
     with open(file_name) as f:
         return f.read()
@@ -173,78 +169,99 @@ def parse_op(c: str) -> Optional[Union[IncrementCell, IncrementPtr, Output, Loop
     else:
         return None
 
+def get_flat_loops(prog) -> List[Tuple[int, int]]:
+    start = None
+    pairs = []
+
+    for i, op in enumerate(prog):
+        if isinstance(op, LoopStart):
+            start = i
+            continue
+
+        if (isinstance(op, LoopEnd) 
+            and start is not None
+            and prog[start].id == op.id):
+                pairs.append((start, i+1))
+                start = None
+                continue
+    return pairs
+
+def optimize_flat_loops(prog, opt_func: Callable[[List], List]):
+    """
+    Takes in a list of operations, and an optimizing function
+    Returns a program that is optimized for this pass
+    """
+    new_prog = [op for op in prog]
+    
+    # assume no overlaps, sort decreasing by loop start
+    flat_loops = sorted(get_flat_loops(prog), key=lambda t:t[0], reverse=True)
+
+    for start, end in flat_loops:
+        new_prog[start:end] = opt_func(prog[start:end])
+    return new_prog
+
+
 def optimize_memset(prog):
     """
     [-] or [+] 
     """
-    new_prog = []
-    skip = 0
-    for i, op in enumerate(prog):
-        if skip > 0:
-            skip -= 1
-            continue
+    def opt_func(slice):
+        if len(slice) != 3: return slice
 
-        if not isinstance(op, LoopStart) or i > len(prog) - 3: 
-            new_prog.append(op)
-            continue
+        if slice[1].size != -1 and slice[1].size != 1: return slice
 
-        loop_id = op.id
+        return [Memset()]
 
-        if (isinstance(prog[i+1], IncrementCell) 
-                and (prog[i+1].size == -1 or prog[i+1].size == 1)
-                and isinstance(prog[i+2], LoopEnd)
-                and prog[i+2].id == loop_id):
-            new_prog.append(Memset())
-            skip = 2
-        else:
-            new_prog.append(op)
-    return new_prog
+    return optimize_flat_loops(prog, opt_func)
 
 def optimize_add_to(prog):
     """
-        [ - > + < ]
-        offset = 1
+        [ - > + >> + <<<]
+        offset = 1, 3
         addTo(offset) => mem[t0 + offset] += mem[t0] 
         memset(t0)
     """
 
-    new_prog = []
-    skip = 0
-    for i, op in enumerate(prog):
-        if skip > 0:
-            skip -= 1
-            continue
+    def opt_func(slice):
+        # slice should have size [6,8,10, ...]
+        if len(slice) < 6 or len(slice) % 2 != 0: return slice
 
-        if not isinstance(op, LoopStart) or i > len(prog) - 6:
-            new_prog.append(op)
-            continue
+        if not isinstance(slice[1], IncrementCell) or slice[1].size != -1: return slice
 
-        loop_id = op.id
+        # check we have alternating IncrementCell and IncrementPtr
+        inner = slice[2:-1]
+        check_cell = False
 
-        o1 = prog[i+1]
-        o2 = prog[i+2]
-        o3 = prog[i+3]
-        o4 = prog[i+4]
-        o5 = prog[i+5]
+        # keep counts
+        offsets: List[int] = []
+        offset_sum = 0
+        do_adds: List[bool] = []
 
-        if (isinstance(o1, IncrementCell) and isinstance(o2, IncrementPtr) and 
-            isinstance(o3, IncrementCell) and isinstance(o4, IncrementPtr) and
-            isinstance(o5, LoopEnd) and
-            # check o1 and o3 size are -1 and 1
-            o1.size == -1 and (o3.size == -1 or o3.size == 1) and
-            # check > and < are equal
-            o2.size == -o4.size and
-            loop_id == o5.id):
+        for op in inner:
+            if check_cell:
+                # do not alter the root 
+                if offset_sum == 0: 
+                    return slice
+                # todo: change this in the future to support multadds
+                if not isinstance(op, IncrementCell) or (op.size != 1 and op.size != -1): 
+                    return slice
 
-            do_add = o3.size > 0
-            offset = o2.size
+                do_adds.append(op.size > 0)
+            else:
+                if not isinstance(op, IncrementPtr) or op.size == 0: 
+                    return slice
+                offset_sum += op.size
+                offsets.append(offset_sum) 
 
-            new_prog.append(AddTo(offset, do_add))
-            new_prog.append(Memset())
-            skip = 5
-        else:
-            new_prog.append(op)
-    return new_prog
+            check_cell = not check_cell
+        
+        if offset_sum != 0: return slice
+
+        assert len(offsets) == len(do_adds) + 1
+
+        return [AddTo(offset, do_add) for offset, do_add in zip(offsets, do_adds)] + [Memset()]
+
+    return optimize_flat_loops(prog, opt_func)
 
 
 def main():

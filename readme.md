@@ -22,3 +22,5 @@ Read documents on the [architecture](spec/arch.md), and the [application binary 
     - [ ] `rti` will also stop other interrupts from occuring
 - [ ] Implement better multi-interrupt support.
 - [ ] ~Add Register Banking (Maybe...)~
+- [ ] Implement `mult` and `div` in hardware
+- [ ] Re-implement stack to grow downwards and add addressing with offset `load r5 r6 0xA` to load `@r6 + 10`

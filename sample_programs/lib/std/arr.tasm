@@ -1,6 +1,6 @@
 
 # Find index of val in arr of size, return -1 if not found 
-.arr_find # (WORD *arr, WORD val, WORD size) -> WORD
+fn .arr_find # (WORD *arr, WORD val, WORD size) -> WORD
     push! t0 t1 t2
 
     # counter, but also return value
@@ -31,7 +31,7 @@
 #end .arr_find
 
 
-.arr_memset # (WORD *arr, WORD val, WORD size) -> ()
+fn .arr_memset # (WORD *arr, WORD val, WORD size) -> ()
     push! t0 t1
 
     imov  t0 0

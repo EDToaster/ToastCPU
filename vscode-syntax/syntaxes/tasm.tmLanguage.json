@@ -12,6 +12,9 @@
 			"include": "#labels"
 		},
 		{
+			"include": "#subroutines"
+		},
+		{
 			"include": "#opcodes"
 		},
 		{
@@ -62,6 +65,16 @@
 					"comment": "Matches .label that is preceeded by whitespace or start of line",
 					"name": "variable.other.constant.label.tasm",
 					"match": "(^|(?<=\\s))(\\.[\\w]+)\\b"
+				}
+			]
+		},
+		"subroutines": {
+			"begin": "(^|(?<=\\s))fn\\s+",
+			"end": "\\s",
+			"name": "keyword.control.function.tasm",
+			"patterns": [
+				{
+					"include": "#labels"
 				}
 			]
 		},

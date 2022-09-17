@@ -1,0 +1,60 @@
+fn .reset
+    imov! isr .isr
+    call! .main
+#end .reset
+
+fn .isr
+    isr! 
+    rti!
+#end .isr
+
+#include<../../lib/std/arr>
+#include<../../lib/std/print>
+#include<../../lib/std/keyboard>
+
+
+fn .main
+    jmpr
+#end .main
+
+
+fn .shift_32bit
+
+#end .shift_32bit
+
+fn .mult # (WORD a, WORD b) -> ()
+    push! t0 t1 t2 t3 t4 t5 
+
+    # t0/t1 = a lo/hi
+    # t2    = b lo
+    # t3/t4 = acc lo/hi
+
+    # set b lo
+    mov     t1 p1
+    # set a lo
+    mov     t0 p0
+    # set a hi
+    imov!   t1 0xFFFF
+    tst     t0
+    jn!     .mult_skip_set_a_high_byte
+    imov    t1 0
+
+.mult_skip_set_a_high_byte
+    # set acc lo/hi
+    mov     t3 0
+    mov     t4 0
+
+.mult_loop
+    # if (b & 1 == 0)
+    mov     t5 t3
+    iand    t5 1
+    jz!     .mult_loop_skip
+
+    # add a to acc
+
+.mult_loop_skip
+    # shift b right, shift a left
+
+
+    pop!  t5 t4 t3 t2 t1 t0
+#end .mult

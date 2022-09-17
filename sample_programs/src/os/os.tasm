@@ -14,7 +14,7 @@
 .prompt_message
     "$ \0"
 
-.isr
+fn .isr
     isr!
     call!   .get_keyboard_ascii
     mov     p0 v0
@@ -22,7 +22,7 @@
     rti!
 #end .isr
 
-.main # ( ) -> ( )
+fn .main # ( ) -> ( )
     # init variables
     call!   .print_init
 

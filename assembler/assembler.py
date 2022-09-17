@@ -385,9 +385,17 @@ class Instruction:
                 self
             ]
 
+@dataclass
+class Ignore:
+    pass
+
 class Program:
     def __init__(self):
         pass
+
+    def parse_ignore(self, token) -> Optional[Ignore]:
+        if token == "fn": return Ignore()
+        return None
 
     def parse_label(self, token) -> Optional[Label]:
         x = re.search("^\\.([0-9A-Za-z-_]+)$", token)
@@ -440,6 +448,10 @@ class Program:
         return None
 
     def parse_token(self, token: str):
+        ignore = self.parse_ignore(token)
+        if ignore is not None:
+            return ignore
+
         label = self.parse_label(token)
         if label is not None:
             return label
@@ -479,8 +491,12 @@ class Program:
                 continue
 
             raw = [self.parse_token(tok.strip()) for tok in line_to_parse.split()]
+            if len(raw) > 0 and isinstance(raw[0], Ignore):
+                raw.pop(0) 
+
             if len(raw) < 1 or raw[0] is None:
                 continue
+
             raw_format.append((stripped_line, [r for r in raw if r is not None]))
 
         # add labels to words

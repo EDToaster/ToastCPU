@@ -1,4 +1,4 @@
-.print_init # ( ) -> ( )
+fn .print_init # ( ) -> ( )
     imov    t0 0
     str!    .ptr_counter t0
 
@@ -8,7 +8,7 @@
     jmpr
 #end .print_init
 
-.print_string # (char *str) -> ( )
+fn .print_string # (char *str) -> ( )
     push!   t0 t1 p0
 
     mov     t0 p0   # t0 = str
@@ -33,7 +33,53 @@
 .ptr_counter        [1]
 .ptr_line_counter   [1]
 
-.print_char # (word c) -> ( )
+fn .print_word # (word c) -> ( )
+    push!  t0 p0
+    
+    # print F000
+    mov    t0 p0
+    ishr   p0 12
+    iand   p0 0xF
+    call!  .print_nibble
+
+    # print 0F00
+    mov    p0 t0
+    ishr   p0 8
+    iand   p0 0xF
+    call!  .print_nibble
+
+    # print 00F0
+    mov    p0 t0
+    ishr   p0 4
+    iand   p0 0xF
+    call!  .print_nibble
+
+    # print 000F
+    mov    p0 t0
+    iand   p0 0xF
+    call!  .print_nibble
+
+    pop!   p0 t0
+    jmpr
+#end .print_word
+
+.print_hex_char
+    "0123456789ABCDEF"
+
+fn .print_nibble # (word c) -> ( )
+    push!   t0 p0
+    
+    imov!   t0 .print_hex_char
+    add     p0 t0
+    load    p0 p0
+    call!   .print_char
+
+    pop!    p0 t0
+    jmpr
+#end .print_nibble
+
+
+fn .print_char # (word c) -> ( )
     push!   t0 t1 t2
 
     mov     t0 p0                   # t0 = c

@@ -51,4 +51,34 @@ fn test_identifiers() {
     assert!(tl::IdentifierParser::new().parse("2hello").is_err());
 }
 
-fn main() {}
+#[test]
+fn test_statements() {
+    if let Statement::For(ForStatement { pre, cond: Expression::Literal(Literal::Int(1)), body}) = tl::StatementParser::new().parse("for ( a = 2 ; 1 ; ) {}").unwrap() {
+        assert!(matches!(*pre, 
+            Statement::Assignment(
+                Identifier { id: "a" }, 
+                Expression::Literal(
+                    Literal::Int(2)))));
+        assert!(body.is_empty());
+    } else {
+        panic!();
+    }
+    
+    if let Statement::For(ForStatement { pre, cond: Expression::Literal(Literal::Int(1)), body }) = tl::StatementParser::new().parse("for (; 1 ;) {}").unwrap() {
+        assert!(matches!(*pre, Statement::Empty()));
+        assert!(body.is_empty());
+    } else {
+        panic!();
+    }
+
+    assert!(matches!(tl::StatementParser::new().parse("word a;").unwrap(), Statement::Declaration(Identifier { id: "a" })));
+    assert!(matches!(tl::StatementParser::new().parse("a = 1;").unwrap(), Statement::Assignment(Identifier { id: "a" }, Expression::Literal(Literal::Int(1)))));
+
+    
+}
+
+
+fn main() {
+    let s: &str = include_str!("../sample_programs/main.tl");
+    
+}

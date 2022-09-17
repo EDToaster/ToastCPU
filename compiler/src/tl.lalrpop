@@ -1,0 +1,38 @@
+grammar;
+
+use crate::ast::*;
+use crate::parse::*;
+
+pub Literal: Literal<'input> = {
+    IntLiteral,
+    CharLiteral,
+    StringLiteral,
+}
+
+IntLiteral: Literal<'input> = {
+    <s:r"0x[0-9a-fA-F]+"> => Literal::Int(i32::parse_with_prefix(s).unwrap()),
+    <s:r"0b[01]+"> => Literal::Int(i32::parse_with_prefix(s).unwrap()),
+    <s:r"[0-9]+"> => Literal::Int(i32::parse_with_prefix(s).unwrap()),
+}
+
+CharLiteral: Literal<'input> = {
+    <s:r"'[^']'"> => Literal::Char(s.chars().nth(1).unwrap() as i32)
+}
+
+StringLiteral: Literal<'input> = {
+    <s:r#""[^"]*""#> => Literal::String(&s[1..s.len() - 1]),
+}
+
+pub Identifier: Identifier<'input> = {
+    <id:r"[a-zA-Z_][\w]*"> => Identifier { id }
+}
+
+match {
+    // match newline
+    r"\s*" => { }, // The default whitespace skipping is disabled an `ignore pattern` is specified
+    r"//[^\n\r]*[\n\r]*" => { }, // Skip `// comments`
+    r"#[^\n\r]*[\n\r]*" => { }, // Skip `# comments`
+    r"/\*[^*]*\*+(?:[^/*][^*]*\*+)*/" => { },  // Skip `/* comments */`
+} else {
+    _
+}

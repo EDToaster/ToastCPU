@@ -5,5 +5,9 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[build-dependencies] # <-- We added this and everything after!
+lalrpop = "0.19.7"
+
 [dependencies]
+lalrpop-util = { version = "0.19.7", features = ["lexer"] }
 regex = "1.6.0"

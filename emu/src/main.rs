@@ -233,7 +233,7 @@ fn main() {
     let mut registers: Registers = Registers {
         general: [0; 12],
         isr: 0,
-        sp: 0x8000,
+        sp: 0xBFFF,
         sr: StatusRegister { sr: 0 },
         pc: 0x0000,
     };
@@ -252,10 +252,10 @@ fn main() {
     while !halt {
         if *irq.lock().unwrap() {
             *irq.lock().unwrap() = false;
+            registers.sp -= 1;
             mem.write(registers.sp, registers.pc);
-            registers.sp += 1;
+            registers.sp -= 1;
             mem.write(registers.sp, registers.sr.sr);
-            registers.sp += 1;
             registers.pc = registers.isr;
             continue;
         }
@@ -270,14 +270,15 @@ fn main() {
 
         let alu_imm4: u16 = r2;
         let alu_op: u16 = inst & 0x000F;
+        let load_offset: u16 = alu_op;
         let jmp_op: u16 = alu_op;
 
         match opcode {
             LOAD => {
-                registers[r1] = mem.read(registers[r2]);
+                registers[r1] = mem.read(registers[r2] + load_offset);
             }
             STR => {
-                mem.write(registers[r1], registers[r2]);
+                mem.write(registers[r1] + load_offset, registers[r2]);
             }
             IMOV => {
                 registers[r1] = imov_imm8;
@@ -286,12 +287,12 @@ fn main() {
                 registers[r1] = imoh_imm8 | (registers[r1] & 0x00FF);
             }
             PUSH => {
+                registers.sp -= 1;
                 mem.write(registers[r1], registers[r2]);
-                registers.sp += 1;
             }
             POP => {
-                registers.sp -= 1;
                 registers[r1] = mem.read(registers[r2]);
+                registers.sp += 1;
             }
             HALT => {
                 halt = true;
@@ -338,11 +339,11 @@ fn main() {
 
                 if do_jump {
                     if r {
-                        registers.sp -= 1;
                         registers.pc = mem.read(registers.sp);
-                    } else if l {
-                        mem.write(registers.sp, registers.pc + 1);
                         registers.sp += 1;
+                    } else if l {
+                        registers.sp -= 1;
+                        mem.write(registers.sp, registers.pc + 1);
 
                         registers.pc = registers[r1];
                     } else {
@@ -352,10 +353,10 @@ fn main() {
                 }
             }
             RTI => {
-                registers.sp -= 1;
                 registers.sr.sr = mem.read(registers.sp);
-                registers.sp -= 1;
+                registers.sp += 1;
                 registers.pc = mem.read(registers.sp);
+                registers.sp += 1;
 
                 registers.pc -= 1;
             }

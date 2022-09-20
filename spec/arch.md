@@ -41,7 +41,7 @@ There are a total of 16 16-bit integer registers:
 * `r5     (v0) Return value` 
 * `r6-r11 (t0 to t5) 7 General Purpose Registers (Callee must restore)`
 * `r12    (isr) Interrupt service routine`
-* `r13    (sp) Stack Pointer`
+* `r13    (sp) Stack Pointer (0xC000 downwards)`
 * `r14    (sr) Status Register`
    * WIP: Bits 15-8: Register bank #
    * Bit 4: V, if last operation caused overflow
@@ -76,13 +76,13 @@ For iALU ops, rx2 is an imm4 value.
 J-type operations are used for jump operations, where `n` negates the jump condition.
 
 ```
-0000 xxxx xxxx ----
-load rx1  rx2
-     (D-type) Move the data pointed to by rx2 into the register rx1
+0000 xxxx xxxx xxxx
+load rx1  rx2  offset
+     (D-type) Move the data pointed to by rx2 into the register rx1 (with offset)
 
-0001 xxxx xxxx ----
-str  rx1  rx2
-     (D-type) Move the data in register rx2 into memory location rx1
+0001 xxxx xxxx xxxx
+str  rx1  rx2  offset
+     (D-type) Move the data in register rx2 into memory location rx1 (with offset)
 
 0010 xxxx xxxxxxxx
 imov rxx  imm8
@@ -179,3 +179,4 @@ rti
 - [x] Change all J-type instructions so that the `opcode` is the same, and use last four bits to differentiate between `jz`, `jeq`, etc
 - [x] Implement hardware interrupts
 - [ ] Implement `rti`
+- [x] Add load with offset instruction and move stack to 0xBFFF

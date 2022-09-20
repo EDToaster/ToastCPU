@@ -62,11 +62,15 @@ opcodes = {
 one_4bit_opcodes = ["not", "tst"]
 
 two_4bit_opcodes = [
-    "load", "str", "and", "or", 
+    "and", "or", 
     "xor", "add", "sub", "mov", "cmp",
     "shr", "sshr", "shl", "iand", 
     "ior", "ixor", "iadd", "isub", "icmp",
     "ishr", "isshr", "ishl"
+]
+
+load_str_opcodes = [
+    "load", "str"
 ]
 
 imm8_opcodes = [
@@ -111,8 +115,6 @@ no_arg_opcodes = [
 ]
 
 opcodes_suffix = {
-    "load": "0000",
-    "str": "0000",
     "push": "0000",
     "pop": "0000",
     "not": "0000",
@@ -225,6 +227,13 @@ class Instruction:
             instr += self.words[1].to_binary(4)
             instr += "0" * 4
             instr += opcodes_suffix[opcode]
+        elif opcode in load_str_opcodes:
+            instr += self.words[1].to_binary(4)
+            instr += self.words[2].to_binary(4)
+            if len(self.words) > 3:
+                instr += self.words[3].to_binary(4)
+            else:
+                instr += "0" * 4
         elif opcode in two_4bit_opcodes:
             instr += self.words[1].to_binary(4)
             instr += self.words[2].to_binary(4)
@@ -505,7 +514,7 @@ class Program:
         current_labels_for_line = []
 
         # compile-time allocation
-        heap = 0xC000
+        heap = 0x8000
 
         for (text, line) in raw_format:
             if len(line) < 1:
@@ -514,8 +523,8 @@ class Program:
             if len(line) >= 2 and isinstance(line[0], Label) and isinstance(line[1], Number):
                 label_locations[line[0]] = line[1]
             elif len(line) >= 2 and isinstance(line[0], Label) and isinstance(line[1], Allocation):
-                heap -= line[1].size
                 label_locations[line[0]] = Number(heap)
+                heap += line[1].size
             elif isinstance(line[0], Label):
                 current_labels_for_line.append(line[0])
             else:

@@ -11,13 +11,13 @@ BEGIN
 0004 : A010; -- ' jmpl
 0005 : 7000; --   halt
 0006 : 2600; --   imov    t0 0
-0007 : 20FF; -- . imov [str!    .ptr_counter t0]
-0008 : 30BF; -- | imoh
+0007 : 2000; -- . imov [str!    .ptr_counter t0]
+0008 : 3080; -- | imoh
 0009 : 1060; -- ' str
 000A : 2664; -- . imov [imov!   t0 100]
 000B : 3600; -- ' imoh
-000C : 20FE; -- . imov [str!    .ptr_line_counter t0]
-000D : 30BF; -- | imoh
+000C : 2001; -- . imov [str!    .ptr_line_counter t0]
+000D : 3080; -- | imoh
 000E : 1060; -- ' str
 000F : A020; --   jmpr
 0010 : 5D60; -- . push [push!   t0 t1 p0]
@@ -105,34 +105,34 @@ BEGIN
 0062 : 2074; -- . imov [jnz!    .print_char_keep_going]
 0063 : 3000; -- | imoh
 0064 : A002; -- ' j_op
-0065 : 27FF; -- . imov [load!   t1 .ptr_counter]
-0066 : 37BF; -- | imoh
+0065 : 2700; -- . imov [load!   t1 .ptr_counter]
+0066 : 3780; -- | imoh
 0067 : 0770; -- ' load
-0068 : 28FE; -- . imov [load!   t2 .ptr_line_counter]
-0069 : 38BF; -- | imoh
+0068 : 2801; -- . imov [load!   t2 .ptr_line_counter]
+0069 : 3880; -- | imoh
 006A : 0880; -- ' load
 006B : 8784; --   add     t1 t2
-006C : 20FF; -- . imov [str!    .ptr_counter t1]
-006D : 30BF; -- | imoh
+006C : 2000; -- . imov [str!    .ptr_counter t1]
+006D : 3080; -- | imoh
 006E : 1070; -- ' str
 006F : 2864; -- . imov [imov!   t2 100]
 0070 : 3800; -- ' imoh
 0071 : 2088; -- . imov [jmp!    .print_char_store_and_exit]
 0072 : 3000; -- | imoh
 0073 : A000; -- ' j_op
-0074 : 28FF; -- . imov [load!   t2 .ptr_counter]
-0075 : 38BF; -- | imoh
+0074 : 2800; -- . imov [load!   t2 .ptr_counter]
+0075 : 3880; -- | imoh
 0076 : 0880; -- ' load
 0077 : 2738; --   imov    t1 0b00111000
 0078 : 978A; --   ishl    t1 8
 0079 : 8672; --   or      t0 t1
 007A : 1860; --   str     t2 t0
 007B : 9814; --   iadd    t2 1
-007C : 20FF; -- . imov [str!    .ptr_counter t2]
-007D : 30BF; -- | imoh
+007C : 2000; -- . imov [str!    .ptr_counter t2]
+007D : 3080; -- | imoh
 007E : 1080; -- ' str
-007F : 28FE; -- . imov [load!   t2 .ptr_line_counter]
-0080 : 38BF; -- | imoh
+007F : 2801; -- . imov [load!   t2 .ptr_line_counter]
+0080 : 3880; -- | imoh
 0081 : 0880; -- ' load
 0082 : 9815; --   isub    t2 1
 0083 : 2088; -- . imov [jnz!    .print_char_store_and_exit]
@@ -140,8 +140,8 @@ BEGIN
 0085 : A002; -- ' j_op
 0086 : 2864; -- . imov [imov!   t2 100]
 0087 : 3800; -- ' imoh
-0088 : 27FF; -- . imov [load!   t1 .ptr_counter]
-0089 : 37BF; -- | imoh
+0088 : 2700; -- . imov [load!   t1 .ptr_counter]
+0089 : 3780; -- | imoh
 008A : 0770; -- ' load
 008B : 2070; -- . imov [icmp!   t1 6000]
 008C : 3017; -- | imoh
@@ -150,11 +150,11 @@ BEGIN
 008F : 3000; -- | imoh
 0090 : A003; -- ' j_op
 0091 : 2700; --   imov    t1 0
-0092 : 20FF; -- . imov [str!    .ptr_counter t1]
-0093 : 30BF; -- | imoh
+0092 : 2000; -- . imov [str!    .ptr_counter t1]
+0093 : 3080; -- | imoh
 0094 : 1070; -- ' str
-0095 : 20FE; -- . imov [str!    .ptr_line_counter t2]
-0096 : 30BF; -- | imoh
+0095 : 2001; -- . imov [str!    .ptr_line_counter t2]
+0096 : 3080; -- | imoh
 0097 : 1080; -- ' str
 0098 : 68D0; -- . pop [pop!    t2 t1 t0]
 0099 : 67D0; -- | pop
@@ -162,51 +162,51 @@ BEGIN
 009B : A020; --   jmpr
 009C : 5D60; -- . push [push! t0]
 009D : 2600; --   imov t0 0
-009E : 20EC; -- . imov [str!  .key_buffer_write_offset t0]
-009F : 30BF; -- | imoh
+009E : 2013; -- . imov [str!  .key_buffer_write_offset t0]
+009F : 3080; -- | imoh
 00A0 : 1060; -- ' str
-00A1 : 20ED; -- . imov [str!  .key_buffer_read_offset t0]
-00A2 : 30BF; -- | imoh
+00A1 : 2012; -- . imov [str!  .key_buffer_read_offset t0]
+00A2 : 3080; -- | imoh
 00A3 : 1060; -- ' str
 00A4 : 66D0; -- . pop [pop! t0]
 00A5 : A020; --   jmpr
 00A6 : 5D60; -- . push [push! t0 t1]
 00A7 : 5D70; -- ' push
-00A8 : 27EE; -- . imov [imov! t1 .key_buffer]
-00A9 : 37BF; -- ' imoh
-00AA : 26EC; -- . imov [load! t0 .key_buffer_write_offset]
-00AB : 36BF; -- | imoh
+00A8 : 2702; -- . imov [imov! t1 .key_buffer]
+00A9 : 3780; -- ' imoh
+00AA : 2613; -- . imov [load! t0 .key_buffer_write_offset]
+00AB : 3680; -- | imoh
 00AC : 0660; -- ' load
 00AD : 8764; --   add   t1 t0
 00AE : 1710; --   str   t1 p0
 00AF : 9614; --   iadd  t0 1
 00B0 : 96F1; --   iand  t0 0b1111
-00B1 : 20EC; -- . imov [str!  .key_buffer_write_offset t0]
-00B2 : 30BF; -- | imoh
+00B1 : 2013; -- . imov [str!  .key_buffer_write_offset t0]
+00B2 : 3080; -- | imoh
 00B3 : 1060; -- ' str
 00B4 : 67D0; -- . pop [pop!  t1 t0]
 00B5 : 66D0; -- ' pop
 00B6 : A020; --   jmpr
 00B7 : 5D60; -- . push [push! t0 t1]
 00B8 : 5D70; -- ' push
-00B9 : 26ED; -- . imov [load! t0 .key_buffer_read_offset]
-00BA : 36BF; -- | imoh
+00B9 : 2612; -- . imov [load! t0 .key_buffer_read_offset]
+00BA : 3680; -- | imoh
 00BB : 0660; -- ' load
-00BC : 27EC; -- . imov [load! t1 .key_buffer_write_offset]
-00BD : 37BF; -- | imoh
+00BC : 2713; -- . imov [load! t1 .key_buffer_write_offset]
+00BD : 3780; -- | imoh
 00BE : 0770; -- ' load
 00BF : 8677; --   cmp t0 t1
 00C0 : 20B9; -- . imov [jz! .key_buffer_read_loop]
 00C1 : 3000; -- | imoh
 00C2 : A001; -- ' j_op
-00C3 : 27EE; -- . imov [imov! t1 .key_buffer]
-00C4 : 37BF; -- ' imoh
+00C3 : 2702; -- . imov [imov! t1 .key_buffer]
+00C4 : 3780; -- ' imoh
 00C5 : 8764; --   add   t1 t0
 00C6 : 0570; --   load  v0 t1
 00C7 : 9614; --   iadd t0 1
 00C8 : 96F1; --   iand t0 0b1111
-00C9 : 20ED; -- . imov [str! .key_buffer_read_offset t0]
-00CA : 30BF; -- | imoh
+00C9 : 2012; -- . imov [str! .key_buffer_read_offset t0]
+00CA : 3080; -- | imoh
 00CB : 1060; -- ' str
 00CC : 67D0; -- . pop [pop!  t1 t0]
 00CD : 66D0; -- ' pop

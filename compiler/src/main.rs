@@ -73,10 +73,7 @@ fn test_statements() {
 
     assert!(matches!(tl::StatementParser::new().parse("word a;").unwrap(), Statement::Declaration(Identifier { id: "a" })));
     assert!(matches!(tl::StatementParser::new().parse("a = 1;").unwrap(), Statement::Assignment(Identifier { id: "a" }, Expression::Literal(Literal::Int(1)))));
-
-    
 }
-
 
 fn main() {
     let s: &str = include_str!("../sample_programs/main.tl");

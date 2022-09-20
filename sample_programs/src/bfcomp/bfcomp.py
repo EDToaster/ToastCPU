@@ -25,7 +25,7 @@ class IncrementCell:
             ]
         else:
             return [
-                f"    imov! t1 {size}",
+                f"    {'imov!' if size < 256 else 'imov'} t1 {size}",
                 "    load t2 t0",
                 f"    {'sub' if neg else 'add'}  t2 t1",
                 "    str  t0 t2",
@@ -52,7 +52,7 @@ class IncrementPtr:
             ]
         else:
             return [
-                f"    imov! t1 {size}",
+                f"    {'imov!' if size < 256 else 'imov'} t1 {size}",
                 f"    {'sub' if neg else 'add'}  t0 t1",
             ]
 
@@ -137,7 +137,7 @@ class AddTo:
             return [
                 "    load t1 t0",
                 "    mov  t2 t0",
-                f"    imov! t4 {offset}",
+                f"    {'imov!' if offset < 256 else 'imov'} t4 {offset}",
                 f"    {'sub' if neg else 'add'}  t2 t4",
                 "    load t4 t2",
                 f"    {'add' if self.do_add else 'sub'}  t4 t1",

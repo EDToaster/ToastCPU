@@ -33,6 +33,21 @@ fn .print_string # (char *str) -> ( )
 .ptr_counter        [1]
 .ptr_line_counter   [1]
 
+.print_color        [1]
+
+fn .print_set_color
+    push!  t0 t1
+    load!  t0 .print_color
+    imov!  t1 0b0000000011111111
+    and    t0 t1
+    mov    t1 p0
+    ishl   t1 8
+    or     t0 t1
+    str!   .print_color t0
+    pop!   t1 t0
+    jmpr
+#end .print_set_color
+
 fn .print_word # (word c) -> ( )
     push!  t0 p0
     
@@ -98,6 +113,7 @@ fn .print_char # (word c) -> ( )
     # get counter into t2
     load!   t2 .ptr_counter
 
+    # todo: use print_color
     imov    t1 0b00111000
     ishl    t1 8
     or      t0 t1

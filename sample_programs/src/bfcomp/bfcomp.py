@@ -124,15 +124,24 @@ class AddTo:
         neg = self.offset < 0
         offset = -self.offset if neg else self.offset
         
-        if offset < 16:           
-            return [
-                "    load t1 t0",
-                "    mov  t2 t0",
-                f"    {'isub' if neg else 'iadd'}  t2 {offset}",
-                "    load t4 t2",
-                f"    {'add' if self.do_add else 'sub'}  t4 t1",
-                "    str  t2 t4"
-            ]
+        if offset < 16:    
+            if neg:       
+                return [
+                    "    load t1 t0",
+                    "    mov  t2 t0",
+                    f"    {'isub' if neg else 'iadd'}  t2 {offset}",
+                    "    load t4 t2",
+                    f"    {'add' if self.do_add else 'sub'}  t4 t1",
+                    "    str  t2 t4"
+                ]
+            else:
+                return [
+                    "    load t1 t0",
+                    "    mov  t2 t0",
+                    f"    load t4 t2 {offset}",
+                    f"    {'add' if self.do_add else 'sub'}  t4 t1",
+                    f"    str  t2 t4 {offset}"
+                ]
         else:
             return [
                 "    load t1 t0",
@@ -262,6 +271,12 @@ def optimize_add_to(prog):
         return [AddTo(offset, do_add) for offset, do_add in zip(offsets, do_adds)] + [Memset()]
 
     return optimize_flat_loops(prog, opt_func)
+
+def optimize_offset_adds(prog):
+    """
+        >> -- << 
+        p[2] -= 2
+    """
 
 
 def main():

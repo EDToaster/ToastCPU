@@ -2,7 +2,7 @@
 - [Todo](#todo)
 
 # Toast CPU
-`toast` is a 16-bit architecture spec, an emulator, an FPGA implementation, and an assembler.
+`toast` is a 16-bit architecture spec, an emulator, an subscalar FPGA implementation, and an assembler.
 
 Read documents on the [architecture](spec/arch.md), and the [application binary interface](spec/abi.md).
 

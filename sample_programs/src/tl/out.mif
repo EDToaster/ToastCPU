@@ -1,0 +1,635 @@
+DEPTH = 32768;                -- The size of memory in words
+WIDTH = 16;                   -- The size of data in bits
+ADDRESS_RADIX = HEX;          -- The radix for address values
+DATA_RADIX = HEX;             -- The radix for data values
+CONTENT                       -- start of (address : data pairs)
+BEGIN
+0000 : 2CF6; -- . imov [imov!   isr .isr]
+0001 : 3C01; -- ' imoh
+0002 : 2012; -- . imov r0 .print_init  [call!   .print_init]
+0003 : 3000; -- | imoh r0 .print_init
+0004 : A010; -- ' jmpl
+0005 : 2601; -- . imov [imov!   t0 .ret_stack]
+0006 : 3680; -- ' imoh
+0007 : 2711; -- . imov [imov!   t1 .reset_ret]
+0008 : 3700; -- ' imoh
+0009 : 1670; --   str     t0 t1
+000A : 9614; --   iadd    t0 1
+000B : 2000; -- . imov [str!    .ret_stack_ptr t0]
+000C : 3080; -- | imoh
+000D : 1060; -- ' str
+000E : 2015; -- . imov [jmp!    .main]
+000F : 3002; -- | imoh
+0010 : A000; -- ' j_op
+0011 : 7000; --   halt
+0012 : 2600; --   imov    t0 0
+0013 : 2001; -- . imov [str!    .ptr_counter t0]
+0014 : 3081; -- | imoh
+0015 : 1060; -- ' str
+0016 : 2664; -- . imov [imov!   t0 100]
+0017 : 3600; -- ' imoh
+0018 : 2002; -- . imov [str!    .ptr_line_counter t0]
+0019 : 3081; -- | imoh
+001A : 1060; -- ' str
+001B : A020; --   jmpr
+001C : 5D60; -- . push [push!   t0 t1 p0]
+001D : 5D70; -- | push
+001E : 5D10; -- ' push
+001F : 8616; --   mov     t0 p0   # t0 = str
+0020 : 0760; --   load    t1 t0
+0021 : 9704; --   iadd    t1 0    # if (t0 == '\0')
+0022 : 202D; -- . imov [jz!     .print_string_exit]
+0023 : 3000; -- | imoh
+0024 : A001; -- ' j_op
+0025 : 8176; --   mov     p0 t1
+0026 : 207A; -- . imov r0 .print_char  [call!   .print_char]
+0027 : 3000; -- | imoh r0 .print_char
+0028 : A010; -- ' jmpl
+0029 : 9614; --   iadd    t0 1    # t0++
+002A : 2020; -- . imov [jmp!    .print_string_loop]
+002B : 3000; -- | imoh
+002C : A000; -- ' j_op
+002D : 61D0; -- . pop [pop!    p0 t1 t0]
+002E : 67D0; -- | pop
+002F : 66D0; -- ' pop
+0030 : A020; --   jmpr
+0031 : 5D60; -- . push [push!  t0 t1]
+0032 : 5D70; -- ' push
+0033 : 2603; -- . imov [load!  t0 .print_color]
+0034 : 3681; -- | imoh
+0035 : 0660; -- ' load
+0036 : 27FF; -- . imov [imov!  t1 0b0000000011111111]
+0037 : 3700; -- ' imoh
+0038 : 8671; --   and    t0 t1
+0039 : 8716; --   mov    t1 p0
+003A : 978A; --   ishl   t1 8
+003B : 8672; --   or     t0 t1
+003C : 2003; -- . imov [str!   .print_color t0]
+003D : 3081; -- | imoh
+003E : 1060; -- ' str
+003F : 67D0; -- . pop [pop!   t1 t0]
+0040 : 66D0; -- ' pop
+0041 : A020; --   jmpr
+0042 : 5D60; -- . push [push!  t0 p0]
+0043 : 5D10; -- ' push
+0044 : 8616; --   mov    t0 p0
+0045 : 91C8; --   ishr   p0 12
+0046 : 91F1; --   iand   p0 0xF
+0047 : 206E; -- . imov r0 .print_nibble  [call!  .print_nibble]
+0048 : 3000; -- | imoh r0 .print_nibble
+0049 : A010; -- ' jmpl
+004A : 8166; --   mov    p0 t0
+004B : 9188; --   ishr   p0 8
+004C : 91F1; --   iand   p0 0xF
+004D : 206E; -- . imov r0 .print_nibble  [call!  .print_nibble]
+004E : 3000; -- | imoh r0 .print_nibble
+004F : A010; -- ' jmpl
+0050 : 8166; --   mov    p0 t0
+0051 : 9148; --   ishr   p0 4
+0052 : 91F1; --   iand   p0 0xF
+0053 : 206E; -- . imov r0 .print_nibble  [call!  .print_nibble]
+0054 : 3000; -- | imoh r0 .print_nibble
+0055 : A010; -- ' jmpl
+0056 : 8166; --   mov    p0 t0
+0057 : 91F1; --   iand   p0 0xF
+0058 : 206E; -- . imov r0 .print_nibble  [call!  .print_nibble]
+0059 : 3000; -- | imoh r0 .print_nibble
+005A : A010; -- ' jmpl
+005B : 61D0; -- . pop [pop!   p0 t0]
+005C : 66D0; -- ' pop
+005D : A020; --   jmpr
+005E : 0030; -- 0
+005F : 0031; -- 1
+0060 : 0032; -- 2
+0061 : 0033; -- 3
+0062 : 0034; -- 4
+0063 : 0035; -- 5
+0064 : 0036; -- 6
+0065 : 0037; -- 7
+0066 : 0038; -- 8
+0067 : 0039; -- 9
+0068 : 0041; -- A
+0069 : 0042; -- B
+006A : 0043; -- C
+006B : 0044; -- D
+006C : 0045; -- E
+006D : 0046; -- F
+006E : 5D60; -- . push [push!   t0 p0]
+006F : 5D10; -- ' push
+0070 : 265E; -- . imov [imov!   t0 .print_hex_char]
+0071 : 3600; -- ' imoh
+0072 : 8164; --   add     p0 t0
+0073 : 0110; --   load    p0 p0
+0074 : 207A; -- . imov r0 .print_char  [call!   .print_char]
+0075 : 3000; -- | imoh r0 .print_char
+0076 : A010; -- ' jmpl
+0077 : 61D0; -- . pop [pop!    p0 t0]
+0078 : 66D0; -- ' pop
+0079 : A020; --   jmpr
+007A : 5D60; -- . push [push!   t0 t1 t2]
+007B : 5D70; -- | push
+007C : 5D80; -- ' push
+007D : 8616; --   mov     t0 p0                   # t0 = c
+007E : 96A7; --   icmp    t0 0x0A                 # if (t0 == '\n')
+007F : 2091; -- . imov [jnz!    .print_char_keep_going]
+0080 : 3000; -- | imoh
+0081 : A002; -- ' j_op
+0082 : 2701; -- . imov [load!   t1 .ptr_counter]
+0083 : 3781; -- | imoh
+0084 : 0770; -- ' load
+0085 : 2802; -- . imov [load!   t2 .ptr_line_counter]
+0086 : 3881; -- | imoh
+0087 : 0880; -- ' load
+0088 : 8784; --   add     t1 t2
+0089 : 2001; -- . imov [str!    .ptr_counter t1]
+008A : 3081; -- | imoh
+008B : 1070; -- ' str
+008C : 2864; -- . imov [imov!   t2 100]
+008D : 3800; -- ' imoh
+008E : 20A5; -- . imov [jmp!    .print_char_store_and_exit]
+008F : 3000; -- | imoh
+0090 : A000; -- ' j_op
+0091 : 2801; -- . imov [load!   t2 .ptr_counter]
+0092 : 3881; -- | imoh
+0093 : 0880; -- ' load
+0094 : 2738; --   imov    t1 0b00111000
+0095 : 978A; --   ishl    t1 8
+0096 : 8672; --   or      t0 t1
+0097 : 1860; --   str     t2 t0
+0098 : 9814; --   iadd    t2 1
+0099 : 2001; -- . imov [str!    .ptr_counter t2]
+009A : 3081; -- | imoh
+009B : 1080; -- ' str
+009C : 2802; -- . imov [load!   t2 .ptr_line_counter]
+009D : 3881; -- | imoh
+009E : 0880; -- ' load
+009F : 9815; --   isub    t2 1
+00A0 : 20A5; -- . imov [jnz!    .print_char_store_and_exit]
+00A1 : 3000; -- | imoh
+00A2 : A002; -- ' j_op
+00A3 : 2864; -- . imov [imov!   t2 100]
+00A4 : 3800; -- ' imoh
+00A5 : 2701; -- . imov [load!   t1 .ptr_counter]
+00A6 : 3781; -- | imoh
+00A7 : 0770; -- ' load
+00A8 : 2070; -- . imov [icmp!   t1 6000]
+00A9 : 3017; -- | imoh
+00AA : 8707; -- ' cmp
+00AB : 20B2; -- . imov [jn!     .print_char_skip_reset]
+00AC : 3000; -- | imoh
+00AD : A003; -- ' j_op
+00AE : 2700; --   imov    t1 0
+00AF : 2001; -- . imov [str!    .ptr_counter t1]
+00B0 : 3081; -- | imoh
+00B1 : 1070; -- ' str
+00B2 : 2002; -- . imov [str!    .ptr_line_counter t2]
+00B3 : 3081; -- | imoh
+00B4 : 1080; -- ' str
+00B5 : 68D0; -- . pop [pop!    t2 t1 t0]
+00B6 : 67D0; -- | pop
+00B7 : 66D0; -- ' pop
+00B8 : A020; --   jmpr
+00B9 : 5D60; -- . push [push! t0]
+00BA : 2600; --   imov t0 0
+00BB : 2015; -- . imov [str!  .key_buffer_write_offset t0]
+00BC : 3081; -- | imoh
+00BD : 1060; -- ' str
+00BE : 2014; -- . imov [str!  .key_buffer_read_offset t0]
+00BF : 3081; -- | imoh
+00C0 : 1060; -- ' str
+00C1 : 66D0; -- . pop [pop! t0]
+00C2 : A020; --   jmpr
+00C3 : 5D60; -- . push [push! t0 t1]
+00C4 : 5D70; -- ' push
+00C5 : 2704; -- . imov [imov! t1 .key_buffer]
+00C6 : 3781; -- ' imoh
+00C7 : 2615; -- . imov [load! t0 .key_buffer_write_offset]
+00C8 : 3681; -- | imoh
+00C9 : 0660; -- ' load
+00CA : 8764; --   add   t1 t0
+00CB : 1710; --   str   t1 p0
+00CC : 9614; --   iadd  t0 1
+00CD : 96F1; --   iand  t0 0b1111
+00CE : 2015; -- . imov [str!  .key_buffer_write_offset t0]
+00CF : 3081; -- | imoh
+00D0 : 1060; -- ' str
+00D1 : 67D0; -- . pop [pop!  t1 t0]
+00D2 : 66D0; -- ' pop
+00D3 : A020; --   jmpr
+00D4 : 5D60; -- . push [push! t0 t1]
+00D5 : 5D70; -- ' push
+00D6 : 2614; -- . imov [load! t0 .key_buffer_read_offset]
+00D7 : 3681; -- | imoh
+00D8 : 0660; -- ' load
+00D9 : 2715; -- . imov [load! t1 .key_buffer_write_offset]
+00DA : 3781; -- | imoh
+00DB : 0770; -- ' load
+00DC : 8677; --   cmp t0 t1
+00DD : 20D6; -- . imov [jz! .key_buffer_read_loop]
+00DE : 3000; -- | imoh
+00DF : A001; -- ' j_op
+00E0 : 2704; -- . imov [imov! t1 .key_buffer]
+00E1 : 3781; -- ' imoh
+00E2 : 8764; --   add   t1 t0
+00E3 : 0570; --   load  v0 t1
+00E4 : 9614; --   iadd t0 1
+00E5 : 96F1; --   iand t0 0b1111
+00E6 : 2014; -- . imov [str! .key_buffer_read_offset t0]
+00E7 : 3081; -- | imoh
+00E8 : 1060; -- ' str
+00E9 : 67D0; -- . pop [pop!  t1 t0]
+00EA : 66D0; -- ' pop
+00EB : A020; --   jmpr
+00EC : 0020; --  
+00ED : 0020; --  
+00EE : 0020; --  
+00EF : 0020; --  
+00F0 : 0020; --  
+00F1 : 0020; --  
+00F2 : 0020; --  
+00F3 : 0020; --  
+00F4 : 0020; --  
+00F5 : 0020; --  
+00F6 : 0020; --  
+00F7 : 0020; --  
+00F8 : 0020; --  
+00F9 : 0020; --  
+00FA : 0060; -- `
+00FB : 0020; --  
+00FC : 0020; --  
+00FD : 0020; --  
+00FE : 0020; --  
+00FF : 0020; --  
+0100 : 0020; --  
+0101 : 0071; -- q
+0102 : 0031; -- 1
+0103 : 0020; --  
+0104 : 0020; --  
+0105 : 0020; --  
+0106 : 007A; -- z
+0107 : 0073; -- s
+0108 : 0061; -- a
+0109 : 0077; -- w
+010A : 0032; -- 2
+010B : 0020; --  
+010C : 0020; --  
+010D : 0063; -- c
+010E : 0078; -- x
+010F : 0064; -- d
+0110 : 0065; -- e
+0111 : 0034; -- 4
+0112 : 0033; -- 3
+0113 : 0020; --  
+0114 : 0020; --  
+0115 : 0020; --  
+0116 : 0076; -- v
+0117 : 0066; -- f
+0118 : 0074; -- t
+0119 : 0072; -- r
+011A : 0035; -- 5
+011B : 0020; --  
+011C : 0020; --  
+011D : 006E; -- n
+011E : 0062; -- b
+011F : 0068; -- h
+0120 : 0067; -- g
+0121 : 0079; -- y
+0122 : 0036; -- 6
+0123 : 0020; --  
+0124 : 0020; --  
+0125 : 0020; --  
+0126 : 006D; -- m
+0127 : 006A; -- j
+0128 : 0075; -- u
+0129 : 0037; -- 7
+012A : 0038; -- 8
+012B : 0020; --  
+012C : 0020; --  
+012D : 002C; -- ,
+012E : 006B; -- k
+012F : 0069; -- i
+0130 : 006F; -- o
+0131 : 0030; -- 0
+0132 : 0039; -- 9
+0133 : 0020; --  
+0134 : 0020; --  
+0135 : 002E; -- .
+0136 : 002F; -- /
+0137 : 006C; -- l
+0138 : 003B; -- ;
+0139 : 0070; -- p
+013A : 002D; -- -
+013B : 0020; --  
+013C : 0020; --  
+013D : 0020; --  
+013E : 0020; --  
+013F : 0020; --  
+0140 : 005B; -- [
+0141 : 003D; -- =
+0142 : 0020; --  
+0143 : 0020; --  
+0144 : 0020; --  
+0145 : 0020; --  
+0146 : 000A; -- \n
+0147 : 005D; -- ]
+0148 : 0020; --  
+0149 : 005C; -- \\
+014A : 0020; --  
+014B : 0020; --  
+014C : 0020; --  
+014D : 0020; --  
+014E : 0020; --  
+014F : 0020; --  
+0150 : 0020; --  
+0151 : 0020; --  
+0152 : 0020; --  
+0153 : 0020; --  
+0154 : 0020; --  
+0155 : 0020; --  
+0156 : 0020; --  
+0157 : 0020; --  
+0158 : 0020; --  
+0159 : 0020; --  
+015A : 0020; --  
+015B : 0020; --  
+015C : 0020; --  
+015D : 0020; --  
+015E : 0020; --  
+015F : 0020; --  
+0160 : 0020; --  
+0161 : 0020; --  
+0162 : 0020; --  
+0163 : 0020; --  
+0164 : 0020; --  
+0165 : 0020; --  
+0166 : 0020; --  
+0167 : 0020; --  
+0168 : 0020; --  
+0169 : 0020; --  
+016A : 0020; --  
+016B : 0020; --  
+016C : 0020; --  
+016D : 0020; --  
+016E : 0020; --  
+016F : 0020; --  
+0170 : 0020; --  
+0171 : 0020; --  
+0172 : 0020; --  
+0173 : 0020; --  
+0174 : 0020; --  
+0175 : 0020; --  
+0176 : 0020; --  
+0177 : 0020; --  
+0178 : 0020; --  
+0179 : 0020; --  
+017A : 0020; --  
+017B : 0020; --  
+017C : 0020; --  
+017D : 0020; --  
+017E : 0020; --  
+017F : 0020; --  
+0180 : 0020; --  
+0181 : 0020; --  
+0182 : 0020; --  
+0183 : 0020; --  
+0184 : 0020; --  
+0185 : 0020; --  
+0186 : 0020; --  
+0187 : 0020; --  
+0188 : 0020; --  
+0189 : 0020; --  
+018A : 0020; --  
+018B : 0020; --  
+018C : 0020; --  
+018D : 0020; --  
+018E : 0020; --  
+018F : 0020; --  
+0190 : 0020; --  
+0191 : 0020; --  
+0192 : 0020; --  
+0193 : 0020; --  
+0194 : 0020; --  
+0195 : 0020; --  
+0196 : 0020; --  
+0197 : 0020; --  
+0198 : 0020; --  
+0199 : 0020; --  
+019A : 0020; --  
+019B : 0020; --  
+019C : 0020; --  
+019D : 0020; --  
+019E : 0020; --  
+019F : 0020; --  
+01A0 : 0020; --  
+01A1 : 0020; --  
+01A2 : 0020; --  
+01A3 : 0020; --  
+01A4 : 0020; --  
+01A5 : 0020; --  
+01A6 : 0020; --  
+01A7 : 0020; --  
+01A8 : 0020; --  
+01A9 : 0020; --  
+01AA : 0020; --  
+01AB : 0020; --  
+01AC : 0020; --  
+01AD : 0020; --  
+01AE : 0020; --  
+01AF : 0020; --  
+01B0 : 0020; --  
+01B1 : 0020; --  
+01B2 : 0020; --  
+01B3 : 0020; --  
+01B4 : 0020; --  
+01B5 : 0020; --  
+01B6 : 0020; --  
+01B7 : 0020; --  
+01B8 : 0020; --  
+01B9 : 0020; --  
+01BA : 0020; --  
+01BB : 0020; --  
+01BC : 0020; --  
+01BD : 0020; --  
+01BE : 0020; --  
+01BF : 0020; --  
+01C0 : 0020; --  
+01C1 : 0020; --  
+01C2 : 0020; --  
+01C3 : 0020; --  
+01C4 : 0020; --  
+01C5 : 0020; --  
+01C6 : 0020; --  
+01C7 : 0020; --  
+01C8 : 0020; --  
+01C9 : 0020; --  
+01CA : 0020; --  
+01CB : 0020; --  
+01CC : 0020; --  
+01CD : 0020; --  
+01CE : 0020; --  
+01CF : 0020; --  
+01D0 : 0020; --  
+01D1 : 0020; --  
+01D2 : 0020; --  
+01D3 : 0020; --  
+01D4 : 0020; --  
+01D5 : 0020; --  
+01D6 : 0020; --  
+01D7 : 0020; --  
+01D8 : 0020; --  
+01D9 : 0020; --  
+01DA : 0020; --  
+01DB : 0020; --  
+01DC : 0020; --  
+01DD : 0020; --  
+01DE : 0020; --  
+01DF : 0020; --  
+01E0 : 0020; --  
+01E1 : 0020; --  
+01E2 : 0020; --  
+01E3 : 0020; --  
+01E4 : 0020; --  
+01E5 : 0020; --  
+01E6 : 0020; --  
+01E7 : 0020; --  
+01E8 : 0020; --  
+01E9 : 0020; --  
+01EA : 0020; --  
+01EB : 0020; --  
+01EC : 5D60; -- . push [push!   t0]
+01ED : 25EC; -- . imov [imov!   v0 .ps2_lut]
+01EE : 3500; -- ' imoh
+01EF : 26FF; -- . imov [load!   t0 .ps2_scancode_ptr]
+01F0 : 36FF; -- | imoh
+01F1 : 0660; -- ' load
+01F2 : 8564; --   add     v0 t0
+01F3 : 0550; --   load    v0 v0
+01F4 : 66D0; -- . pop [pop!    t0]
+01F5 : A020; --   jmpr
+01F6 : 5D00; -- · push r0 [isr!]
+01F7 : 60D0; -- . pop r0 [rti!]
+01F8 : C000; -- ' rti
+01F9 : 66D0; -- . pop [pop! t0 t1]
+01FA : 67D0; -- ' pop
+01FB : 5D60; -- . push [push! t0 t1]
+01FC : 5D70; -- ' push
+01FD : 66D0; -- . pop [pop! t0 t1]
+01FE : 67D0; -- ' pop
+01FF : 5D70; -- . push [push! t1 t0 t1 t0]
+0200 : 5D60; -- | push
+0201 : 5D70; -- | push
+0202 : 5D60; -- ' push
+0203 : 67D0; -- . pop [pop! t1 t0]
+0204 : 66D0; -- ' pop
+0205 : 8674; --   add t0 t1
+0206 : 5D60; -- . push [push! t0]
+0207 : 66D0; -- . pop [pop! t0 t1]
+0208 : 67D0; -- ' pop
+0209 : 5D60; -- . push [push! t0 t1]
+020A : 5D70; -- ' push
+020B : 66D0; -- . pop [pop! t0]
+020C : 2600; -- . imov [load!   t0 .ret_stack_ptr]
+020D : 3680; -- | imoh
+020E : 0660; -- ' load
+020F : 9615; --   isub    t0 1
+0210 : 0760; --   load    t1 t0
+0211 : 2000; -- . imov [str!    .ret_stack_ptr t0]
+0212 : 3080; -- | imoh
+0213 : 1060; -- ' str
+0214 : A700; --   jmp     t1
+0215 : 2601; -- . imov [imov! t0 1]
+0216 : 3600; -- ' imoh
+0217 : 5D60; --   push t0
+0218 : 2601; -- . imov [imov! t0 1]
+0219 : 3600; -- ' imoh
+021A : 5D60; --   push t0
+021B : 66D0; -- . pop [pop! t0]
+021C : 5D60; -- . push [push! t0 t0]
+021D : 5D60; -- ' push
+021E : 61D0; -- . pop [pop! p0]
+021F : 2042; -- . imov r0 .print_word  [call! .print_word]
+0220 : 3000; -- | imoh r0 .print_word
+0221 : A010; -- ' jmpl
+0222 : 2600; -- . imov [load!   t0 .ret_stack_ptr]
+0223 : 3680; -- | imoh
+0224 : 0660; -- ' load
+0225 : 272F; -- . imov [imov!   t1 .main_body_retaddr0]
+0226 : 3702; -- ' imoh
+0227 : 1670; --   str     t0 t1
+0228 : 9614; --   iadd    t0 1
+0229 : 2000; -- . imov [str!    .ret_stack_ptr t0]
+022A : 3080; -- | imoh
+022B : 1060; -- ' str
+022C : 20F9; -- . imov [jmp!    .fib]
+022D : 3001; -- | imoh
+022E : A000; -- ' j_op
+022F : 66D0; -- . pop [pop! t0]
+0230 : 5D60; -- . push [push! t0 t0]
+0231 : 5D60; -- ' push
+0232 : 61D0; -- . pop [pop! p0]
+0233 : 2042; -- . imov r0 .print_word  [call! .print_word]
+0234 : 3000; -- | imoh r0 .print_word
+0235 : A010; -- ' jmpl
+0236 : 2600; -- . imov [load!   t0 .ret_stack_ptr]
+0237 : 3680; -- | imoh
+0238 : 0660; -- ' load
+0239 : 2743; -- . imov [imov!   t1 .main_body_retaddr1]
+023A : 3702; -- ' imoh
+023B : 1670; --   str     t0 t1
+023C : 9614; --   iadd    t0 1
+023D : 2000; -- . imov [str!    .ret_stack_ptr t0]
+023E : 3080; -- | imoh
+023F : 1060; -- ' str
+0240 : 20F9; -- . imov [jmp!    .fib]
+0241 : 3001; -- | imoh
+0242 : A000; -- ' j_op
+0243 : 66D0; -- . pop [pop! t0]
+0244 : 5D60; -- . push [push! t0 t0]
+0245 : 5D60; -- ' push
+0246 : 61D0; -- . pop [pop! p0]
+0247 : 2042; -- . imov r0 .print_word  [call! .print_word]
+0248 : 3000; -- | imoh r0 .print_word
+0249 : A010; -- ' jmpl
+024A : 2600; -- . imov [load!   t0 .ret_stack_ptr]
+024B : 3680; -- | imoh
+024C : 0660; -- ' load
+024D : 2757; -- . imov [imov!   t1 .main_body_retaddr2]
+024E : 3702; -- ' imoh
+024F : 1670; --   str     t0 t1
+0250 : 9614; --   iadd    t0 1
+0251 : 2000; -- . imov [str!    .ret_stack_ptr t0]
+0252 : 3080; -- | imoh
+0253 : 1060; -- ' str
+0254 : 20F9; -- . imov [jmp!    .fib]
+0255 : 3001; -- | imoh
+0256 : A000; -- ' j_op
+0257 : 66D0; -- . pop [pop! t0]
+0258 : 5D60; -- . push [push! t0 t0]
+0259 : 5D60; -- ' push
+025A : 61D0; -- . pop [pop! p0]
+025B : 2042; -- . imov r0 .print_word  [call! .print_word]
+025C : 3000; -- | imoh r0 .print_word
+025D : A010; -- ' jmpl
+025E : 2600; -- . imov [load!   t0 .ret_stack_ptr]
+025F : 3680; -- | imoh
+0260 : 0660; -- ' load
+0261 : 276B; -- . imov [imov!   t1 .main_body_retaddr3]
+0262 : 3702; -- ' imoh
+0263 : 1670; --   str     t0 t1
+0264 : 9614; --   iadd    t0 1
+0265 : 2000; -- . imov [str!    .ret_stack_ptr t0]
+0266 : 3080; -- | imoh
+0267 : 1060; -- ' str
+0268 : 20F9; -- . imov [jmp!    .fib]
+0269 : 3001; -- | imoh
+026A : A000; -- ' j_op
+026B : 2600; -- . imov [load!   t0 .ret_stack_ptr]
+026C : 3680; -- | imoh
+026D : 0660; -- ' load
+026E : 9615; --   isub    t0 1
+026F : 0760; --   load    t1 t0
+0270 : 2000; -- . imov [str!    .ret_stack_ptr t0]
+0271 : 3080; -- | imoh
+0272 : 1060; -- ' str
+0273 : A700; --   jmp     t1
+END;

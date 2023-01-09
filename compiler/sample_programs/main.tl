@@ -1,9 +1,0 @@
-
-fn main() -> () {
-    int a;
-    int b;
-
-    for (a = 0; 0;) {
-        b = a;
-    }
-}

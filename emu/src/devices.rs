@@ -21,8 +21,8 @@ impl Devices {
 
     pub fn read(&self, addr: u16) -> u16 {
         match addr {
-            0..=0x7FFF => self.rom[addr as usize] as u16,
-            0x8000..=0xBFFF => self.ram[(addr - 0x8000) as usize] as u16,
+            0..=0x7FFF => self.rom[addr as usize],
+            0x8000..=0xBFFF => self.ram[(addr - 0x8000) as usize],
             0xFFFF => {
                 let a = *self.key.lock().unwrap();
                 // println!("{:04x} at {:04x}", a, addr);

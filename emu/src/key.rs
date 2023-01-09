@@ -67,7 +67,7 @@ impl Key {
                     code: KeyCode::Char(c),
                     modifiers: KeyModifiers::NONE,
                 }) => {
-                    if ('a'..='z').contains(&c) {
+                    if c.is_ascii_lowercase() {
                         self.irq(self.convert_to_scan_code(c as u8));
                     }
                 }

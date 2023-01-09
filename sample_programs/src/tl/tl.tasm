@@ -1,0 +1,172 @@
+
+.reset
+    # setup isr and jump to main
+    imov!   isr .isr
+    call!   .print_init
+
+    # initialize ret stack ptrs
+    imov!   t0 .ret_stack
+    imov!   t1 .reset_ret
+
+    str     t0 t1
+    iadd    t0 1
+    str!    .ret_stack_ptr t0
+
+    jmp!    .main
+.reset_ret
+    halt
+
+# allocate 256 words on the heap
+.ret_stack_ptr [1]
+.ret_stack [0x0100]
+
+#include<../../lib/std/print>
+#include<../../lib/std/keyboard>
+
+fn .isr
+    isr!
+    rti!
+#end .isr
+fn .fib
+
+
+    pop! t0 t1
+    push! t0 t1
+                            
+    pop! t0 t1
+    push! t1 t0 t1 t0
+                            
+    pop! t1 t0
+    add t0 t1
+    push! t0
+                            
+    pop! t0 t1
+    push! t0 t1
+                            
+    pop! t0
+                            
+    
+.fib_exit
+    # load the stack ptr addr into t0
+    load!   t0 .ret_stack_ptr
+    isub    t0 1
+
+    # load the return addr
+    load    t1 t0
+
+    # str the stack ptr addr
+    str!    .ret_stack_ptr t0
+
+    jmp     t1
+#end .fib
+fn .main
+
+
+    imov! t0 1
+    push t0
+                    
+    imov! t0 1
+    push t0
+                    
+    pop! t0
+    push! t0 t0
+                            
+    pop! p0
+    call! .print_word
+                            
+    # load the stack ptr addr into t0
+    load!   t0 .ret_stack_ptr
+
+    # load the return addr
+    imov!   t1 .main_body_retaddr0
+
+    # store t1 at t0
+    str     t0 t1
+
+    # increment t0
+    iadd    t0 1
+    str!    .ret_stack_ptr t0
+
+    jmp!    .fib
+.main_body_retaddr0
+                            
+    pop! t0
+    push! t0 t0
+                            
+    pop! p0
+    call! .print_word
+                            
+    # load the stack ptr addr into t0
+    load!   t0 .ret_stack_ptr
+
+    # load the return addr
+    imov!   t1 .main_body_retaddr1
+
+    # store t1 at t0
+    str     t0 t1
+
+    # increment t0
+    iadd    t0 1
+    str!    .ret_stack_ptr t0
+
+    jmp!    .fib
+.main_body_retaddr1
+                            
+    pop! t0
+    push! t0 t0
+                            
+    pop! p0
+    call! .print_word
+                            
+    # load the stack ptr addr into t0
+    load!   t0 .ret_stack_ptr
+
+    # load the return addr
+    imov!   t1 .main_body_retaddr2
+
+    # store t1 at t0
+    str     t0 t1
+
+    # increment t0
+    iadd    t0 1
+    str!    .ret_stack_ptr t0
+
+    jmp!    .fib
+.main_body_retaddr2
+                            
+    pop! t0
+    push! t0 t0
+                            
+    pop! p0
+    call! .print_word
+                            
+    # load the stack ptr addr into t0
+    load!   t0 .ret_stack_ptr
+
+    # load the return addr
+    imov!   t1 .main_body_retaddr3
+
+    # store t1 at t0
+    str     t0 t1
+
+    # increment t0
+    iadd    t0 1
+    str!    .ret_stack_ptr t0
+
+    jmp!    .fib
+.main_body_retaddr3
+                            
+    
+.main_exit
+    # load the stack ptr addr into t0
+    load!   t0 .ret_stack_ptr
+    isub    t0 1
+
+    # load the return addr
+    load    t1 t0
+
+    # str the stack ptr addr
+    str!    .ret_stack_ptr t0
+
+    jmp     t1
+#end .main

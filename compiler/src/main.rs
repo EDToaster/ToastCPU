@@ -1,81 +1,62 @@
-use crate::ast::*;
+use lrlex::lrlex_mod;
+use lrpar::lrpar_mod;
 
-mod ast;
-mod parse;
+use std::error::Error;
+use std::fmt::{Display, Formatter};
+use std::fs;
+extern crate argparse;
+use argparse::{ArgumentParser, Store};
+use crate::emit::{emit_function, emit_module};
 
-#[macro_use]
-extern crate lalrpop_util;
+lrlex_mod!("tl.l");
+lrpar_mod!("tl.y");
 
-lalrpop_mod!(pub tl); // synthesized by LALRPOP
+mod emit;
 
-#[test]
-fn test_literals() {
-    assert!(matches!(
-        tl::LiteralParser::new().parse("\"\"").unwrap(),
-        Literal::String("")
-    ));
-    
-    assert!(matches!(
-        tl::LiteralParser::new().parse("\"hello\"").unwrap(),
-        Literal::String("hello")
-    ));
+#[derive(Debug)]
+struct ArgParseError(i32);
 
-    assert!(tl::LiteralParser::new().parse("\"hello world").is_err());
-
-    assert!(matches!(
-        tl::LiteralParser::new().parse("13").unwrap(),
-        Literal::Int(13)
-    ));
-
-    assert!(matches!(
-        tl::LiteralParser::new().parse("0x0A").unwrap(),
-        Literal::Int(0x0A)
-    ));
-
-    assert!(matches!(
-        tl::LiteralParser::new().parse("0b0101").unwrap(),
-        Literal::Int(0b0101)
-    ));
-
-    assert!(matches!(
-        tl::LiteralParser::new().parse("'2'").unwrap(),
-        Literal::Char(50)
-    ));
-
-    assert!(tl::LiteralParser::new().parse("'92'").is_err());
-}
-
-#[test]
-fn test_identifiers() {
-    assert!(matches!(tl::IdentifierParser::new().parse("hello").unwrap(), Identifier { id: "hello" }));
-    assert!(tl::IdentifierParser::new().parse("2hello").is_err());
-}
-
-#[test]
-fn test_statements() {
-    if let Statement::For(ForStatement { pre, cond: Expression::Literal(Literal::Int(1)), body}) = tl::StatementParser::new().parse("for ( a = 2 ; 1 ; ) {}").unwrap() {
-        assert!(matches!(*pre, 
-            Statement::Assignment(
-                Identifier { id: "a" }, 
-                Expression::Literal(
-                    Literal::Int(2)))));
-        assert!(body.is_empty());
-    } else {
-        panic!();
+impl Error for ArgParseError {}
+impl Display for ArgParseError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Encountered error while parsing arguments: {}", self.0)
     }
-    
-    if let Statement::For(ForStatement { pre, cond: Expression::Literal(Literal::Int(1)), body }) = tl::StatementParser::new().parse("for (; 1 ;) {}").unwrap() {
-        assert!(matches!(*pre, Statement::Empty()));
-        assert!(body.is_empty());
-    } else {
-        panic!();
+}
+
+fn get_args() -> Result<(String, String), ArgParseError> {
+    let mut input: String = "".to_string();
+    let mut output: String = "".to_string();
+    {
+        let mut ap = ArgumentParser::new();
+        ap.set_description("Compile ToastLang to ToastASM");
+        ap.refer(&mut input)
+            .add_option(&["-i", "--input-file"], Store, "Input .tl file");
+        ap.refer(&mut output)
+            .add_option(&["-o", "--output-file"], Store, "Output file location");
+        ap.parse_args()
+    }
+    .map(|_| (input, output))
+    .map_err(|i| ArgParseError(i))
+}
+
+fn main() -> Result<(), Box<dyn Error>> {
+    let (input, output) = get_args()?;
+    let program_text = fs::read_to_string(input)?;
+
+    let lexer_def = tl_l::lexerdef();
+
+    let lexer = lexer_def.lexer(&*program_text);
+    let (res, errs) = tl_y::parse(&lexer);
+    for e in errs {
+        println!("{}", e.pp(&lexer, &tl_y::token_epp));
+    }
+    if let Some(Ok(r)) = res {
+        let tasm = emit_module(&r);
+        fs::write(output, tasm).expect("Unable to write file");
     }
 
-    assert!(matches!(tl::StatementParser::new().parse("word a;").unwrap(), Statement::Declaration(Identifier { id: "a" })));
-    assert!(matches!(tl::StatementParser::new().parse("a = 1;").unwrap(), Statement::Assignment(Identifier { id: "a" }, Expression::Literal(Literal::Int(1)))));
-}
-
-fn main() {
-    let s: &str = include_str!("../sample_programs/main.tl");
-    
+    println!("{}", stringify!(
+                    imov! t0 {}
+                    push t0));
+    Ok(())
 }

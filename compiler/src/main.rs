@@ -6,6 +6,7 @@ use std::fmt::{Display, Formatter};
 use std::fs;
 extern crate argparse;
 use argparse::{ArgumentParser, Store};
+use lrpar::LexParseError::ParseError;
 use crate::emit::{emit_function, emit_module};
 
 lrlex_mod!("tl.l");
@@ -39,9 +40,9 @@ fn get_args() -> Result<(String, String), ArgParseError> {
     .map_err(|i| ArgParseError(i))
 }
 
-fn main() -> Result<(), Box<dyn Error>> {
-    let (input, output) = get_args()?;
-    let program_text = fs::read_to_string(input)?;
+fn main() -> Result<(), String> {
+    let (input, output) = get_args().map_err(|e| e.to_string())?;
+    let program_text = fs::read_to_string(input).map_err(|e| e.to_string())?;
 
     let lexer_def = tl_l::lexerdef();
 
@@ -49,14 +50,14 @@ fn main() -> Result<(), Box<dyn Error>> {
     let (res, errs) = tl_y::parse(&lexer);
     for e in errs {
         println!("{}", e.pp(&lexer, &tl_y::token_epp));
-    }
-    if let Some(Ok(r)) = res {
-        let tasm = emit_module(&r);
-        fs::write(output, tasm).expect("Unable to write file");
+        return Err(e.to_string())
     }
 
-    println!("{}", stringify!(
-                    imov! t0 {}
-                    push t0));
+    let r = res.ok_or("Some parser thing went wrong!")?
+        .map_err(|_| "Some parser thing went wrong!")?;
+
+    let tasm = emit_module(&r);
+    fs::write(output, tasm).expect("Unable to write file");
+
     Ok(())
 }

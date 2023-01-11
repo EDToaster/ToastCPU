@@ -171,7 +171,7 @@ fn alu(op: u16, a: i32, b: i32, sr: &mut StatusRegister) -> u16 {
         0x6 => b,
         0x7 => a - b,
         0x8 => ((a as u16) >> b) as i32,
-        0x9 => a >> b,
+        0x9 => ((a as i16) >> b) as i32,
         0xA => a << b,
         _ => panic!("Invalid alu operation {op}"),
     };

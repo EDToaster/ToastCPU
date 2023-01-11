@@ -62,7 +62,7 @@ Each instruction of `toast` is 16 bits wide, prepended by a 4-bit opcode.
 There are 5 types of instructions (x denotes set bit, - denotes "I don't care what the value is")
 
 | Type | Layout                                                 |
-| :--- | :----------------------------------------------------- |
+|:-----|:-------------------------------------------------------|
 | D    | <pre>xxxx xxxx xxxx ----<br>op   rx1  rx2       </pre> |
 | I    | <pre>xxxx xxxx xxxxxxxx <br>op   rx1  imm8      </pre> |
 | J    | <pre>xxxx xxxx -- xx xxxx<br>op   rdst    rl jop</pre> |

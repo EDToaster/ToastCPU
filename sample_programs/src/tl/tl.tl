@@ -65,27 +65,37 @@ fn test_logical -> {
     "0 !"       { 0 ! 1 = }     assert
 }
 
+#         strptr len
+fn strlen u16 -> u16 {
+    # strptr strptr+13
+    dup
+
+    while { dup load } {
+        1 +
+    }
+
+    swap -
+}
+
+fn test_strlen -> {
+    "Testing strlen\n" ps
+    "strlen(\"abcd\")" { "abcd" strlen 4 = } assert
+    "strlen(\"\")" { "" strlen 0 = } assert
+}
+
 fn main -> {
     "Hello from ToastLang!\n\n" ps
 
     test_sum
     test_arith
     test_logical
+    test_strlen
 
     "Passed All Test Cases!" ps
 
-    fib
+    # fib
 }
 
-#         strptr len
-fn strlen u16 -> u16 {
-    0 over
-    # strptr acc strptr
-    while { load dup } {
-        drop 1 + swap 1 + swap over
-    }
-    drop swap drop
-}
 
 # Print the hex char
 fn ph u16 -> {

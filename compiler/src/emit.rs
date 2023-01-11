@@ -580,13 +580,11 @@ pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState) -> 
                 let (while_body_subblock, while_body_sc) =
                     emit_block(&*while_body_id, body, global_state);
 
-                if while_eval_sc != 1 {
-                    panic!("While eval block needs to have stack change size of 1, but has {while_eval_sc}");
+                if while_eval_sc + while_body_sc != 1 {
+                    panic!("While eval block and body block added together, must have stack change size of 1, but has {}", while_eval_sc + while_body_sc);
                 }
 
-                if while_body_sc != 0 {
-                    panic!("While body block cannot have stack change size, but has {while_body_sc}");
-                }
+                stack_size += while_eval_sc - 1;
 
                 tasm!(
                     block;;

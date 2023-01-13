@@ -2,12 +2,9 @@
 %%
 
 Module -> Result<Module, ()>:
-    FunctionList { Ok(Module { span: $span, functions: $1? }) }
-    ;
-
-FunctionList -> Result<Vec<Function>, ()>:
-    { Ok(vec![]) }
-    | FunctionList Function { let mut v = $1?; v.push($2?); Ok(v) }
+    { Ok(Module { span: $span, globals: vec![], functions: vec![] }) }
+    | Module Function { let mut m = $1?; m.functions.push($2?); Ok(m) }
+    | Module Global { let mut m = $1?; m.globals.push($2?); Ok(m) }
     ;
 
 Function -> Result<Function, ()>:
@@ -22,6 +19,10 @@ Function -> Result<Function, ()>:
             }
         )
     }
+    ;
+
+Global -> Result<Global, ()>:
+    'GLOBAL' Identifier IntLiteral { Ok(Global { span: $span, name: $2?, val: $3? }) }
     ;
 
 Typelist -> Result<Vec<Identifier>, ()>:
@@ -46,6 +47,10 @@ While -> Result<While, ()>:
     'WHILE' Block Block { Ok(While { span: $span, eval: $2?, body: $3? }) }
     ;
 
+Let -> Result<Let, ()>:
+    'LET' Identifiers Block { Ok(Let { span: $span, bindings: $2?, body: $3? }) }
+    ;
+
 Statements -> Result<Vec<Statement>, ()>:
     { Ok(vec![]) }
     | Statements Statement { let mut v = $1?; v.push($2?); Ok(v) }
@@ -60,6 +65,7 @@ Statement -> Result<Statement, ()>:
     | Unroll { Ok(Statement::Unroll($1?)) }
     | If { Ok(Statement::If($1?)) }
     | While { Ok(Statement::While($1?)) }
+    | Let { Ok(Statement::Let($1?)) }
     ;
 
 Operator -> Result<Operator, ()>:
@@ -80,6 +86,11 @@ Operator -> Result<Operator, ()>:
     | 'LTE' { Ok(Operator::Lte($span)) }
     | 'GT' { Ok(Operator::Gt($span)) }
     | 'GTE' { Ok(Operator::Gte($span)) }
+    ;
+
+Identifiers -> Result<Vec<Identifier>, ()>:
+    { Ok(vec![]) }
+    | Identifiers Identifier { let mut v = $1?; v.push($2?); Ok(v) }
     ;
 
 Identifier -> Result<Identifier, ()>:
@@ -170,6 +181,7 @@ pub enum Statement {
     Unroll(Unroll),
     If(If),
     While(While),
+    Let(Let),
 }
 
 #[derive(Debug)]
@@ -194,6 +206,13 @@ pub struct While {
 }
 
 #[derive(Debug)]
+pub struct Let {
+    pub span: Span,
+    pub bindings: Vec<Identifier>,
+    pub body: Block,
+}
+
+#[derive(Debug)]
 pub struct Block {
     pub span: Span,
     pub body: Vec<Statement>,
@@ -209,8 +228,16 @@ pub struct Function {
 }
 
 #[derive(Debug)]
+pub struct Global {
+    pub span: Span,
+    pub name: Identifier,
+    pub val: IntLiteral,
+}
+
+#[derive(Debug)]
 pub struct Module {
     pub span: Span,
+    pub globals: Vec<Global>,
     pub functions: Vec<Function>,
 }
 

@@ -1,6 +1,8 @@
+use std::arch::global_asm;
+use std::borrow::Borrow;
 use std::collections::HashMap;
 use std::fmt::format;
-use crate::tl_y::{Block, char_int, Function, Identifier, If, IntArray, IntLiteral, Module, Operator, Statement, Unroll, While};
+use crate::tl_y::{Block, char_int, Function, Global, Identifier, If, IntArray, IntLiteral, Let, Module, Operator, Statement, Unroll, While};
 macro_rules! tasm {
     ($prog:ident; $($params:expr),*; $asm:literal) => {
         $prog.push_str(&*format!($asm, $($params),*));
@@ -11,15 +13,61 @@ pub struct GlobalState {
     pub string_allocs_counter: isize,
     pub string_allocs: HashMap<Vec<u16>, String>,
     pub stack_changes: HashMap<String, isize>,
+    // [a b c d] means that `d` is at the top of the ret stack
+    pub current_bindings: Vec<String>,
+    pub global_labels: HashMap<String, String>, // name -> label
 }
 
 // todo: do Result<String> instead
-pub fn emit_module(m: &Module) -> String {
-    let mut prog = r#"
+// todo: allow for multiple modules (and includes)
+pub fn emit_module(m: &Module) -> Result<String, ()> {
+    // preprocess function sizes
+    let mut stack_changes: HashMap<String, isize> = HashMap::new();
+    for f in &m.functions {
+        let name = &f.name.name;
+        stack_changes.insert(name.clone(), f.out_t.len() as isize - f.in_t.len() as isize);
+    }
+
+    // grab global variables
+    let mut global_prog: String = String::new();
+    let mut global_labels: HashMap<String, String> = HashMap::new();
+
+    let mut global_init_routine = r#"
+    push! t0
+    "#.to_string();
+
+    for g in &m.globals {
+        let (emitted, label, val) = emit_global(g)?;
+        global_prog.push_str(emitted.as_str());
+        global_labels.insert(g.name.name.clone(), label.clone());
+
+        tasm!(
+            global_init_routine;;
+            r"
+    imov!  t0 {val}
+    str!   .{label} t0
+            "
+        );
+    }
+
+    global_init_routine.push_str(r"
+    pop! t0
+    jmpr
+                                        ");
+
+    let mut global_state = GlobalState {
+        stack_changes,
+        string_allocs_counter: 0,
+        string_allocs: HashMap::new(),
+        current_bindings: vec![],
+        global_labels
+    };
+
+    let mut prog = format!(r#"
 .reset
     # setup isr and jump to main
     imov!   isr .isr
-    call!   .print_init
+    # call!   .print_init
 
     # initialize ret stack ptrs
     imov!   t0 .ret_stack
@@ -29,35 +77,29 @@ pub fn emit_module(m: &Module) -> String {
     iadd    t0 1
     str!    .ret_stack_ptr t0
 
+    # initialize our global variables
+    call!   .init_globals
     jmp!    .main
 .reset_ret
     halt
 
-# allocate 256 words on the heap
-.ret_stack_ptr [1]
-.ret_stack [0x0100]
+.init_globals
+{global_init_routine}
 
-#include<../../lib/std/print>
-#include<../../lib/std/keyboard>
+{global_prog}
+
+# allocate 1024 words on the heap
+.ret_stack_ptr [1]
+.ret_stack [0x0400]
+
+# #include<../../lib/std/print>
+# #include<../../lib/std/keyboard>
 
 fn .isr
     isr!
     rti!
 #end .isr
-"#.to_string();
-
-    // preprocess function sizes
-    let mut stack_changes: HashMap<String, isize> = HashMap::new();
-    for f in &m.functions {
-        let name = &f.name.name;
-        stack_changes.insert(name.clone(), f.out_t.len() as isize - f.in_t.len() as isize);
-    }
-
-    let mut global_state = GlobalState {
-        stack_changes,
-        string_allocs_counter: 0,
-        string_allocs: HashMap::new(),
-    };
+"#);
 
     let mut functions: String = String::new();
 
@@ -69,7 +111,7 @@ fn .isr
     prog.push_str(&*emit_string_defs(&global_state));
 
     prog.push_str(&*functions);
-    prog
+    Ok(prog)
 }
 
 pub fn emit_string_defs(global_state: &GlobalState) -> String {
@@ -92,6 +134,18 @@ pub fn emit_string_defs(global_state: &GlobalState) -> String {
     }
 
     string_defs
+}
+
+
+pub fn emit_global(g: &Global) -> Result<(String, String, isize), ()> {
+    let global_name = &g.name.name;
+    let label = &format!("variable_alloc_{global_name}");
+    // todo: change size to be dynamic based on type
+    let size = 1;
+    let prog = format!(r"
+.{label} [{size}]
+    ");
+    Ok((prog, label.to_string(), g.val.val))
 }
 
 pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState) -> (String, isize) {
@@ -181,16 +235,16 @@ pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState) -> 
     //                     );
     //                     stack_size -= 1;
     //                 }
-                    "pc" => {
-                        tasm!(
-                            block;;
-                            r"
-    pop! p0
-    call! .print_char
-                            "
-                        );
-                        stack_size -= 1;
-                    }
+    //                 "pc" => {
+    //                     tasm!(
+    //                         block;;
+    //                         r"
+    // pop! p0
+    // call! .print_char
+    //                         "
+    //                     );
+    //                     stack_size -= 1;
+    //                 }
     //                 "ps" => {
     //                     tasm!(
     //                         block;;
@@ -225,18 +279,51 @@ pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState) -> 
                             block;;
                             r"
     pop! t1 t0
-    str  t0 t1
+    str  t1 t0
                             "
                         );
                         stack_size -= 2;
                     }
                     s => {
-                        // generic function call
-                        let ret_label = format!("{}_retaddr{}", block_id, counter);
-                        counter += 1;
-                        tasm!(
-                            block;;
-                            r"
+                        // check if it's a binding
+                        let offset_opt = global_state
+                            .current_bindings
+                            .iter()
+                            .rev()
+                            .enumerate()
+                            .filter(|(_, b)| **b == s.to_string())
+                            .map(|(i, _)| i + 1)
+                            .next();
+
+                        if let Some(offset) = offset_opt {
+                            // is a binding
+                            tasm!(
+                                block;;
+                                r"
+    load!   t0 .ret_stack_ptr
+    imov!   t1 {offset}
+    sub     t0 t1
+    push!   t0
+                                "
+                            );
+                            stack_size += 1;
+                        } else if let Some(label) = global_state.global_labels.get(s) {
+                            // global variable
+                            tasm!(
+                                block;;
+                                r"
+    imov! t0 .{label}
+    push! t0
+                                "
+                            );
+                            stack_size += 1;
+                        } else {
+                            // generic function call
+                            let ret_label = format!("{}_retaddr{}", block_id, counter);
+                            counter += 1;
+                            tasm!(
+                                block;;
+                                r"
     # load the stack ptr addr into t0
     load!   t0 .ret_stack_ptr
 
@@ -252,9 +339,11 @@ pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState) -> 
 
     jmp!    .{s}
 .{ret_label}
-                            "
-                        );
-                        stack_size += global_state.stack_changes.get(s).unwrap();
+                                "
+                            );
+                            stack_size += global_state.stack_changes.get(s).unwrap();
+                        }
+
                     }
                 }
             }
@@ -537,7 +626,7 @@ pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState) -> 
                     stack_size += stack_change;
                 }
             }
-            Statement::If(If { if_block, else_block, .. }) => {
+            Statement::If(If { if_block, else_block, span }) => {
                 let if_id = format!("{block_id}_{subblock_counter}_if");
                 let else_id = format!("{block_id}_{subblock_counter}_else");
                 let if_else_exit = format!("{block_id}_{subblock_counter}_if_exit");
@@ -550,7 +639,7 @@ pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState) -> 
                 };
 
                 if if_sc != else_sc {
-                    panic!("If and else blocks do not have the same stack change size");
+                    panic!("If and else blocks do not have the same stack change size in {if_id}, if has {if_sc} and else has {else_sc}");
                 }
                 stack_size += if_sc - 1;
 
@@ -601,6 +690,61 @@ pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState) -> 
                     "
                 );
             }
+            Statement::Let(Let { bindings, body, .. }) => {
+                let num_bindings = bindings.len() as usize;
+
+                tasm! (
+                    block;;
+                    r"
+    load!   t0 .ret_stack_ptr
+                    "
+                );
+
+                // for each binding starting at end
+                for i in bindings.iter().rev() {
+                    // append to bindings list for function
+                    global_state.current_bindings.push(i.name.clone());
+
+                    tasm! (
+                        block;;
+                        r"
+    # pop from the data stack
+    # push to return stack
+    pop!    t1
+    str     t0 t1
+    iadd    t0 1
+                        "
+                    );
+                }
+
+                tasm! (
+                    block;;
+                    r"
+    str!    .ret_stack_ptr t0
+                    "
+                );
+
+                // emit inner block
+                let let_block_id = &*format!("{block_id}_{subblock_counter}_let_block");
+                subblock_counter += 1;
+                let (let_block, let_sc) = emit_block(let_block_id, body, global_state);
+                tasm!(
+                    block;;
+                    r"
+{let_block}
+    # pop {num_bindings} elements from return stack
+    load!   t0 .ret_stack_ptr
+    imov!   t1 {num_bindings}
+    sub     t0 t1
+    str!    .ret_stack_ptr t0
+                    "
+                );
+
+                // pop bindings off
+                global_state.current_bindings.truncate(global_state.current_bindings.len() - num_bindings);
+
+                stack_size += let_sc - num_bindings as isize;
+            }
         }
     }
 
@@ -613,7 +757,12 @@ pub fn emit_function(f: &Function, global_state: &mut GlobalState) -> String {
     let func_exit = format!("{}_exit", func_name);
     let mut func = format!("fn .{}\n", func_name);
 
+    // reset the bindings
+    global_state.current_bindings.clear();
+
     let (block, stack_size) = emit_block(&*format!("{func_name}_body"), &f.body, global_state);
+
+    global_state.current_bindings.clear();
 
     let declared_stack_size = *(global_state.stack_changes.get(func_name).unwrap());
     if stack_size != declared_stack_size {

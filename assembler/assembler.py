@@ -537,10 +537,10 @@ class Program:
             expanded_instructions += instruction.expand_and_convert_mask()
             
         
-        print()
-        print()
-        print()
-        [print (line) for line in expanded_instructions]
+        # print()
+        # print()
+        # print()
+        # [print (line) for line in expanded_instructions]
 
         # find label locations
         for i, line in enumerate(expanded_instructions):
@@ -556,10 +556,10 @@ class Program:
             word = Instruction(line.text, line.labels, [(l.to_number(label_locations) if isinstance(l, LabelMask) else l) for l in line.words])
             labels_replaced.append(word)
         
-        print()
-        print()
-        print()
-        [print (line) for line in labels_replaced]
+        # print()
+        # print()
+        # print()
+        # [print (line) for line in labels_replaced]
 
         return [(line.text, line.to_binary()) for line in labels_replaced]
 
@@ -606,8 +606,8 @@ def main():
     input_file = os.path.abspath(i)
     lines = preprocess(input_file, set([input_file]))
 
-    for l in lines:
-        print(l.strip())
+    # for l in lines:
+    #     print(l.strip())
 
     program: Program = Program()
     binary = program.parse(lines)
@@ -622,7 +622,7 @@ CONTENT                       -- start of (address : data pairs)
 BEGIN
 """)
         for i, (text, line) in enumerate(binary):
-            print(line, text)
+            # print(line, text)
             f.write(f"{'{:0>4X}'.format(i)} : {'{:0>4X}'.format(int(line, 2))}; -- {text}\n")
 
         f.write("END;")

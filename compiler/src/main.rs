@@ -57,7 +57,7 @@ fn main() -> Result<(), String> {
         .map_err(|_| "Some parser thing went wrong!")?;
 
     let tasm = emit_module(&r);
-    fs::write(output, tasm).expect("Unable to write file");
+    fs::write(output, tasm.map_err(|_| "Unable to generate assembly".to_string())?).expect("Unable to write file");
 
     Ok(())
 }

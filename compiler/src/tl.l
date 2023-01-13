@@ -27,7 +27,10 @@
 \{              "LB"
 \}              "RB"
 
+global          "GLOBAL"
 fn              "FN"
+let             "LET"
+struct          "STRUCT"
 ->              "RARROW"
 
 unroll          "UNROLL"

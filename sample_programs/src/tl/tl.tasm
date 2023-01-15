@@ -55,36 +55,21 @@ fn .isr
     rti!
 #end .isr
 
-.string_alloc_41
-    0x30
+.string_alloc_17
+    0x37
     0x20
-    0x78
+    0x3C
+    0x3D
     0x20
-    0x31
-    0x30
+    0x37
     0x0
 
-.string_alloc_43
-    0x54
-    0x65
-    0x73
-    0x74
-    0x69
-    0x6E
-    0x67
+.string_alloc_13
+    0x36
     0x20
-    0x67
-    0x6C
-    0x6F
-    0x62
-    0x61
-    0x6C
+    0x3C
     0x20
-    0x76
-    0x61
-    0x72
-    0x73
-    0xA
+    0x37
     0x0
 
 .string_alloc_18
@@ -94,202 +79,6 @@ fn .isr
     0x3D
     0x20
     0x37
-    0x0
-
-.string_alloc_23
-    0x31
-    0x20
-    0x7C
-    0x7C
-    0x20
-    0x30
-    0x0
-
-.string_alloc_26
-    0x54
-    0x65
-    0x73
-    0x74
-    0x69
-    0x6E
-    0x67
-    0x20
-    0x73
-    0x74
-    0x72
-    0x6C
-    0x65
-    0x6E
-    0xA
-    0x0
-
-.string_alloc_20
-    0x31
-    0x20
-    0x26
-    0x26
-    0x20
-    0x31
-    0x0
-
-.string_alloc_14
-    0x37
-    0x20
-    0x3C
-    0x20
-    0x37
-    0x0
-
-.string_alloc_21
-    0x30
-    0x20
-    0x26
-    0x26
-    0x20
-    0x31
-    0x0
-
-.string_alloc_29
-    0x73
-    0x74
-    0x72
-    0x6C
-    0x65
-    0x6E
-    0x28
-    0x22
-    0x22
-    0x29
-    0x0
-
-.string_alloc_10
-    0x36
-    0x20
-    0x3E
-    0x3D
-    0x20
-    0x37
-    0x0
-
-.string_alloc_34
-    0x62
-    0x31
-    0x0
-
-.string_alloc_38
-    0x54
-    0x65
-    0x73
-    0x74
-    0x69
-    0x6E
-    0x67
-    0x20
-    0x6D
-    0x75
-    0x6C
-    0xA
-    0x0
-
-.string_alloc_7
-    0x36
-    0x20
-    0x3E
-    0x20
-    0x37
-    0x0
-
-.string_alloc_27
-    0x73
-    0x74
-    0x72
-    0x6C
-    0x65
-    0x6E
-    0x28
-    0x22
-    0x61
-    0x62
-    0x63
-    0x64
-    0x22
-    0x29
-    0x0
-
-.string_alloc_30
-    0x0
-
-.string_alloc_2
-    0x73
-    0x75
-    0x6D
-    0x28
-    0x37
-    0x29
-    0x20
-    0x3D
-    0x3D
-    0x20
-    0x32
-    0x31
-    0x0
-
-.string_alloc_31
-    0x54
-    0x65
-    0x73
-    0x74
-    0x69
-    0x6E
-    0x67
-    0x20
-    0x6C
-    0x65
-    0x74
-    0xA
-    0x0
-
-.string_alloc_16
-    0x36
-    0x20
-    0x3C
-    0x3D
-    0x20
-    0x37
-    0x0
-
-.string_alloc_35
-    0x61
-    0x32
-    0x0
-
-.string_alloc_12
-    0x38
-    0x20
-    0x3E
-    0x3D
-    0x20
-    0x37
-    0x0
-
-.string_alloc_45
-    0x76
-    0x61
-    0x72
-    0x31
-    0x20
-    0x3D
-    0x20
-    0x31
-    0x30
-    0x0
-
-.string_alloc_40
-    0x32
-    0x20
-    0x78
-    0x20
-    0x35
     0x0
 
 .string_alloc_1
@@ -307,64 +96,19 @@ fn .isr
     0xA
     0x0
 
-.string_alloc_22
-    0x30
-    0x20
-    0x7C
-    0x7C
-    0x20
-    0x30
-    0x0
-
-.string_alloc_15
-    0x38
-    0x20
-    0x3C
-    0x20
-    0x37
-    0x0
-
-.string_alloc_37
-    0x63
-    0x32
-    0x0
-
-.string_alloc_0
-    0x41
+.string_alloc_2
     0x73
-    0x73
-    0x65
-    0x72
-    0x74
-    0x20
-    0x46
-    0x61
-    0x69
-    0x6C
-    0x65
-    0x64
-    0xA
-    0x0
-
-.string_alloc_5
+    0x75
+    0x6D
+    0x28
     0x37
+    0x29
     0x20
     0x3D
+    0x3D
     0x20
-    0x37
-    0x0
-
-.string_alloc_36
-    0x62
     0x32
-    0x0
-
-.string_alloc_39
     0x31
-    0x20
-    0x78
-    0x20
-    0x32
     0x0
 
 .string_alloc_8
@@ -375,21 +119,101 @@ fn .isr
     0x37
     0x0
 
-.string_alloc_44
+.string_alloc_31
+    0x54
+    0x65
+    0x73
+    0x74
+    0x69
+    0x6E
+    0x67
+    0x20
+    0x6C
+    0x65
+    0x74
+    0xA
+    0x0
+
+.string_alloc_32
+    0x31
+    0x31
+    0x0
+
+.string_alloc_15
+    0x38
+    0x20
+    0x3C
+    0x20
+    0x37
+    0x0
+
+.string_alloc_28
+    0x61
+    0x62
+    0x63
+    0x64
+    0x0
+
+.string_alloc_37
+    0x63
+    0x32
+    0x0
+
+.string_alloc_23
+    0x31
+    0x20
+    0x7C
+    0x7C
+    0x20
+    0x30
+    0x0
+
+.string_alloc_39
+    0x31
+    0x20
+    0x78
+    0x20
+    0x32
+    0x0
+
+.string_alloc_19
+    0x54
+    0x65
+    0x73
+    0x74
+    0x69
+    0x6E
+    0x67
+    0x20
+    0x4C
+    0x6F
+    0x67
+    0x69
+    0x63
+    0x61
+    0x6C
+    0xA
+    0x0
+
+.string_alloc_42
+    0x31
+    0x30
+    0x20
+    0x78
+    0x20
+    0x30
+    0x0
+
+.string_alloc_45
     0x76
     0x61
     0x72
     0x31
     0x20
     0x3D
-    0x3D
     0x20
+    0x31
     0x30
-    0x78
-    0x44
-    0x45
-    0x41
-    0x44
     0x0
 
 .string_alloc_47
@@ -417,19 +241,59 @@ fn .isr
     0x21
     0x0
 
-.string_alloc_6
+.string_alloc_16
     0x36
     0x20
+    0x3C
     0x3D
     0x20
     0x37
     0x0
 
-.string_alloc_11
-    0x37
+.string_alloc_27
+    0x73
+    0x74
+    0x72
+    0x6C
+    0x65
+    0x6E
+    0x28
+    0x22
+    0x61
+    0x62
+    0x63
+    0x64
+    0x22
+    0x29
+    0x0
+
+.string_alloc_41
+    0x30
+    0x20
+    0x78
+    0x20
+    0x31
+    0x30
+    0x0
+
+.string_alloc_35
+    0x61
+    0x32
+    0x0
+
+.string_alloc_12
+    0x38
     0x20
     0x3E
     0x3D
+    0x20
+    0x37
+    0x0
+
+.string_alloc_9
+    0x38
+    0x20
+    0x3E
     0x20
     0x37
     0x0
@@ -451,81 +315,58 @@ fn .isr
     0x33
     0x0
 
-.string_alloc_4
-    0x54
-    0x65
+.string_alloc_7
+    0x36
+    0x20
+    0x3E
+    0x20
+    0x37
+    0x0
+
+.string_alloc_22
+    0x30
+    0x20
+    0x7C
+    0x7C
+    0x20
+    0x30
+    0x0
+
+.string_alloc_36
+    0x62
+    0x32
+    0x0
+
+.string_alloc_5
+    0x37
+    0x20
+    0x3D
+    0x20
+    0x37
+    0x0
+
+.string_alloc_14
+    0x37
+    0x20
+    0x3C
+    0x20
+    0x37
+    0x0
+
+.string_alloc_29
     0x73
     0x74
-    0x69
-    0x6E
-    0x67
-    0x20
-    0x41
     0x72
-    0x69
-    0x74
-    0x68
-    0xA
-    0x0
-
-.string_alloc_19
-    0x54
-    0x65
-    0x73
-    0x74
-    0x69
-    0x6E
-    0x67
-    0x20
-    0x4C
-    0x6F
-    0x67
-    0x69
-    0x63
-    0x61
     0x6C
-    0xA
-    0x0
-
-.string_alloc_24
-    0x31
-    0x20
-    0x21
-    0x0
-
-.string_alloc_48
-    0x54
-    0x65
-    0x73
-    0x74
-    0x69
-    0x6E
-    0x67
-    0x20
-    0x66
-    0x69
-    0x62
-    0x20
-    0x73
-    0x65
-    0x71
-    0x75
     0x65
     0x6E
-    0x63
-    0x65
-    0x20
-    0x2E
-    0x2E
-    0x2E
-    0xA
+    0x28
+    0x22
+    0x22
+    0x29
     0x0
 
-.string_alloc_28
-    0x61
-    0x62
-    0x63
-    0x64
+.string_alloc_30
     0x0
 
 .string_alloc_25
@@ -534,43 +375,76 @@ fn .isr
     0x21
     0x0
 
-.string_alloc_42
-    0x31
-    0x30
+.string_alloc_0
+    0x41
+    0x73
+    0x73
+    0x65
+    0x72
+    0x74
     0x20
-    0x78
-    0x20
-    0x30
+    0x46
+    0x61
+    0x69
+    0x6C
+    0x65
+    0x64
+    0xA
     0x0
 
-.string_alloc_9
-    0x38
+.string_alloc_44
+    0x76
+    0x61
+    0x72
+    0x31
+    0x20
+    0x3D
+    0x3D
+    0x20
+    0x30
+    0x78
+    0x44
+    0x45
+    0x41
+    0x44
+    0x0
+
+.string_alloc_24
+    0x31
+    0x20
+    0x21
+    0x0
+
+.string_alloc_34
+    0x62
+    0x31
+    0x0
+
+.string_alloc_21
+    0x30
+    0x20
+    0x26
+    0x26
+    0x20
+    0x31
+    0x0
+
+.string_alloc_10
+    0x36
     0x20
     0x3E
-    0x20
-    0x37
-    0x0
-
-.string_alloc_17
-    0x37
-    0x20
-    0x3C
     0x3D
     0x20
     0x37
     0x0
 
-.string_alloc_13
-    0x36
+.string_alloc_11
+    0x37
     0x20
-    0x3C
+    0x3E
+    0x3D
     0x20
     0x37
-    0x0
-
-.string_alloc_33
-    0x61
-    0x31
     0x0
 
 .string_alloc_46
@@ -599,93 +473,144 @@ fn .isr
     0xA
     0x0
 
-.string_alloc_32
+.string_alloc_40
+    0x32
+    0x20
+    0x78
+    0x20
+    0x35
+    0x0
+
+.string_alloc_6
+    0x36
+    0x20
+    0x3D
+    0x20
+    0x37
+    0x0
+
+.string_alloc_20
     0x31
+    0x20
+    0x26
+    0x26
+    0x20
     0x31
     0x0
-fn .pc
+
+.string_alloc_4
+    0x54
+    0x65
+    0x73
+    0x74
+    0x69
+    0x6E
+    0x67
+    0x20
+    0x41
+    0x72
+    0x69
+    0x74
+    0x68
+    0xA
+    0x0
+
+.string_alloc_38
+    0x54
+    0x65
+    0x73
+    0x74
+    0x69
+    0x6E
+    0x67
+    0x20
+    0x6D
+    0x75
+    0x6C
+    0xA
+    0x0
+
+.string_alloc_26
+    0x54
+    0x65
+    0x73
+    0x74
+    0x69
+    0x6E
+    0x67
+    0x20
+    0x73
+    0x74
+    0x72
+    0x6C
+    0x65
+    0x6E
+    0xA
+    0x0
+
+.string_alloc_43
+    0x54
+    0x65
+    0x73
+    0x74
+    0x69
+    0x6E
+    0x67
+    0x20
+    0x67
+    0x6C
+    0x6F
+    0x62
+    0x61
+    0x6C
+    0x20
+    0x76
+    0x61
+    0x72
+    0x73
+    0xA
+    0x0
+
+.string_alloc_33
+    0x61
+    0x31
+    0x0
+fn .ps
 
 
     pop! t0
     push! t0 t0
                             
-    imov! t0 10
-    push t0
-                    
-    pop! t1 t0
-    imov t2 1  # default value
-    sub  t0 t1
-    jz!  .pc_body_0_opskip
-    imov t2 0
-.pc_body_0_opskip
-    push! t2
+.ps_body_0_while_eval
+
+    pop! t0
+    load t0 t0
+    push! t0
+                            
+    pop! t0
+    push! t0 t0
                             
     pop! t0
     tst  t0
-    jz!  .pc_body_1_else
-.pc_body_1_if
+    jz!  .ps_body_0_while_exit
+.ps_body_0_while_block
 
-    pop! t0
-                            
-    imov! t0 .variable_alloc_text_ptr
-    push! t0
-                                
-    pop! t0
-    load t0 t0
-    push! t0
-                            
-    imov! t0 .variable_alloc_text_progress
-    push! t0
-                                
-    pop! t0
-    load t0 t0
-    push! t0
-                            
-    pop!  t1 t0
-    add   t0 t1
-    push! t0
-                            
-    imov! t0 .variable_alloc_text_ptr
-    push! t0
-                                
-    pop! t1 t0
-    str  t1 t0
-                            
-    imov! t0 100
-    push t0
-                    
-    imov! t0 .variable_alloc_text_progress
-    push! t0
-                                
-    pop! t1 t0
-    str  t1 t0
-                            
-    jmp! .pc_body_1_if_exit
-.pc_body_1_else
+    # load the stack ptr addr into t0
+    load!   t0 .ret_stack_ptr
 
-    imov! t0 .variable_alloc_text_ptr
-    push! t0
+    # load the return addr
+    imov!   t1 .ps_body_0_while_block_retaddr0
+
+    # store t1 at t0
+    str     t0 t1
+
+    # increment t0
+    iadd    t0 1
+    str!    .ret_stack_ptr t0
+
+    jmp!    .pc
+.ps_body_0_while_block_retaddr0
                                 
-    pop! t0
-    load t0 t0
-    push! t0
-                            
-    pop! t0 t1
-    push! t0 t1
-                            
-    imov! t0 14336
-    push t0
-                    
-    pop!  t1 t0
-    or    t0 t1
-    push! t0
-                            
-    pop! t0 t1
-    push! t1 t0 t1
-                            
-    pop! t1 t0
-    str  t1 t0
-                            
     imov! t0 1
     push t0
                     
@@ -693,111 +618,18 @@ fn .pc
     add   t0 t1
     push! t0
                             
-    imov! t0 .variable_alloc_text_ptr
-    push! t0
-                                
-    pop! t1 t0
-    str  t1 t0
-                            
-    imov! t0 .variable_alloc_text_progress
-    push! t0
-                                
-    pop! t0
-    load t0 t0
-    push! t0
-                            
-    imov! t0 1
-    push t0
-                    
-    pop!  t1 t0
-    sub   t0 t1
-    push! t0
-                            
     pop! t0
     push! t0 t0
                             
-    imov! t0 0
-    push t0
+    jmp! .ps_body_0_while_eval
+.ps_body_0_while_exit
                     
-    pop! t1 t0
-    imov t2 1  # default value
-    sub  t0 t1
-    jz!  .pc_body_1_else_0_opskip
-    imov t2 0
-.pc_body_1_else_0_opskip
-    push! t2
-                            
-    pop! t0
-    tst  t0
-    jz!  .pc_body_1_else_1_else
-.pc_body_1_else_1_if
-
     pop! t0
                             
-    imov! t0 100
-    push t0
-                    
-    jmp! .pc_body_1_else_1_if_exit
-.pc_body_1_else_1_else
-
-.pc_body_1_else_1_if_exit
-                    
-    imov! t0 .variable_alloc_text_progress
-    push! t0
-                                
-    pop! t1 t0
-    str  t1 t0
-                            
-.pc_body_1_if_exit
-                    
-    imov! t0 .variable_alloc_text_ptr
-    push! t0
-                                
     pop! t0
-    load t0 t0
-    push! t0
                             
-    imov! t0 6000
-    push t0
-                    
-    pop! t1 t0
-    imov t2 0  # default value
-    sub  t0 t1
-    jn!  .pc_body_2_opskip
-    imov t2 1
-.pc_body_2_opskip
-    push! t2
-                            
-    pop! t0
-    tst  t0
-    jz!  .pc_body_3_else
-.pc_body_3_if
-
-    imov! t0 0
-    push t0
-                    
-    imov! t0 .variable_alloc_text_ptr
-    push! t0
-                                
-    pop! t1 t0
-    str  t1 t0
-                            
-    imov! t0 100
-    push t0
-                    
-    imov! t0 .variable_alloc_text_progress
-    push! t0
-                                
-    pop! t1 t0
-    str  t1 t0
-                            
-    jmp! .pc_body_3_if_exit
-.pc_body_3_else
-
-.pc_body_3_if_exit
-                    
     
-.pc_exit
+.ps_exit
     # load the stack ptr addr into t0
     load!   t0 .ret_stack_ptr
     isub    t0 1
@@ -809,7 +641,7 @@ fn .pc
     str!    .ret_stack_ptr t0
 
     jmp     t1
-#end .pc
+#end .ps
 fn .assert
 
 
@@ -3303,6 +3135,213 @@ fn .main
 
     jmp     t1
 #end .main
+fn .pc
+
+
+    pop! t0
+    push! t0 t0
+                            
+    imov! t0 10
+    push t0
+                    
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jz!  .pc_body_0_opskip
+    imov t2 0
+.pc_body_0_opskip
+    push! t2
+                            
+    pop! t0
+    tst  t0
+    jz!  .pc_body_1_else
+.pc_body_1_if
+
+    pop! t0
+                            
+    imov! t0 .variable_alloc_text_ptr
+    push! t0
+                                
+    pop! t0
+    load t0 t0
+    push! t0
+                            
+    imov! t0 .variable_alloc_text_progress
+    push! t0
+                                
+    pop! t0
+    load t0 t0
+    push! t0
+                            
+    pop!  t1 t0
+    add   t0 t1
+    push! t0
+                            
+    imov! t0 .variable_alloc_text_ptr
+    push! t0
+                                
+    pop! t1 t0
+    str  t1 t0
+                            
+    imov! t0 100
+    push t0
+                    
+    imov! t0 .variable_alloc_text_progress
+    push! t0
+                                
+    pop! t1 t0
+    str  t1 t0
+                            
+    jmp! .pc_body_1_if_exit
+.pc_body_1_else
+
+    imov! t0 .variable_alloc_text_ptr
+    push! t0
+                                
+    pop! t0
+    load t0 t0
+    push! t0
+                            
+    pop! t0 t1
+    push! t0 t1
+                            
+    imov! t0 14336
+    push t0
+                    
+    pop!  t1 t0
+    or    t0 t1
+    push! t0
+                            
+    pop! t0 t1
+    push! t1 t0 t1
+                            
+    pop! t1 t0
+    str  t1 t0
+                            
+    imov! t0 1
+    push t0
+                    
+    pop!  t1 t0
+    add   t0 t1
+    push! t0
+                            
+    imov! t0 .variable_alloc_text_ptr
+    push! t0
+                                
+    pop! t1 t0
+    str  t1 t0
+                            
+    imov! t0 .variable_alloc_text_progress
+    push! t0
+                                
+    pop! t0
+    load t0 t0
+    push! t0
+                            
+    imov! t0 1
+    push t0
+                    
+    pop!  t1 t0
+    sub   t0 t1
+    push! t0
+                            
+    pop! t0
+    push! t0 t0
+                            
+    imov! t0 0
+    push t0
+                    
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jz!  .pc_body_1_else_0_opskip
+    imov t2 0
+.pc_body_1_else_0_opskip
+    push! t2
+                            
+    pop! t0
+    tst  t0
+    jz!  .pc_body_1_else_1_else
+.pc_body_1_else_1_if
+
+    pop! t0
+                            
+    imov! t0 100
+    push t0
+                    
+    jmp! .pc_body_1_else_1_if_exit
+.pc_body_1_else_1_else
+
+.pc_body_1_else_1_if_exit
+                    
+    imov! t0 .variable_alloc_text_progress
+    push! t0
+                                
+    pop! t1 t0
+    str  t1 t0
+                            
+.pc_body_1_if_exit
+                    
+    imov! t0 .variable_alloc_text_ptr
+    push! t0
+                                
+    pop! t0
+    load t0 t0
+    push! t0
+                            
+    imov! t0 6000
+    push t0
+                    
+    pop! t1 t0
+    imov t2 0  # default value
+    sub  t0 t1
+    jn!  .pc_body_2_opskip
+    imov t2 1
+.pc_body_2_opskip
+    push! t2
+                            
+    pop! t0
+    tst  t0
+    jz!  .pc_body_3_else
+.pc_body_3_if
+
+    imov! t0 0
+    push t0
+                    
+    imov! t0 .variable_alloc_text_ptr
+    push! t0
+                                
+    pop! t1 t0
+    str  t1 t0
+                            
+    imov! t0 100
+    push t0
+                    
+    imov! t0 .variable_alloc_text_progress
+    push! t0
+                                
+    pop! t1 t0
+    str  t1 t0
+                            
+    jmp! .pc_body_3_if_exit
+.pc_body_3_else
+
+.pc_body_3_if_exit
+                    
+    
+.pc_exit
+    # load the stack ptr addr into t0
+    load!   t0 .ret_stack_ptr
+    isub    t0 1
+
+    # load the return addr
+    load    t1 t0
+
+    # str the stack ptr addr
+    str!    .ret_stack_ptr t0
+
+    jmp     t1
+#end .pc
 fn .ph
 
 
@@ -3553,226 +3592,3 @@ fn .p
 
     jmp     t1
 #end .p
-fn .ps
-
-
-    pop! t0
-    push! t0 t0
-                            
-.ps_body_0_while_eval
-
-    pop! t0
-    load t0 t0
-    push! t0
-                            
-    pop! t0
-    push! t0 t0
-                            
-    pop! t0
-    tst  t0
-    jz!  .ps_body_0_while_exit
-.ps_body_0_while_block
-
-    # load the stack ptr addr into t0
-    load!   t0 .ret_stack_ptr
-
-    # load the return addr
-    imov!   t1 .ps_body_0_while_block_retaddr0
-
-    # store t1 at t0
-    str     t0 t1
-
-    # increment t0
-    iadd    t0 1
-    str!    .ret_stack_ptr t0
-
-    jmp!    .pc
-.ps_body_0_while_block_retaddr0
-                                
-    imov! t0 1
-    push t0
-                    
-    pop!  t1 t0
-    add   t0 t1
-    push! t0
-                            
-    pop! t0
-    push! t0 t0
-                            
-    jmp! .ps_body_0_while_eval
-.ps_body_0_while_exit
-                    
-    pop! t0
-                            
-    pop! t0
-                            
-    
-.ps_exit
-    # load the stack ptr addr into t0
-    load!   t0 .ret_stack_ptr
-    isub    t0 1
-
-    # load the return addr
-    load    t1 t0
-
-    # str the stack ptr addr
-    str!    .ret_stack_ptr t0
-
-    jmp     t1
-#end .ps
-fn .fib
-
-
-    imov! t0 .string_alloc_48
-    push! t0
-                    
-    # load the stack ptr addr into t0
-    load!   t0 .ret_stack_ptr
-
-    # load the return addr
-    imov!   t1 .fib_body_retaddr0
-
-    # store t1 at t0
-    str     t0 t1
-
-    # increment t0
-    iadd    t0 1
-    str!    .ret_stack_ptr t0
-
-    jmp!    .ps
-.fib_body_retaddr0
-                                
-    imov! t0 0
-    push t0
-                    
-    imov! t0 1
-    push t0
-                    
-.fib_body_0_while_eval
-
-    pop! t0 t1
-    push! t1 t0 t1
-                            
-    imov! t0 10000
-    push t0
-                    
-    pop! t1 t0
-    imov t2 1  # default value
-    sub  t0 t1
-    jn!  .fib_body_0_while_eval_0_opskip
-    imov t2 0
-.fib_body_0_while_eval_0_opskip
-    push! t2
-                            
-    pop! t0
-    tst  t0
-    jz!  .fib_body_0_while_exit
-.fib_body_0_while_block
-
-    pop! t0 t1
-    push! t1 t0 t1
-                            
-    # load the stack ptr addr into t0
-    load!   t0 .ret_stack_ptr
-
-    # load the return addr
-    imov!   t1 .fib_body_0_while_block_retaddr0
-
-    # store t1 at t0
-    str     t0 t1
-
-    # increment t0
-    iadd    t0 1
-    str!    .ret_stack_ptr t0
-
-    jmp!    .p
-.fib_body_0_while_block_retaddr0
-                                
-    imov! t0 32
-    push t0
-                    
-    # load the stack ptr addr into t0
-    load!   t0 .ret_stack_ptr
-
-    # load the return addr
-    imov!   t1 .fib_body_0_while_block_retaddr1
-
-    # store t1 at t0
-    str     t0 t1
-
-    # increment t0
-    iadd    t0 1
-    str!    .ret_stack_ptr t0
-
-    jmp!    .pc
-.fib_body_0_while_block_retaddr1
-                                
-    pop! t0 t1
-    push! t0 t1
-                            
-    pop! t0 t1
-    push! t1 t0 t1
-                            
-    pop!  t1 t0
-    add   t0 t1
-    push! t0
-                            
-    jmp! .fib_body_0_while_eval
-.fib_body_0_while_exit
-                    
-    pop! t0
-                            
-    pop! t0
-                            
-    imov! t0 57005
-    push t0
-                    
-    # load the stack ptr addr into t0
-    load!   t0 .ret_stack_ptr
-
-    # load the return addr
-    imov!   t1 .fib_body_retaddr1
-
-    # store t1 at t0
-    str     t0 t1
-
-    # increment t0
-    iadd    t0 1
-    str!    .ret_stack_ptr t0
-
-    jmp!    .p
-.fib_body_retaddr1
-                                
-    imov! t0 48879
-    push t0
-                    
-    # load the stack ptr addr into t0
-    load!   t0 .ret_stack_ptr
-
-    # load the return addr
-    imov!   t1 .fib_body_retaddr2
-
-    # store t1 at t0
-    str     t0 t1
-
-    # increment t0
-    iadd    t0 1
-    str!    .ret_stack_ptr t0
-
-    jmp!    .p
-.fib_body_retaddr2
-                                
-    
-.fib_exit
-    # load the stack ptr addr into t0
-    load!   t0 .ret_stack_ptr
-    isub    t0 1
-
-    # load the return addr
-    load    t1 t0
-
-    # str the stack ptr addr
-    str!    .ret_stack_ptr t0
-
-    jmp     t1
-#end .fib

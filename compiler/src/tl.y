@@ -22,7 +22,7 @@ Function -> Result<Function, ()>:
     ;
 
 Global -> Result<Global, ()>:
-    'GLOBAL' Identifier IntLiteral { Ok(Global { span: $span, name: $2?, val: $3? }) }
+    'GLOBAL' Identifier Identifier IntLiteral { Ok(Global { span: $span, name: $2?, var_type: $3?, val: $4? }) }
     ;
 
 Typelist -> Result<Vec<Identifier>, ()>:
@@ -86,6 +86,7 @@ Operator -> Result<Operator, ()>:
     | 'LTE' { Ok(Operator::Lte($span)) }
     | 'GT' { Ok(Operator::Gt($span)) }
     | 'GTE' { Ok(Operator::Gte($span)) }
+    | 'HOLE' { Ok(Operator::Hole($span)) }
     ;
 
 Identifiers -> Result<Vec<Identifier>, ()>:
@@ -151,6 +152,8 @@ pub enum Operator {
     Lte(Span),
     Gt(Span),
     Gte(Span),
+
+    Hole(Span),
 }
 
 #[derive(Debug)]
@@ -231,6 +234,7 @@ pub struct Function {
 pub struct Global {
     pub span: Span,
     pub name: Identifier,
+    pub var_type: Identifier,
     pub val: IntLiteral,
 }
 

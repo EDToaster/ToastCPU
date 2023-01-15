@@ -6,8 +6,7 @@ use std::fmt::{Display, Formatter};
 use std::fs;
 extern crate argparse;
 use argparse::{ArgumentParser, Store};
-use lrpar::LexParseError::ParseError;
-use crate::emit::{emit_function, emit_module};
+use crate::emit::module::emit_module;
 
 lrlex_mod!("tl.l");
 lrpar_mod!("tl.y");
@@ -57,7 +56,7 @@ fn main() -> Result<(), String> {
         .map_err(|_| "Some parser thing went wrong!")?;
 
     let tasm = emit_module(&r);
-    fs::write(output, tasm.map_err(|_| "Unable to generate assembly".to_string())?).expect("Unable to write file");
+    fs::write(output, tasm?).expect("Unable to write file");
 
     Ok(())
 }

@@ -1,0 +1,76 @@
+
+.reset
+    # setup isr and jump to main
+    imov!   isr .isr
+    # call!   .print_init
+
+    # initialize ret stack ptrs
+    imov!   t0 .ret_stack
+    imov!   t1 .reset_ret
+
+    str     t0 t1
+    iadd    t0 1
+    str!    .ret_stack_ptr t0
+
+    # initialize our global variables
+    call!   .init_globals
+    jmp!    .main
+.reset_ret
+    halt
+
+.init_globals
+
+    push! t0
+    
+    pop! t0
+    jmpr
+                                        
+
+
+
+# allocate 1024 words on the heap
+.ret_stack_ptr [1]
+.ret_stack [0x0400]
+
+# #include<../../lib/std/print>
+# #include<../../lib/std/keyboard>
+
+fn .isr
+    isr!
+    rti!
+#end .isr
+fn .main
+
+
+    imov! t0 1
+    push t0
+                    
+.main_body_0_while_eval
+
+    pop! t0
+    push! t0 t0
+                            
+    pop! t0
+    tst  t0
+    jz!  .main_body_0_while_exit
+.main_body_0_while_block
+
+    jmp! .main_body_0_while_eval
+.main_body_0_while_exit
+                    
+    pop! t0
+                            
+    
+.main_exit
+    # load the stack ptr addr into t0
+    load!   t0 .ret_stack_ptr
+    isub    t0 1
+
+    # load the return addr
+    load    t1 t0
+
+    # str the stack ptr addr
+    str!    .ret_stack_ptr t0
+
+    jmp     t1
+#end .main

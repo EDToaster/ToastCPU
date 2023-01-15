@@ -4,7 +4,9 @@
 0x[0-9a-fA-F]+  "HEX_INT"
 0b[01]+         "BIN_INT"
 
-\|\|              "LOR"
+\?\?              "HOLE"
+
+\|\|            "LOR"
 &&              "LAND"
 !               "LNOT"
 
@@ -38,7 +40,7 @@ if              "IF"
 else            "ELSE"
 while           "WHILE"
 
-[a-zA-Z_][a-zA-Z0-9_]*  "IDENT"
+[a-zA-Z_][a-zA-Z0-9_]*\**  "IDENT"
 
 "(?:[^"\\]|\\.)*"       "STRING"
 '(?:[^"\\]|\\.)'        "CHAR"

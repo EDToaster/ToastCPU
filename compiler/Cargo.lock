@@ -105,8 +105,10 @@ dependencies = [
  "argparse",
  "cfgrammar",
  "colored",
+ "lazy_static",
  "lrlex",
  "lrpar",
+ "regex",
 ]
 
 [[package]]

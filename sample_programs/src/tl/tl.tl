@@ -1,43 +1,7 @@
-global var1 0xDEAD
-
-### GLOBALS
-global text_progress 100
-global text_ptr 0x0000
-### END GLOBALS
-
-### START PRINT MODULE
-# 100 chars by 60 lines
-
-fn pc u16 -> {
-    dup '\n' = if {
-        drop
-        text_ptr load text_progress load + text_ptr store
-        100 text_progress store
-    } else {
-        text_ptr load swap
-
-        # print the char
-        0b0011100000000000 |
-        over store
-
-        1 + text_ptr store
-
-        text_progress load 1 - dup 0 = if {
-            drop 100
-        }
-        text_progress store
-    }
-
-    text_ptr load 6000 >= if {
-        0 text_ptr store
-        100 text_progress store
-    }
-}
-
-### END PRINT MODULE
+global var1 u16 0xDEAD
 
 // teststr, assertstr, cond
-fn assert u16 u16 -> {
+fn assert u16* u16 -> {
     if {
         #"Passed\n" ps
     } else {
@@ -105,8 +69,8 @@ fn test_logical -> {
     "0 !"       { 0   !  1 = }  assert
 }
 
-#         strptr len
-fn strlen u16 -> u16 {
+#         strptr  len
+fn strlen u16* -> u16 {
     # strptr strptr+13
     dup
 
@@ -164,8 +128,38 @@ fn main -> {
     test_global
 
     "Passed All Test Cases!" ps
+}
 
-    # fib
+### START PRINT MODULE
+# 100 chars by 60 lines
+
+global text_progress u16    100
+global text_ptr      u16*   0x0000
+
+fn pc u16 -> {
+    dup '\n' = if {
+        drop
+        text_ptr load text_progress load + text_ptr ?? store
+        100 text_progress ?? store
+    } else {
+        text_ptr load swap
+
+        # print the char
+        0b0011100000000000 |
+        over store
+
+        1 + text_ptr store
+
+        text_progress load 1 - dup 0 = if {
+            drop 100
+        }
+        text_progress store
+    }
+
+    text_ptr load 6000 >= if {
+        0 text_ptr store
+        100 text_progress store
+    }
 }
 
 # Print the hex char
@@ -194,26 +188,11 @@ fn p u16 -> {
 }
 
 #     strptr
-fn ps u16 -> {
+fn ps u16* -> {
     dup
     while { load dup } {
         # str char
         pc 1 + dup
     }
     drop drop
-}
-
-fn fib -> {
-    "Testing fib sequence ...\n" ps
-
-    # a b
-      0 1
-    while { over 10000 < } {
-        over p ' ' pc
-        swap over +
-    }
-
-    drop drop
-
-    0xDEAD p 0xBEEF p
 }

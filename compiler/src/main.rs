@@ -5,13 +5,17 @@ use std::error::Error;
 use std::fmt::{Display, Formatter};
 use std::fs;
 extern crate argparse;
-use argparse::{ArgumentParser, Store};
+extern crate core;
+
+use argparse::{ArgumentParser, Collect, Store};
 use crate::emit::module::emit_module;
+use crate::preprocess::preprocess;
 
 lrlex_mod!("tl.l");
 lrpar_mod!("tl.y");
 
 mod emit;
+mod preprocess;
 
 #[derive(Debug)]
 struct ArgParseError(i32);
@@ -23,9 +27,10 @@ impl Display for ArgParseError {
     }
 }
 
-fn get_args() -> Result<(String, String), ArgParseError> {
+fn get_args() -> Result<(String, String, Vec<String>), ArgParseError> {
     let mut input: String = "".to_string();
     let mut output: String = "".to_string();
+    let mut include_paths: Vec<String> = vec![];
     {
         let mut ap = ArgumentParser::new();
         ap.set_description("Compile ToastLang to ToastASM");
@@ -33,15 +38,20 @@ fn get_args() -> Result<(String, String), ArgParseError> {
             .add_option(&["-i", "--input-file"], Store, "Input .tl file");
         ap.refer(&mut output)
             .add_option(&["-o", "--output-file"], Store, "Output file location");
+        ap.refer(&mut include_paths)
+            .add_option(&["-I", "--include"], Collect, "Include file paths");
         ap.parse_args()
     }
-    .map(|_| (input, output))
+    .map(|_| (input, output, include_paths))
     .map_err(|i| ArgParseError(i))
 }
 
 fn main() -> Result<(), String> {
-    let (input, output) = get_args().map_err(|e| e.to_string())?;
-    let program_text = fs::read_to_string(input).map_err(|e| e.to_string())?;
+    let (input, output, include_paths) = get_args().map_err(|e| e.to_string())?;
+
+    println!("Options: {input:?}, {output:?}, {include_paths:?}");
+    let mut program_text = fs::read_to_string(input).map_err(|e| e.to_string())?;
+    program_text = preprocess(&program_text, &include_paths)?;
 
     let lexer_def = tl_l::lexerdef();
 

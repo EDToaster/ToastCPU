@@ -547,8 +547,8 @@ class Program:
             for label in line.labels:
                 label_locations[label] = Number(i)
         
-        for label, loc in label_locations.items():
-            print (f"{label} at {loc}")
+        # for label, loc in label_locations.items():
+        #     print (f"{label} at {loc}")
 
         # replace labels with numbers
         labels_replaced = []

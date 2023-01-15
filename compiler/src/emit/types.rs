@@ -1,4 +1,7 @@
+use core::fmt;
 use std::collections::HashMap;
+use std::fmt::Formatter;
+use std::iter;
 use lazy_static::lazy_static;
 use regex::Regex;
 use crate::tl_y::Identifier;
@@ -25,15 +28,28 @@ impl TypeSize for StructType {
     }
 }
 
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Clone, Eq, PartialEq)]
 pub enum Type {
     U16,
     Pointer(isize, Box<Type>),
     Struct(StructType),
+    Generic(String),
 }
 
 lazy_static! {
-    static ref TYPE_POINTER_REGEX: Regex = Regex::new(r"(?P<base_type>[^*]+)(?P<pointers>\*+)").unwrap();
+    static ref TYPE_POINTER_REGEX: Regex = Regex::new(r"(?P<base_type>\$?[^*]+)(?P<pointers>\*+)").unwrap();
+    static ref TYPE_GENERICS_REGEX: Regex = Regex::new(r"(?P<alias>\$?[^*]+)").unwrap();
+}
+
+impl fmt::Debug for Type {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            Type::U16 => { write!(f, "u16") }
+            Type::Pointer(i, t) => { write!(f, "{:?}{}", t, iter::repeat('*').take(*i as usize).collect::<String>()) }
+            Type::Struct(_) => { write!(f, "struct") }
+            Type::Generic(s) => { write!(f, "{s}")}
+        }
+    }
 }
 
 impl TypeSize for Type {
@@ -42,6 +58,7 @@ impl TypeSize for Type {
             Type::U16 => 1,
             Type::Pointer(..) => 1,
             Type::Struct(s) => s.type_size(),
+            Type::Generic(s) => 1,
         }
     }
 }
@@ -53,14 +70,29 @@ impl TypeSize for Vec<Type> {
 }
 
 impl Type {
+    pub fn new_generic(label: &str) -> Type {
+        Type::Generic(label.to_string())
+    }
+
+    pub fn baseline_pointers(t1: &Type, t2: &Type) -> Result<(Type, Type), String> {
+        match (t1, t2) {
+            (p1 @ Type::Pointer(_, _), p2 @ Type::Pointer(_, _)) => {
+                Type::baseline_pointers(&p1.de_ref()?, &p2.de_ref()?)
+            }
+            _ => Ok((t1.clone(), t2.clone()))
+        }
+    }
+
     pub fn parse(s: &str) -> Result<Type, ()> {
         match s {
             "u16" => Ok(Type::U16),
             s => {
                 if let Some(caps) = TYPE_POINTER_REGEX.captures(s) {
-                    let base_type = Type::parse(caps.name("base_type").ok_or(()).map(|m| m.as_str())?)?;
-                    let pointer_layers = caps.name("pointers").ok_or(()).map(|m| m.as_str())?.len();
-                    Ok(Type::Pointer(pointer_layers as isize, Box::new(base_type)))
+                    let base_type = Type::parse(&caps["base_type"])?;
+                    let pointer_layers = &caps["pointers"].len();
+                    Ok(Type::Pointer(*pointer_layers as isize, Box::new(base_type)))
+                } else if let Some(caps) = TYPE_GENERICS_REGEX.captures(s) {
+                    Ok(Type::Generic((&caps["alias"]).to_string()))
                 } else {
                     Err(())
                 }

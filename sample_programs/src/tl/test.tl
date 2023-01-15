@@ -1,13 +1,16 @@
 global var1 u16 0xDEAD
 
+#include<std/io>
+#include<std/string>
+
 // teststr, assertstr, cond
 fn assert u16* u16 -> {
     if {
-        #"Passed\n" ps
+        //"Passed\n" ps
     } else {
-        dup ps
-        ' ' pc
-        "Assert Failed\n" ps
+        dup print_string
+        ' ' print_char
+        "Assert Failed\n" print_string
         halt
     }
     drop
@@ -22,13 +25,13 @@ fn sum u16 -> u16 {
     drop
 }
 
-# multiply by repeated add
+// multiply by repeated add
 fn mul u16 u16 -> u16 {
     0 let a b acc {
         while { b load } {
-            # acc += a
+            // acc += a
             acc load { a load } + acc store
-            # b -= 1
+            // b -= 1
             b load 1 - b store
         }
         acc load
@@ -36,13 +39,13 @@ fn mul u16 u16 -> u16 {
 }
 
 fn test_sum -> {
-    "Testing Sum\n" ps
+    "Testing Sum\n" print_string
     "sum(7) == 21"      { 7 sum 28 - 0 = }      assert
     "sum(22) == 253"    { 22 sum 253 - 0 = }    assert
 }
 
 fn test_arith -> {
-    "Testing Arith\n" ps
+    "Testing Arith\n" print_string
     "7 = 7"     { 7 7 = 1 = }   assert
     "6 = 7"     { 6 7 = 0 = }   assert
     "6 > 7"     { 6 7 > 0 = }   assert
@@ -60,7 +63,7 @@ fn test_arith -> {
 }
 
 fn test_logical -> {
-    "Testing Logical\n" ps
+    "Testing Logical\n" print_string
     "1 && 1"    { 1 1 && 1 = }  assert
     "0 && 1"    { 0 1 && 0 = }  assert
     "0 || 0"    { 0 0 || 0 = }  assert
@@ -69,26 +72,15 @@ fn test_logical -> {
     "0 !"       { 0   !  1 = }  assert
 }
 
-#         strptr  len
-fn strlen u16* -> u16 {
-    # strptr strptr+13
-    dup
-
-    while { dup load } {
-        1 +
-    }
-
-    swap -
-}
 
 fn test_strlen -> {
-    "Testing strlen\n" ps
+    "Testing strlen\n" print_string
     "strlen(\"abcd\")" { "abcd" strlen 4 = } assert
     "strlen(\"\")" { "" strlen 0 = } assert
 }
 
 fn test_let -> {
-    "Testing let\n" ps
+    "Testing let\n" print_string
     11 0xA 0xB let a b {
         { 11 = } "11" swap assert
         "a1" { a load 0xA = } assert
@@ -103,7 +95,7 @@ fn test_let -> {
 }
 
 fn test_mul -> {
-    "Testing mul\n" ps
+    "Testing mul\n" print_string
     "1 x 2" { 1 2 mul 2 = } assert
     "2 x 5" { 2 5 mul 10 = } assert
     "0 x 10" { 0 10 mul 0 = } assert
@@ -111,13 +103,13 @@ fn test_mul -> {
 }
 
 fn test_global -> {
-    "Testing global vars\n" ps
+    "Testing global vars\n" print_string
     "var1 == 0xDEAD" { var1 load 0xDEAD = } assert
     "var1 = 10" { 10 var1 store var1 load 10 = } assert
 }
 
 fn main -> {
-    "Hello from ToastLang!\n\n" ps
+    "Hello from ToastLang!\n" print_string
 
     test_sum
     test_arith
@@ -127,72 +119,14 @@ fn main -> {
     test_mul
     test_global
 
-    "Passed All Test Cases!" ps
+    "Passed All Test Cases!" print_string
 }
 
-### START PRINT MODULE
-# 100 chars by 60 lines
-
-global text_progress u16    100
-global text_ptr      u16*   0x0000
-
-fn pc u16 -> {
-    dup '\n' = if {
-        drop
-        text_ptr load text_progress load + text_ptr ?? store
-        100 text_progress ?? store
-    } else {
-        text_ptr load swap
-
-        # print the char
-        0b0011100000000000 |
-        over store
-
-        1 + text_ptr store
-
-        text_progress load 1 - dup 0 = if {
-            drop 100
-        }
-        text_progress store
+// returns the n-th fib number by recursion
+fn rec_fib u16 -> u16 {
+    dup 1 > if {
+        dup 1 - rec_fib
+        swap 2 - rec_fib
+        +
     }
-
-    text_ptr load 6000 >= if {
-        0 text_ptr store
-        100 text_progress store
-    }
-}
-
-# Print the hex char
-fn ph u16 -> {
-    dup 10 < if {
-        '0' + pc
-    } else {
-        10 - 'A' + pc
-    }
-}
-
-# Print the nibble
-#     val
-fn pn u16 -> {
-    dup 4 >> 0xF & ph
-    dup 0xF & ph
-    drop
-}
-
-# Print the word
-#    val
-fn p u16 -> {
-    dup 8 >> 0xFF & pn
-    dup 0xFF & pn
-    drop
-}
-
-#     strptr
-fn ps u16* -> {
-    dup
-    while { load dup } {
-        # str char
-        pc 1 + dup
-    }
-    drop drop
 }

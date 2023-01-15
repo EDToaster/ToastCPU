@@ -1,33 +1,7 @@
 use lrpar::Span;
-use crate::emit::block::check_stack_and_mutate;
+use crate::emit::type_check::{check_and_apply_multiple_stack_transitions, check_and_apply_stack_transition};
 use crate::emit::types::{FunctionState, tasm, Type};
 use crate::tl_y::Operator;
-
-// allows add and sub operators to include pointer arithmetic
-fn check_add_sub_and_mutate(r: &str, span: &Span, function_state: &mut FunctionState) -> Result<(), (Span, String)> {
-    // assert at most 1 of the top two is a pointer
-    let prev_size = function_state.stack_view.len();
-    if prev_size < 2 {
-        Err((span.clone(), format!("Operator `{r}` requires 2 numeric elements at the top of the stack. Current stack is {:?}", function_state.stack_view)))
-    } else {
-        let a = &function_state.stack_view.pop().expect("whoopsies");
-        let b = &function_state.stack_view.pop().expect("whoopsies");
-        let result_type = match (a, b) {
-            (Type::Pointer(i1, b1), Type::Pointer(i2, b2)) => if i1 == i2 && b1 == b2 {
-                Ok(&Type::U16)
-            } else {
-                Err((span.clone(), format!("Operator `{r}` requires pointer operands to be the same type. Types were [{b:?}, {a:?}].")))
-            },
-            (Type::Pointer(_, _), Type::U16) => Ok(a),
-            (Type::U16, Type::Pointer(_, _)) => Ok(b),
-            (Type::U16, Type::U16) => Ok(a),
-            _ => Err((span.clone(), format!("Operator `{r}` requires operands of two numeric types. At most one of the operands can be a pointer. Types were [{b:?}, {a:?}]."))),
-        }?;
-        function_state.stack_view.push(result_type.clone());
-
-        Ok(())
-    }
-}
 
 pub fn emit_operator(block_id: &str, r: &Operator, function_state: &mut FunctionState) -> Result<String, (Span, String)> {
     let mut operation = String::new();
@@ -42,8 +16,26 @@ pub fn emit_operator(block_id: &str, r: &Operator, function_state: &mut Function
     push! t0
                             "
                         );
-            // todo: allow for pointer arith
-            check_add_sub_and_mutate("+", &span, function_state)?;
+            check_and_apply_multiple_stack_transitions("+", &span, function_state,
+            &vec![
+                    (
+                        vec![
+                            Type::Pointer(1, Box::new(Type::new_generic("$a"))),
+                            Type::U16,
+                        ], vec![Type::Pointer(1, Box::new(Type::new_generic("$a")))]
+                    ),
+                    (
+                        vec![
+                            Type::U16,
+                            Type::Pointer(1, Box::new(Type::new_generic("$a"))),
+                        ], vec![Type::Pointer(1, Box::new(Type::new_generic("$a")))]
+                    ),
+                    (
+                        vec![
+                            Type::U16, Type::U16
+                        ], vec![Type::U16]
+                    ),
+                ])?;
         }
         Operator::Sub(span) => {
             tasm!(
@@ -54,7 +46,27 @@ pub fn emit_operator(block_id: &str, r: &Operator, function_state: &mut Function
     push! t0
                             "
                         );
-            check_add_sub_and_mutate("-", &span, function_state)?;
+            check_and_apply_multiple_stack_transitions("-", &span, function_state,
+           &vec![
+                   (
+                       vec![
+                           Type::Pointer(1, Box::new(Type::new_generic("$a"))),
+                           Type::U16,
+                       ], vec![Type::Pointer(1, Box::new(Type::new_generic("$a")))]
+                   ),
+                   (
+                       vec![
+                           Type::Pointer(1, Box::new(Type::new_generic("$a"))),
+                           Type::Pointer(1, Box::new(Type::new_generic("$a"))),
+                       ], vec![Type::U16]
+                   ),
+                   (
+                       vec![
+                           Type::U16,
+                           Type::U16,
+                       ], vec![Type::U16]
+                   ),
+               ])?;
         }
         Operator::BOr(span) => {
             tasm!(
@@ -65,7 +77,7 @@ pub fn emit_operator(block_id: &str, r: &Operator, function_state: &mut Function
     push! t0
                             "
                         );
-            check_stack_and_mutate("|", &span, function_state, &vec![Type::U16, Type::U16], &vec![Type::U16])?;
+            check_and_apply_stack_transition("|", span, function_state, &vec![Type::U16, Type::U16], &vec![Type::U16])?;
         }
         Operator::BAnd(span) => {
             tasm!(
@@ -76,7 +88,7 @@ pub fn emit_operator(block_id: &str, r: &Operator, function_state: &mut Function
     push! t0
                             "
                         );
-            check_stack_and_mutate("&", &span, function_state, &vec![Type::U16, Type::U16], &vec![Type::U16])?;
+            check_and_apply_stack_transition("&", &span, function_state, &vec![Type::U16, Type::U16], &vec![Type::U16])?;
         }
         Operator::BNot(span) => {
             tasm!(
@@ -87,7 +99,7 @@ pub fn emit_operator(block_id: &str, r: &Operator, function_state: &mut Function
     push! t0
                             "
                         );
-            check_stack_and_mutate("~", &span, function_state, &vec![Type::U16], &vec![Type::U16])?;
+            check_and_apply_stack_transition("~", &span, function_state, &vec![Type::U16], &vec![Type::U16])?;
         }
         Operator::Sshr(span) => {
             tasm!(
@@ -98,7 +110,7 @@ pub fn emit_operator(block_id: &str, r: &Operator, function_state: &mut Function
     push! t0
                             "
                         );
-            check_stack_and_mutate(">>", &span, function_state, &vec![Type::U16, Type::U16], &vec![Type::U16])?;
+            check_and_apply_stack_transition(">>", &span, function_state, &vec![Type::U16, Type::U16], &vec![Type::U16])?;
         }
         Operator::Shr(span) => {
             tasm!(
@@ -109,7 +121,7 @@ pub fn emit_operator(block_id: &str, r: &Operator, function_state: &mut Function
     push! t0
                             "
                         );
-            check_stack_and_mutate(">>>", &span, function_state, &vec![Type::U16, Type::U16], &vec![Type::U16])?;
+            check_and_apply_stack_transition(">>>", &span, function_state, &vec![Type::U16, Type::U16], &vec![Type::U16])?;
         }
         Operator::Shl(span) => {
             tasm!(
@@ -120,7 +132,7 @@ pub fn emit_operator(block_id: &str, r: &Operator, function_state: &mut Function
     push! t0
                             "
                         );
-            check_stack_and_mutate("<<", &span, function_state, &vec![Type::U16, Type::U16], &vec![Type::U16])?;
+            check_and_apply_stack_transition("<<", &span, function_state, &vec![Type::U16, Type::U16], &vec![Type::U16])?;
         }
         Operator::Xor(span) => {
             tasm!(
@@ -131,7 +143,7 @@ pub fn emit_operator(block_id: &str, r: &Operator, function_state: &mut Function
     push! t0
                             "
                         );
-            check_stack_and_mutate("^", &span, function_state, &vec![Type::U16, Type::U16], &vec![Type::U16])?;
+            check_and_apply_stack_transition("^", &span, function_state, &vec![Type::U16, Type::U16], &vec![Type::U16])?;
         }
 
         Operator::LOr(span) => {
@@ -151,7 +163,7 @@ pub fn emit_operator(block_id: &str, r: &Operator, function_state: &mut Function
     push! t2
                             "
                         );
-            check_stack_and_mutate("||", &span, function_state, &vec![Type::U16, Type::U16], &vec![Type::U16])?;
+            check_and_apply_stack_transition("||", &span, function_state, &vec![Type::U16, Type::U16], &vec![Type::U16])?;
         }
 
         Operator::LAnd(span) => {
@@ -171,7 +183,7 @@ pub fn emit_operator(block_id: &str, r: &Operator, function_state: &mut Function
     push! t2
                             "
                         );
-            check_stack_and_mutate("&&", &span, function_state, &vec![Type::U16, Type::U16], &vec![Type::U16])?;
+            check_and_apply_stack_transition("&&", &span, function_state, &vec![Type::U16, Type::U16], &vec![Type::U16])?;
         }
 
         Operator::LNot(span) => {
@@ -189,7 +201,7 @@ pub fn emit_operator(block_id: &str, r: &Operator, function_state: &mut Function
     push! t1
                             "
                         );
-            check_stack_and_mutate("!", &span, function_state, &vec![Type::U16], &vec![Type::U16])?;
+            check_and_apply_stack_transition("!", &span, function_state, &vec![Type::U16], &vec![Type::U16])?;
         }
 
         Operator::Eq(span) => {
@@ -207,7 +219,7 @@ pub fn emit_operator(block_id: &str, r: &Operator, function_state: &mut Function
     push! t2
                             "
                         );
-            check_stack_and_mutate("=", &span, function_state, &vec![Type::U16, Type::U16], &vec![Type::U16])?;
+            check_and_apply_stack_transition("=", &span, function_state, &vec![Type::new_generic("$a"), Type::new_generic("$a")], &vec![Type::U16])?;
         }
         Operator::Lt(span) => {
             let skip_label = format!("{block_id}_opskip");
@@ -224,7 +236,7 @@ pub fn emit_operator(block_id: &str, r: &Operator, function_state: &mut Function
     push! t2
                             "
                         );
-            check_stack_and_mutate("<", &span, function_state, &vec![Type::U16, Type::U16], &vec![Type::U16])?;
+            check_and_apply_stack_transition("<", &span, function_state, &vec![Type::U16, Type::U16], &vec![Type::U16])?;
         }
         Operator::Lte(span) => {
             let skip_label = format!("{block_id}_opskip");
@@ -241,7 +253,7 @@ pub fn emit_operator(block_id: &str, r: &Operator, function_state: &mut Function
     push! t2
                             "
                         );
-            check_stack_and_mutate("<=", &span, function_state, &vec![Type::U16, Type::U16], &vec![Type::U16])?;
+            check_and_apply_stack_transition("<=", &span, function_state, &vec![Type::U16, Type::U16], &vec![Type::U16])?;
         }
         Operator::Gt(span) => {
             let skip_label = format!("{block_id}_opskip");
@@ -258,7 +270,7 @@ pub fn emit_operator(block_id: &str, r: &Operator, function_state: &mut Function
     push! t2
                             "
                         );
-            check_stack_and_mutate(">", &span, function_state, &vec![Type::U16, Type::U16], &vec![Type::U16])?;
+            check_and_apply_stack_transition(">", &span, function_state, &vec![Type::U16, Type::U16], &vec![Type::U16])?;
         }
         Operator::Gte(span) => {
             let skip_label = format!("{block_id}_opskip");
@@ -275,10 +287,14 @@ pub fn emit_operator(block_id: &str, r: &Operator, function_state: &mut Function
     push! t2
                             "
                         );
-            check_stack_and_mutate(">=", &span, function_state, &vec![Type::U16, Type::U16], &vec![Type::U16])?;
+            check_and_apply_stack_transition(">=", &span, function_state, &vec![Type::U16, Type::U16], &vec![Type::U16])?;
         }
         Operator::Hole(span) => {
             println!("Stack at {span:?}: {:?}", function_state.stack_view);
+        }
+        Operator::As(span, t) => {
+            let parsed_t = Type::parse(&t.name).map_err(|_| (span.clone(), format!("Could not parse type {}.", &t.name)))?;
+            check_and_apply_stack_transition(&*format!("as({parsed_t:?})"), &span, function_state, &vec![Type::new_generic("$a")], &vec![parsed_t])?;
         }
     }
     Ok(operation)

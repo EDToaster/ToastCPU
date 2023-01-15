@@ -87,6 +87,7 @@ Operator -> Result<Operator, ()>:
     | 'GT' { Ok(Operator::Gt($span)) }
     | 'GTE' { Ok(Operator::Gte($span)) }
     | 'HOLE' { Ok(Operator::Hole($span)) }
+    | 'AS' 'LP' Identifier 'RP' { Ok(Operator::As($span, $3?)) }
     ;
 
 Identifiers -> Result<Vec<Identifier>, ()>:
@@ -152,6 +153,8 @@ pub enum Operator {
     Lte(Span),
     Gt(Span),
     Gte(Span),
+
+    As(Span, Identifier),
 
     Hole(Span),
 }

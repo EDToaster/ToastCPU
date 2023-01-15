@@ -1,76 +1,10 @@
+use std::borrow::Borrow;
+use std::collections::HashMap;
 use lrpar::Span;
 use crate::emit::operator::emit_operator;
+use crate::emit::type_check::check_and_apply_stack_transition;
 use crate::emit::types::*;
 use crate::tl_y::*;
-
-pub fn check_load(span: &Span, function_state: &mut FunctionState) -> Result<(), (Span, String)> {
-    match function_state.stack_view.pop() {
-        Some(p @ Type::Pointer(_, _)) => {
-            function_state.stack_view.push(p.de_ref().map_err(|_| (span.clone(), "Something went wrong when dereferencing pointer".to_string()))?);
-            Ok(())
-        }
-        None => {
-            Err((span.clone(), format!(
-                "Cannot invoke statement `load` as it requires 1 pointer at the top of the stack. Current stack is empty.")))
-        }
-        _ => {
-            Err((span.clone(), format!(
-                "Cannot invoke statement `load` as it requires 1 pointer at the top of the stack. Current stack contains {:?}.", function_state.stack_view)))
-        }
-    }
-}
-
-pub fn check_store(span: &Span, function_state: &mut FunctionState) -> Result<(), (Span, String)> {
-    if function_state.stack_view.len() < 2 {
-        Err((span.clone(), format!(
-            "Cannot invoke statement `store` as it requires (type, type*) at the top of the stack. Current stack contains {:?}.", function_state.stack_view)))
-    } else {
-        let new_length = function_state.stack_view.len() - 2;
-        let top_two = &function_state.stack_view[new_length..];
-        match (&top_two[0], &top_two[1]) {
-            (bt1, bt2 @ Type::Pointer(_, _)) if *bt1 == bt2.de_ref().map_err(|s| (span.clone(), s))? => {
-                function_state.stack_view.pop();
-                function_state.stack_view.pop();
-                Ok(())
-            }
-            _ => {
-                Err((span.clone(), format!(
-                    "Cannot invoke statement `store` as it requires (type, type*) at the top of the stack. Current stack contains {:?}.", function_state.stack_view)))
-            }
-        }
-    }
-}
-
-pub fn check_generic_stack_and_mutate<F>(s: &str, span: &Span, function_state: &mut FunctionState, num_in: isize, type_func: F) -> Result<(), (Span, String)>
-    where F: FnOnce(&[Type]) -> Vec<Type> {
-    let prev_size = function_state.stack_view.len() as isize;
-    if prev_size < num_in {
-        return Err((span.clone(), format!(
-            "Cannot invoke statement `{s}` as it requires {num_in} elements at the top of the stack. Current stack has {prev_size} elements.")));
-    }
-
-    let slice = &function_state.stack_view[(prev_size - num_in) as usize..];
-    let out_t = type_func(slice);
-
-    function_state.stack_view.truncate((prev_size - num_in) as usize);
-    function_state.stack_view.extend(out_t);
-
-    Ok(())
-}
-
-// todo: revamp since u16 isn't the only numeric type
-pub fn check_stack_and_mutate(s: &str, span: &Span, function_state: &mut FunctionState, in_t: &Vec<Type>, out_t: &Vec<Type>) -> Result<(), (Span, String)> {
-    if function_state.stack_view.ends_with(in_t) {
-        function_state.stack_view.truncate(function_state.stack_view.len() - in_t.len());
-        function_state.stack_view.extend(out_t.clone());
-        Ok(())
-    } else {
-        let msg = format!(
-            "Cannot invoke statement `{s}` as it requires {in_t:?} on top of the stack. Current stack contains {:?}.",
-            function_state.stack_view);
-        Err((span.clone(), msg))
-    }
-}
 
 pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState, function_state: &mut FunctionState) -> Result<String, (Span, String)> {
     let mut block = "".to_string();
@@ -89,7 +23,7 @@ pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState, fun
     push t0
                     "
                 );
-                check_stack_and_mutate(format!("{val}").as_str(), span, function_state, &vec![], &vec![Type::U16])?
+                check_and_apply_stack_transition(val.to_string().as_str(), span, function_state, &vec![], &vec![Type::U16])?;
             }
             Statement::IntArray(IntArray { val, span }) => {
                 let mut string_alloc_label = &*format!("string_alloc_{}", global_state.string_allocs_counter);
@@ -105,7 +39,8 @@ pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState, fun
     push! t0
                     "
                 );
-                check_stack_and_mutate(format!("{val:?}").as_str(), span, function_state, &vec![], &vec![Type::Pointer(1, Box::new(Type::U16))])?
+                check_and_apply_stack_transition(format!("{val:?}").as_str(), span, function_state,
+                                                 &vec![], &vec![Type::Pointer(1, Box::new(Type::U16))])?
             }
             Statement::Identifier(Identifier { name, span }) => {
                 // handle built in funcs
@@ -118,8 +53,8 @@ pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState, fun
     push! t0 t0
                             "
                         );
-                        check_generic_stack_and_mutate(
-                            "dup", span, function_state, 1, |v| { vec![v[0].clone(), v[0].clone()] })?;
+                        check_and_apply_stack_transition("dup", span, function_state,
+                                                         &vec![Type::new_generic("$a")], &vec![Type::new_generic("$a"), Type::new_generic("$a")])?;
                     }
                     "over" => {
                         tasm!(
@@ -129,8 +64,9 @@ pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState, fun
     push! t1 t0 t1
                             "
                         );
-                        check_generic_stack_and_mutate(
-                            "over", span, function_state, 2, |v| { vec![v[0].clone(), v[1].clone(), v[0].clone()] })?;
+                        check_and_apply_stack_transition("over", span, function_state,
+                                                         &vec![Type::new_generic("$a"), Type::new_generic("$b")],
+                                                         &vec![Type::new_generic("$a"), Type::new_generic("$b"), Type::new_generic("$a")])?;
                     }
                     "swap" => {
                         tasm!(
@@ -140,8 +76,9 @@ pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState, fun
     push! t0 t1
                             "
                         );
-                        check_generic_stack_and_mutate(
-                            "over", span, function_state, 2, |v| { vec![v[1].clone(), v[0].clone()] })?;
+                        check_and_apply_stack_transition("swap", span, function_state,
+                                                         &vec![Type::new_generic("$a"), Type::new_generic("$b")],
+                                                         &vec![Type::new_generic("$b"), Type::new_generic("$a")])?;
                     }
                     "halt" => {
                         tasm!(
@@ -158,8 +95,9 @@ pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState, fun
     pop! t0
                             "
                         );
-                        check_generic_stack_and_mutate(
-                            "drop", span, function_state, 1, |_| { vec![] })?;
+                        check_and_apply_stack_transition("swap", span, function_state,
+                                                         &vec![Type::new_generic("$a")],
+                                                         &vec![])?;
                     }
                     "load" => {
                         tasm!(
@@ -170,7 +108,9 @@ pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState, fun
     push! t0
                             "
                         );
-                        check_load(span, function_state)?;
+                        check_and_apply_stack_transition("load", span, function_state,
+                                                         &vec![Type::Pointer(1, Box::new(Type::new_generic("$a")))],
+                                                         &vec![Type::new_generic("$a")])?;
                     }
                     "store" => {
                         tasm!(
@@ -180,7 +120,9 @@ pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState, fun
     str  t1 t0
                             "
                         );
-                        check_store(span, function_state)?;
+                        check_and_apply_stack_transition("store", span, function_state,
+                                                         &vec![Type::new_generic("$a"), Type::Pointer(1, Box::new(Type::new_generic("$a")))],
+                                                         &vec![])?;
                     }
                     s => {
                         let mut offset_opt = None;
@@ -203,7 +145,9 @@ pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState, fun
     push!   t0
                                 "
                             );
-                            check_stack_and_mutate(s, &span, function_state, &vec![], &vec![t.add_ref()])?;
+                            check_and_apply_stack_transition(s, span, function_state,
+                                                             &vec![],
+                                                             &vec![t.add_ref()])?;
                         } else if let Some((label, t)) = global_state.globals.get(s) {
                             // global variable
                             tasm!(
@@ -213,7 +157,9 @@ pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState, fun
     push! t0
                                 "
                             );
-                            check_stack_and_mutate(s, &span, function_state, &vec![], &vec![t.add_ref()])?;
+                            check_and_apply_stack_transition(s, span, function_state,
+                                                             &vec![],
+                                                             &vec![t.add_ref()])?;
                         } else {
                             // generic function call
                             let ret_label = format!("{}_retaddr{}", block_id, counter);
@@ -239,15 +185,18 @@ pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState, fun
                                 "
                             );
                             // todo: temporary while we get static analysis going
-                            let (in_t, out_t) = global_state.function_signatures.get(s).unwrap();
-                            check_stack_and_mutate(s, &span, function_state, in_t, out_t)?;
+                            let (in_t, out_t) = global_state.function_signatures
+                                .get(s)
+                                .ok_or((span.clone(), format!("Was not able to find function signature of function {s}")))?;
+                            check_and_apply_stack_transition(s, &span, function_state, in_t, out_t)?;
                         }
 
                     }
                 }
             }
             Statement::Operator(r) => {
-                let op = emit_operator(format!("{block_id}_operator").as_str(), r, function_state)?;
+                let op = emit_operator(format!("{block_id}_{subblock_counter}_operator").as_str(), r, function_state)?;
+                subblock_counter += 1;
                 tasm!(
                     block;;
                     r"
@@ -326,10 +275,8 @@ pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState, fun
                 );
             }
             Statement::While(While { eval, body, span }) => {
-
                 // stack states
                 // .., eval, pop, body, ..
-
                 let while_eval_id = format!("{block_id}_{subblock_counter}_while_eval");
                 let while_body_id = format!("{block_id}_{subblock_counter}_while_block");
                 let while_eval_exit = format!("{block_id}_{subblock_counter}_while_exit");

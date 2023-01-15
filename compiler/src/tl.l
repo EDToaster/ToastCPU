@@ -26,6 +26,9 @@
 >               "GT"
 >=              "GTE"
 
+\(              "LP"
+\)              "RP"
+
 \{              "LB"
 \}              "RB"
 
@@ -39,8 +42,9 @@ unroll          "UNROLL"
 if              "IF"
 else            "ELSE"
 while           "WHILE"
+as              "AS"
 
-[a-zA-Z_][a-zA-Z0-9_]*\**  "IDENT"
+\$?[a-zA-Z_][a-zA-Z0-9_]*\**  "IDENT"
 
 "(?:[^"\\]|\\.)*"       "STRING"
 '(?:[^"\\]|\\.)'        "CHAR"

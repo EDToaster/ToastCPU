@@ -4,6 +4,32 @@ use crate::emit::types::GlobalState;
 use crate::tl_y::Function;
 use crate::emit::types::*;
 
+pub fn emit_isr(f: &Function, global_state: &mut GlobalState) -> Result<String, (Span, String)> {
+    let func_name = &f.name.name;
+
+    if f.in_t.len() > 0 || f.out_t.len() > 0 {
+        return Err((f.span.clone(), format!("Interrupt service routine (isr) cannot take in or emit stack items.")))
+    }
+
+    let mut function_state = FunctionState {
+        current_bindings: vec![],
+        stack_view: vec![],
+    };
+
+    let block = emit_block(&*format!("{func_name}_body"),
+                           &f.body, global_state, &mut function_state)
+        .map_err(|(span, err)| (span, format!("{func_name}: {err}")))?;
+
+    let mut func = String::new();
+    tasm!(func;;
+    r"
+fn .isr
+    isr!
+{block}
+    rti!
+    ");
+    Ok(func)
+}
 
 pub fn emit_function(f: &Function, global_state: &mut GlobalState) -> Result<String, (Span, String)> {
     // at this point we really only care about one function
@@ -27,7 +53,7 @@ pub fn emit_function(f: &Function, global_state: &mut GlobalState) -> Result<Str
     let (_, out_t) = global_state.function_signatures.get(func_name).unwrap();
 
     if out_t != &function_state.stack_view {
-        return Err((f.span.clone(), format!("Function signature expects return of {:?}, but {:?} was gotten", out_t, function_state.stack_view)));
+        return Err((f.span.clone(), format!("Function `{func_name}` signature expects return of {:?}, but {:?} was gotten", out_t, function_state.stack_view)));
     }
 
     func.push_str(&*format!(r"

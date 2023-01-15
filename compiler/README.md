@@ -48,3 +48,5 @@ the sum on to the stack. The `p` function prints out the resulting number in hex
   - [ ] `const foo u16 100` pushes the address of foo to the stack
   - [ ] `inline foo u16 100` pushes the *value* of foo to the stack. The substitution happens at compile time, and 
         doesn't require any rom allocation.
+- [x] Add support for pattern matched type defs
+  - `pub fn foo $a $a* $b -> $b* { ... }` Generics!

@@ -1,0 +1,74 @@
+
+////// START PRINT MODULE
+// 100 chars by 60 lines
+
+global text_progress u16    100
+global text_ptr      u16*   0x0000
+
+fn print_char u16 -> {
+    dup '\n' = if {
+        drop
+        text_ptr load text_progress load + text_ptr store
+        100 text_progress store
+    } else {
+        text_ptr load swap
+
+        // print the char
+        0b0011100000000000 |
+        over store
+
+        1 + text_ptr store
+
+        text_progress load 1 - dup 0 = if {
+            drop 100
+        }
+    text_progress store
+    }
+
+    text_ptr load as(u16) 6000 >= if {
+        halt
+        0 as(u16*) text_ptr store
+        100 text_progress store
+    }
+}
+
+// Print the hex char
+fn print_hex u16 -> {
+    dup 10 < if {
+        '0' + print_char
+    } else {
+        10 - 'A' + print_char
+    }
+}
+
+// Print the nibble
+//     val
+fn print_nibble u16 -> {
+    dup 4 >> 0xF & print_hex
+    dup 0xF & print_hex
+    drop
+}
+
+// Print the word
+//    val
+fn print_word u16 -> {
+    dup 8 >> 0xFF & print_nibble
+    dup 0xFF & print_nibble
+    drop
+}
+
+//     strptr
+fn print_string u16* -> {
+    dup
+    while { load dup } {
+        // str char
+        print_char 1 + dup
+    }
+    drop drop
+}
+
+// inputs
+fn get_keyboard_ascii -> u16 {
+    "              `      q1   zsaw2  cxde43   vftr5  nbhgy6   mju78  ,kio09  ./l;p-     [=    \n] \\                                                                                                                                                                  "
+    0xFFFF as(u16*) load + load
+}

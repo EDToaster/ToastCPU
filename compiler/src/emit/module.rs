@@ -1,9 +1,9 @@
 use std::collections::HashMap;
-use crate::emit::function::emit_function;
+use crate::emit::function::{emit_function, emit_isr};
 use crate::emit::global::emit_global;
 use crate::emit::string_defs::emit_string_defs;
 use crate::emit::types::{GlobalState, parse_types, tasm, Type};
-use crate::tl_y::Module;
+use crate::tl_y::{Identifier, Module};
 
 // todo: do Result<String> instead
 // todo: allow for multiple modules (and includes)
@@ -53,7 +53,6 @@ pub fn emit_module(m: &Module) -> Result<String, String> {
 .reset
     # setup isr and jump to main
     imov!   isr .isr
-    # call!   .print_init
 
     # initialize ret stack ptrs
     imov!   t0 .ret_stack
@@ -78,19 +77,33 @@ pub fn emit_module(m: &Module) -> Result<String, String> {
 .ret_stack_ptr [1]
 .ret_stack [0x0400]
 
-# #include<../../lib/std/print>
-# #include<../../lib/std/keyboard>
-
-fn .isr
-    isr!
-    rti!
-#end .isr
 "#);
+
+    let mut isr_found = false;
 
     let mut functions: String = String::new();
 
     for f in &m.functions {
-        functions.push_str(&*emit_function(&f, &mut global_state).map_err(|(_,b)| b)?);
+        match &*f.name.name {
+            "isr" => {
+                isr_found = true;
+                functions.push_str(&*emit_isr(&f, &mut global_state).map_err(|(_,b)| b)?);
+            }
+            _ => {
+                functions.push_str(&*emit_function(&f, &mut global_state).map_err(|(_,b)| b)?);
+            }
+        }
+    }
+
+    // provide default no-op isr if none was provided in code.
+    if !isr_found {
+        tasm!(prog;;
+        r"
+fn .isr
+    isr!
+    rti!
+#end .isr
+        ");
     }
 
     // gather string defs

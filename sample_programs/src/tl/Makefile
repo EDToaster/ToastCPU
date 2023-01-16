@@ -6,6 +6,7 @@ else
   RM := rm
 endif
 
+.PRECIOUS: all
 .PHONY: all
 
 os: os.mif

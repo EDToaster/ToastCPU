@@ -1,5 +1,3 @@
-global var1 u16 0xDEAD
-
 #include<std/io>
 #include<std/string>
 
@@ -96,16 +94,17 @@ fn test_let -> {
 
 fn test_mul -> {
     "Testing mul\n" print_string
-    "1 x 2" { 1 2 mul 2 = } assert
-    "2 x 5" { 2 5 mul 10 = } assert
+    "1 x 2"  { 1 2 mul 2 = }  assert
+    "2 x 5"  { 2 5 mul 10 = } assert
     "0 x 10" { 0 10 mul 0 = } assert
     "10 x 0" { 10 0 mul 0 = } assert
 }
 
+global var1 u16 0xDEAD
 fn test_global -> {
     "Testing global vars\n" print_string
-    "var1 == 0xDEAD" { var1 load 0xDEAD = } assert
-    "var1 = 10" { 10 var1 store var1 load 10 = } assert
+    "var1 == 0xDEAD" { var1 load 0xDEAD = }           assert
+    "var1 = 10"      { 10 var1 store var1 load 10 = } assert
 }
 
 fn main -> {
@@ -120,13 +119,4 @@ fn main -> {
     test_global
 
     "Passed All Test Cases!" print_string
-}
-
-// returns the n-th fib number by recursion
-fn rec_fib u16 -> u16 {
-    dup 1 > if {
-        dup 1 - rec_fib
-        swap 2 - rec_fib
-        +
-    }
 }

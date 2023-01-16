@@ -28,6 +28,7 @@ pub fn emit_module(m: &Module) -> Result<String, String> {
         global_prog.push_str(emitted.as_str());
         globals.insert(g.name.name.clone(), (label.clone(), var_type));
 
+        // todo: better array initialize in global variables
         tasm!(
             global_init_routine;;
             r"

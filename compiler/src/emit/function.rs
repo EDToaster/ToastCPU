@@ -20,6 +20,10 @@ pub fn emit_isr(f: &Function, global_state: &mut GlobalState) -> Result<String, 
                            &f.body, global_state, &mut function_state)
         .map_err(|(span, err)| (span, format!("{func_name}: {err}")))?;
 
+    if !function_state.stack_view.is_empty() {
+        return Err((f.span.clone(), format!("Interrupt service routine (isr) has to handle all stack items, but {:?} remains on the stack.", function_state.stack_view)));
+    }
+
     let mut func = String::new();
     tasm!(func;;
     r"

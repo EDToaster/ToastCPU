@@ -22,7 +22,8 @@ Function -> Result<Function, ()>:
     ;
 
 Global -> Result<Global, ()>:
-    'GLOBAL' Identifier Identifier IntLiteral { Ok(Global { span: $span, name: $2?, var_type: $3?, val: $4? }) }
+    'GLOBAL' Identifier Identifier IntLiteral { Ok(Global { span: $span, name: $2?, var_type: $3?, val: $4?, size: 1 }) }
+    | 'GLOBAL' Identifier 'LS' IntLiteral 'RS' Identifier IntLiteral { Ok(Global { span: $span, name: $2?, size: $4?.val, var_type: $6?, val: $7? }) }
     ;
 
 Typelist -> Result<Vec<Identifier>, ()>:
@@ -237,6 +238,7 @@ pub struct Function {
 pub struct Global {
     pub span: Span,
     pub name: Identifier,
+    pub size: isize,
     pub var_type: Identifier,
     pub val: IntLiteral,
 }

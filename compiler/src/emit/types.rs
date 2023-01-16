@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use std::fmt::Formatter;
 use std::iter;
 use lazy_static::lazy_static;
+use lrpar::Span;
 use regex::Regex;
 use crate::tl_y::Identifier;
 
@@ -44,6 +45,16 @@ impl fmt::Debug for Type {
             Type::Struct(s) => { write!(f, "{s}") }
             Type::Generic(s) => { write!(f, "{s}")}
         }
+    }
+}
+
+pub trait ErrWithSpan<T, U> {
+    fn err_with_span(self, span: &Span) -> Result<T, (Span, U)> where Self: Sized, T: Sized, U: Sized;
+}
+
+impl<T, U> ErrWithSpan<T, U> for Result<T, U> {
+    fn err_with_span(self, span: &Span) -> Result<T, (Span, U)> where Self: Sized, T: Sized, U: Sized {
+        self.map_err(|e| (span.clone(), e))
     }
 }
 

@@ -40,6 +40,7 @@ the sum on to the stack. The `p` function prints out the resulting number in hex
 - [x] File include system
 - [ ] Deprecate file include system and add actual modules
 - [x] Add structs support
+- [x] Add const array offset support `0xDEAD ptr [2] store`
 - [ ] Better static compiler check error messages
 - [x] Add global static memory allocation
   - [x] `global foo u16 100` Denotes global variable called `foo` which will be initialized with `u16: 100`

@@ -54,7 +54,7 @@ pub fn check_and_apply_multiple_stack_transitions(s: &str, span: &Span, function
     Err((span.clone(), format!("Cannot invoke statement `{s}` as it requires one of {rules:?} to match. Current stack is {:?}.", function_state.stack_view)))
 }
 
-pub fn check_and_apply_stack_transition(s: &str, span: &Span, function_state: &mut FunctionState, in_t: &Vec<Type>, out_t: &Vec<Type>) -> Result<(), (Span, String)> {
+pub fn check_and_apply_stack_transition(s: &str, span: &Span, function_state: &mut FunctionState, in_t: &Vec<Type>, out_t: &Vec<Type>) -> Result<Vec<Type>, (Span, String)> {
     let length = function_state.stack_view.len();
     if length < in_t.len() {
         // we don't have enough stack params to call this function
@@ -72,11 +72,11 @@ pub fn check_and_apply_stack_transition(s: &str, span: &Span, function_state: &m
     }
 
     // passed input type check, remove elements from stack and resolve output
-    function_state.stack_view.truncate(new_length);
+    let dropped = function_state.stack_view.drain(new_length..).collect();
 
     for t in out_t.iter() {
         function_state.stack_view.push(resolve_generic_type(t, span, &generics)?);
     }
 
-    Ok(())
+    Ok(dropped)
 }

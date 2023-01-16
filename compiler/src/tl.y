@@ -106,9 +106,10 @@ Operator -> Result<Operator, ()>:
     | 'AS' 'LP' Identifier 'RP' { Ok(Operator::As($span, $3?)) }
     | 'SIZEOF' 'LP' Identifier 'RP' { Ok(Operator::SizeOf($span, $3?)) }
     | 'STRUCT_ACCESS' {
-          let v = $1.map_err(|_| ())?;
-          Ok(Operator::StructAccess(v.span(), $lexer.span_str(v.span())[1..].to_string()))
-      }
+            let v = $1.map_err(|_| ())?;
+            Ok(Operator::StructAccess(v.span(), $lexer.span_str(v.span())[1..].to_string()))
+        }
+    | 'LS' IntLiteral 'RS' { Ok(Operator::ConstArrayAccess($span, $2?)) }
     ;
 
 Identifiers -> Result<Vec<Identifier>, ()>:
@@ -178,6 +179,7 @@ pub enum Operator {
     As(Span, Identifier),
     SizeOf(Span, Identifier),
     StructAccess(Span, String),
+    ConstArrayAccess(Span, IntLiteral),
 
     Hole(Span),
 }

@@ -38,7 +38,7 @@ pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState, fun
                     "
                 );
                 check_and_apply_stack_transition(format!("{val:?}").as_str(), span, function_state,
-                                                 &vec![], &vec![Type::Pointer(1, Box::new(Type::U16))])?
+                                                 &vec![], &vec![Type::Pointer(1, Box::new(Type::U16))])?;
             }
             Statement::Identifier(Identifier { name, span }) => {
                 // handle built in funcs
@@ -93,7 +93,7 @@ pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState, fun
     pop! t0
                             "
                         );
-                        check_and_apply_stack_transition("swap", span, function_state,
+                        check_and_apply_stack_transition("drop", span, function_state,
                                                          &vec![Type::new_generic("$a")],
                                                          &vec![])?;
                     }

@@ -1,6 +1,6 @@
 use lrpar::Span;
 use crate::emit::type_check::{check_and_apply_multiple_stack_transitions, check_and_apply_stack_transition};
-use crate::emit::types::{FunctionState, GlobalState, tasm, Type, TypeSize};
+use crate::emit::types::{ErrWithSpan, FunctionState, GlobalState, tasm, Type, TypeSize};
 use crate::emit::types::Type::U16;
 use crate::tl_y::Operator;
 
@@ -299,7 +299,7 @@ pub fn emit_operator(block_id: &str, r: &Operator, global_state: &GlobalState, f
         }
         Operator::SizeOf(span, t) => {
             let parsed_t = Type::parse(&t.name, &global_state.struct_defs).map_err(|_| (span.clone(), format!("Could not parse type {}.", &t.name)))?;
-            let size = parsed_t.type_size(&global_state.struct_defs).map_err(|e| (span.clone(), e))?;
+            let size = parsed_t.type_size(&global_state.struct_defs).err_with_span(span)?;
             tasm!(
                             operation;;
                             r"
@@ -339,6 +339,27 @@ pub fn emit_operator(block_id: &str, r: &Operator, global_state: &GlobalState, f
                                                   function_state.stack_view)))
             }
 
+        }
+        Operator::ConstArrayAccess(span, offset_literal) => {
+            let offset = offset_literal.val;
+            let dropped_t = &check_and_apply_stack_transition(&*format!("[{offset}]"), &span, function_state,
+                                             &vec![Type::Pointer(1, Box::new(Type::new_generic("$a")))],
+                                             &vec![Type::Pointer(1, Box::new(Type::new_generic("$a")))])?[0];
+            let offset_size = offset *
+                dropped_t
+                    .de_ref()
+                    .err_with_span(span)?
+                    .type_size(&global_state.struct_defs)
+                    .err_with_span(span)?;
+            tasm!(
+                operation;;
+                r"
+    pop! t0
+    imov! t1 {offset_size}
+    add  t0 t1
+    push! t0
+                "
+            );
         }
     }
     Ok(operation)

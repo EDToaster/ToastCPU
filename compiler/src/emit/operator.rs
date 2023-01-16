@@ -1,9 +1,10 @@
 use lrpar::Span;
 use crate::emit::type_check::{check_and_apply_multiple_stack_transitions, check_and_apply_stack_transition};
-use crate::emit::types::{FunctionState, tasm, Type};
+use crate::emit::types::{FunctionState, GlobalState, tasm, Type, TypeSize};
+use crate::emit::types::Type::U16;
 use crate::tl_y::Operator;
 
-pub fn emit_operator(block_id: &str, r: &Operator, function_state: &mut FunctionState) -> Result<String, (Span, String)> {
+pub fn emit_operator(block_id: &str, r: &Operator, global_state: &GlobalState, function_state: &mut FunctionState) -> Result<String, (Span, String)> {
     let mut operation = String::new();
 
     match r {
@@ -293,8 +294,51 @@ pub fn emit_operator(block_id: &str, r: &Operator, function_state: &mut Function
             println!("Stack at {span:?}: {:?}", function_state.stack_view);
         }
         Operator::As(span, t) => {
-            let parsed_t = Type::parse(&t.name).map_err(|_| (span.clone(), format!("Could not parse type {}.", &t.name)))?;
+            let parsed_t = Type::parse(&t.name, &global_state.struct_defs).map_err(|_| (span.clone(), format!("Could not parse type {}.", &t.name)))?;
             check_and_apply_stack_transition(&*format!("as({parsed_t:?})"), &span, function_state, &vec![Type::new_generic("$a")], &vec![parsed_t])?;
+        }
+        Operator::SizeOf(span, t) => {
+            let parsed_t = Type::parse(&t.name, &global_state.struct_defs).map_err(|_| (span.clone(), format!("Could not parse type {}.", &t.name)))?;
+            let size = parsed_t.type_size(&global_state.struct_defs).map_err(|e| (span.clone(), e))?;
+            tasm!(
+                            operation;;
+                            r"
+    imov! t0 {size}
+    push! t0
+                            "
+            );
+            check_and_apply_stack_transition(&*format!("sizeof({parsed_t:?})"), &span, function_state, &vec![], &vec![U16])?;
+        }
+        Operator::StructAccess(span, member) => {
+            // grab the type at the top of the stack
+            let t = function_state.stack_view.last()
+                .ok_or((span.clone(), format!("Struct access .{member} requires one struct pointer at the top of the stack. Current stack is empty.")))?;
+            let base_t = t.de_ref()
+                .map_err(|_| (span.clone(), format!("Struct access .{member} requires one struct pointer at the top of the stack. Current stack is {:?}.",
+                    function_state.stack_view)))?;
+
+            if let Type::Struct(label) = base_t {
+                let struct_def = global_state.struct_defs.get(&*label)
+                    .ok_or((span.clone(), format!("Struct access .{member} requires one struct pointer at the top of the stack. Current stack is {:?}.",
+                                                  function_state.stack_view)))?;
+                let (offset, member_t) = struct_def.members.get(member)
+                    .ok_or((span.clone(), format!("Struct `{label}` does not have a member `{member}`.")))?;
+
+                tasm!(
+                    operation;;
+                    r"
+    pop! t0
+    imov! t1 {offset}
+    add  t0 t1
+    push! t0
+                    "
+                );
+                check_and_apply_stack_transition(&*format!(".{member}"), &span, function_state, &vec![t.clone()], &vec![member_t.add_ref()])?;
+            } else {
+                return Err((span.clone(), format!("Struct access .{member} requires one struct pointer at the top of the stack. Current stack is {:?}.",
+                                                  function_state.stack_view)))
+            }
+
         }
     }
     Ok(operation)

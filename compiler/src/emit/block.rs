@@ -1,5 +1,3 @@
-use std::borrow::Borrow;
-use std::collections::HashMap;
 use lrpar::Span;
 use crate::emit::operator::emit_operator;
 use crate::emit::type_check::check_and_apply_stack_transition;
@@ -128,7 +126,7 @@ pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState, fun
                         let mut offset_opt = None;
                         let mut offset = 0;
                         for (n, t) in function_state.current_bindings.iter().rev() {
-                            offset += t.type_size();
+                            offset += t.type_size(&global_state.struct_defs).map_err(|e| (span.clone(), e))?;
                             if n == s {
                                 offset_opt = Some(t);
                                 break;
@@ -195,7 +193,7 @@ pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState, fun
                 }
             }
             Statement::Operator(r) => {
-                let op = emit_operator(format!("{block_id}_{subblock_counter}_operator").as_str(), r, function_state)?;
+                let op = emit_operator(format!("{block_id}_{subblock_counter}_operator").as_str(), r, global_state, function_state)?;
                 subblock_counter += 1;
                 tasm!(
                     block;;

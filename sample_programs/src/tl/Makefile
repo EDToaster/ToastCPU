@@ -12,8 +12,14 @@ endif
 os: os.mif
 	cd ../../../emu && cargo run --package emu --bin emu -- ../sample_programs/src/tl/os.mif
 
+memset: memset.mif
+	cd ../../../emu && cargo run --package emu --bin emu -- ../sample_programs/src/tl/memset.mif
+
 isr: isr.mif
 	cd ../../../emu && cargo run --package emu --bin emu -- ../sample_programs/src/tl/isr.mif
+
+structs: structs.mif
+	cd ../../../emu && cargo run --package emu --bin emu -- ../sample_programs/src/tl/structs.mif
 
 sigs: sigs.mif
 	cd ../../../emu && cargo run --package emu --bin emu -- ../sample_programs/src/tl/sigs.mif

@@ -2,9 +2,10 @@
 %%
 
 Module -> Result<Module, ()>:
-    { Ok(Module { span: $span, globals: vec![], functions: vec![] }) }
+    { Ok(Module { span: $span, globals: vec![], functions: vec![], struct_defs: vec![] }) }
     | Module Function { let mut m = $1?; m.functions.push($2?); Ok(m) }
     | Module Global { let mut m = $1?; m.globals.push($2?); Ok(m) }
+    | Module StructDef { let mut m = $1?; m.struct_defs.push($2?); Ok(m) }
     ;
 
 Function -> Result<Function, ()>:
@@ -24,6 +25,20 @@ Function -> Result<Function, ()>:
 Global -> Result<Global, ()>:
     'GLOBAL' Identifier Identifier IntLiteral { Ok(Global { span: $span, name: $2?, var_type: $3?, val: $4?, size: 1 }) }
     | 'GLOBAL' Identifier 'LS' IntLiteral 'RS' Identifier IntLiteral { Ok(Global { span: $span, name: $2?, size: $4?.val, var_type: $6?, val: $7? }) }
+    ;
+
+StructDef -> Result<StructDef, ()>:
+    'STRUCT' Identifier 'LB' StructMembers 'RB' { Ok(StructDef { span: $span, name: $2?, members: $4? }) }
+    ;
+
+StructMembers -> Result<Vec<StructMember>, ()>:
+    { Ok(vec![]) }
+    | StructMembers StructMember { let mut v = $1?; v.push($2?); Ok(v) }
+    ;
+
+StructMember -> Result<StructMember, ()>:
+    Identifier Identifier { Ok(StructMember { span: $span, name: $1?, var_type: $2?, size: 1 }) }
+    | Identifier 'LS' IntLiteral 'RS' Identifier { Ok(StructMember { span: $span, name: $1?, size: $3?.val, var_type: $5? }) }
     ;
 
 Typelist -> Result<Vec<Identifier>, ()>:
@@ -89,6 +104,11 @@ Operator -> Result<Operator, ()>:
     | 'GTE' { Ok(Operator::Gte($span)) }
     | 'HOLE' { Ok(Operator::Hole($span)) }
     | 'AS' 'LP' Identifier 'RP' { Ok(Operator::As($span, $3?)) }
+    | 'SIZEOF' 'LP' Identifier 'RP' { Ok(Operator::SizeOf($span, $3?)) }
+    | 'STRUCT_ACCESS' {
+          let v = $1.map_err(|_| ())?;
+          Ok(Operator::StructAccess(v.span(), $lexer.span_str(v.span())[1..].to_string()))
+      }
     ;
 
 Identifiers -> Result<Vec<Identifier>, ()>:
@@ -156,6 +176,8 @@ pub enum Operator {
     Gte(Span),
 
     As(Span, Identifier),
+    SizeOf(Span, Identifier),
+    StructAccess(Span, String),
 
     Hole(Span),
 }
@@ -244,10 +266,26 @@ pub struct Global {
 }
 
 #[derive(Debug)]
+pub struct StructDef {
+    pub span: Span,
+    pub name: Identifier,
+    pub members: Vec<StructMember>,
+}
+
+#[derive(Debug)]
+pub struct StructMember {
+    pub span: Span,
+    pub name: Identifier,
+    pub var_type: Identifier,
+    pub size: isize,
+}
+
+#[derive(Debug)]
 pub struct Module {
     pub span: Span,
     pub globals: Vec<Global>,
     pub functions: Vec<Function>,
+    pub struct_defs: Vec<StructDef>,
 }
 
 // Any functions here are in scope for all the grammar actions above.

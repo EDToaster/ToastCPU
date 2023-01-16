@@ -2,31 +2,51 @@ use std::collections::HashMap;
 use crate::emit::function::{emit_function, emit_isr};
 use crate::emit::global::emit_global;
 use crate::emit::string_defs::emit_string_defs;
-use crate::emit::types::{GlobalState, parse_types, tasm, Type};
-use crate::tl_y::{Identifier, Module};
+use crate::emit::types::{GlobalState, parse_types, StructDefinition, tasm, Type, TypeSize};
+use crate::tl_y::Module;
 
-// todo: do Result<String> instead
 // todo: allow for multiple modules (and includes)
 pub fn emit_module(m: &Module) -> Result<String, String> {
-    // preprocess function sizes
-    let mut function_signatures: HashMap<String, (Vec<Type>, Vec<Type>)> = HashMap::new();
+
+    let mut global_state = GlobalState {
+        function_signatures: HashMap::new(),
+        struct_defs: HashMap::new(),
+        string_allocs_counter: 0,
+        string_allocs: HashMap::new(),
+        globals: HashMap::new(),
+    };
+
+    // preprocess struct defs
+    for s in &m.struct_defs {
+        let name = &s.name.name;
+        let mut members: HashMap<String, (isize, Type)> = HashMap::new();
+        let mut counter = 0;
+        for member in &s.members {
+            let member_name = &member.name.name;
+            let t = Type::parse(&member.var_type.name, &global_state.struct_defs).map_err(|_| format!("Could not parse Type `{}`", &member.var_type.name))?;
+            members.insert(member_name.clone(), (counter, t.clone()));
+            counter += t.type_size(&global_state.struct_defs)? * member.size;
+        }
+        global_state.struct_defs.insert(name.clone(), StructDefinition { size: counter, members });
+    }
+
+    // preprocess function signatures
     for f in &m.functions {
         let name = &f.name.name;
-        function_signatures.insert(name.clone(), parse_types(&f.in_t, &f.out_t).map_err(|_| "Could not parse some types!".to_string())?);
+        global_state.function_signatures.insert(name.clone(), parse_types(&f.in_t, &f.out_t, &global_state.struct_defs).map_err(|_| "Could not parse some types!".to_string())?);
     }
 
     // grab global variables
     let mut global_prog: String = String::new();
-    let mut globals: HashMap<String, (String, Type)> = HashMap::new();
 
     let mut global_init_routine = r#"
     push! t0
     "#.to_string();
 
     for g in &m.globals {
-        let (emitted, label, val, var_type) = emit_global(g)?;
+        let (emitted, label, val, var_type) = emit_global(g, &global_state)?;
         global_prog.push_str(emitted.as_str());
-        globals.insert(g.name.name.clone(), (label.clone(), var_type));
+        global_state.globals.insert(g.name.name.clone(), (label.clone(), var_type));
 
         // todo: better array initialize in global variables
         tasm!(
@@ -42,13 +62,6 @@ pub fn emit_module(m: &Module) -> Result<String, String> {
     pop! t0
     jmpr
                                         ");
-
-    let mut global_state = GlobalState {
-        function_signatures,
-        string_allocs_counter: 0,
-        string_allocs: HashMap::new(),
-        globals,
-    };
 
     let mut prog = format!(r#"
 .reset

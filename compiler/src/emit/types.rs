@@ -12,7 +12,6 @@ macro_rules! tasm {
         $prog.push_str(&*format!($asm, $($params),*));
     }
 }
-pub(crate) use tasm;
 
 #[derive(Debug)]
 pub struct StructDefinition {
@@ -74,6 +73,27 @@ impl TypeSize for Vec<Type> {
     fn type_size(&self, structs: &HashMap<String, StructDefinition>) -> Result<isize, String> {
         self.iter().map(|t| t.type_size(structs)).sum()
     }
+}
+
+macro_rules! ptr {
+    ($t:expr) => {
+        Type::Pointer(1, Box::new($t))
+    };
+    ($i:expr, $t:expr) => {
+        Type::Pointer($i, Box::new($t))
+    };
+}
+
+macro_rules! gen {
+    ($l:expr) => {
+        Type::new_generic($l)
+    };
+}
+
+macro_rules! u16 {
+    () => {
+        Type::U16
+    };
 }
 
 impl Type {
@@ -146,6 +166,9 @@ pub struct FunctionState {
     // [a b c d] means that `d` is at the top of the ret stack
     pub current_bindings: Vec<(String, Type)>,
     pub stack_view: Vec<Type>,
+    pub function_out_stack: Vec<Type>,
+    pub function_out_label: String,
+    pub function_let_bindings: isize,
 }
 
 pub fn parse_types(in_t: &Vec<Identifier>, out_t: &Vec<Identifier>, struct_defs: &HashMap<String, StructDefinition>) -> Result<(Vec<Type>, Vec<Type>), ()> {
@@ -153,3 +176,8 @@ pub fn parse_types(in_t: &Vec<Identifier>, out_t: &Vec<Identifier>, struct_defs:
     let out_parsed: Vec<Type> = out_t.iter().map(|t| Type::parse(&t.name, struct_defs)).collect::<Result<Vec<Type>, ()>>()?;
     Ok((in_parsed, out_parsed))
 }
+
+pub(crate) use tasm;
+pub(crate) use ptr;
+pub(crate) use gen;
+pub(crate) use u16;

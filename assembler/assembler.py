@@ -545,6 +545,8 @@ class Program:
         # find label locations
         for i, line in enumerate(expanded_instructions):
             for label in line.labels:
+                if label in label_locations:
+                    raise f"Label {label} is a duplicate"
                 label_locations[label] = Number(i)
         
         # for label, loc in label_locations.items():

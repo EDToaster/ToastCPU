@@ -126,7 +126,7 @@ pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState, fun
                         let mut offset_opt = None;
                         let mut offset = 0;
                         for (n, t) in function_state.current_bindings.iter().rev() {
-                            offset += t.type_size(&global_state.struct_defs).map_err(|e| (span.clone(), e))?;
+                            offset += t.type_size(&global_state.struct_defs).err_with_span(span)?;
                             if n == s {
                                 offset_opt = Some(t);
                                 break;
@@ -326,7 +326,7 @@ pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState, fun
                 );
             }
             Statement::Let(Let { bindings, body, span }) => {
-                let num_bindings = bindings.len() as usize;
+                let num_bindings = bindings.len();
 
                 tasm! (
                     block;;
@@ -368,6 +368,8 @@ pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState, fun
                     "
                 );
 
+                function_state.function_let_bindings += num_bindings as isize;
+
                 // emit inner block
                 let let_block_id = &*format!("{block_id}_{subblock_counter}_let_block");
                 subblock_counter += 1;
@@ -385,6 +387,7 @@ pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState, fun
                 );
 
                 // pop bindings off
+                function_state.function_let_bindings -= num_bindings as isize;
                 function_state.current_bindings.truncate(function_state.current_bindings.len() - num_bindings);
             }
         }

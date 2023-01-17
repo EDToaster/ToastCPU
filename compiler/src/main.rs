@@ -1,5 +1,5 @@
-use lrlex::lrlex_mod;
-use lrpar::lrpar_mod;
+use lrlex::{DefaultLexeme, lrlex_mod};
+use lrpar::{LexParseError, lrpar_mod, NonStreamingLexer};
 
 use std::error::Error;
 use std::fmt::{Display, Formatter};
@@ -58,7 +58,15 @@ fn main() -> Result<(), String> {
     let lexer = lexer_def.lexer(&*program_text);
     let (res, errs) = tl_y::parse(&lexer);
     for e in errs {
-        println!("{}", e.pp(&lexer, &tl_y::token_epp));
+        println!("Error found: {}", e.pp(&lexer, &tl_y::token_epp));
+
+        match e {
+            LexParseError::LexError(e) => {
+                println!("Token: \"{}\"", lexer.span_str(e.span()));
+            }
+            LexParseError::ParseError(_) => {}
+        }
+
         return Err(e.to_string())
     }
 

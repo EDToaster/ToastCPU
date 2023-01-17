@@ -6,6 +6,7 @@ use crate::emit::types::*;
 
 pub fn emit_isr(f: &Function, global_state: &mut GlobalState) -> Result<String, (Span, String)> {
     let func_name = &f.name.name;
+    let function_out_label = format!("{func_name}_exit");
 
     if f.in_t.len() > 0 || f.out_t.len() > 0 {
         return Err((f.span.clone(), format!("Interrupt service routine (isr) cannot take in or emit stack items.")))
@@ -14,6 +15,9 @@ pub fn emit_isr(f: &Function, global_state: &mut GlobalState) -> Result<String, 
     let mut function_state = FunctionState {
         current_bindings: vec![],
         stack_view: vec![],
+        function_out_stack: vec![],
+        function_out_label: function_out_label.clone(),
+        function_let_bindings: 0,
     };
 
     let block = emit_block(&*format!("{func_name}_body"),
@@ -30,6 +34,7 @@ pub fn emit_isr(f: &Function, global_state: &mut GlobalState) -> Result<String, 
 fn .isr
     isr!
 {block}
+.{function_out_label}
     rti!
     ");
     Ok(func)
@@ -38,15 +43,18 @@ fn .isr
 pub fn emit_function(f: &Function, global_state: &mut GlobalState) -> Result<String, (Span, String)> {
     // at this point we really only care about one function
     let func_name = &f.name.name;
-    let func_exit = format!("{}_exit", func_name);
-    let mut func = format!("fn .{}\n", func_name);
+    let func_exit = format!("{func_name}_exit", );
+    let mut func = format!("fn .{func_name}\n", );
 
-    let (in_t, _) = global_state.function_signatures.get(func_name).unwrap();
+    let (in_t, out_t) = global_state.function_signatures.get(func_name).unwrap();
 
     let stack_view: Vec<Type> = (*in_t).clone();
 
     let mut function_state = FunctionState {
         current_bindings: vec![],
+        function_out_stack: out_t.clone(),
+        function_out_label: func_exit.clone(),
+        function_let_bindings: 0,
         stack_view,
     };
 

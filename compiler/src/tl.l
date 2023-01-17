@@ -4,7 +4,7 @@
 0x[0-9a-fA-F]+  "HEX_INT"
 0b[01]+         "BIN_INT"
 
-\?\?              "HOLE"
+\?\?            "HOLE"
 
 \|\|            "LOR"
 &&              "LAND"
@@ -47,12 +47,13 @@ else            "ELSE"
 while           "WHILE"
 as              "AS"
 sizeof          "SIZEOF"
+return          "RETURN"
 
-\$?[a-zA-Z_][a-zA-Z0-9_]*\**  "IDENT"
-\.[a-zA-Z_][a-zA-Z0-9_]* "STRUCT_ACCESS"
+\$?[a-zA-Z_][a-zA-Z0-9_]*\**    "IDENT"
+\.[a-zA-Z_][a-zA-Z0-9_]*        "STRUCT_ACCESS"
 
-"(?:[^"\\]|\\.)*"       "STRING"
-'(?:[^"\\]|\\.)'        "CHAR"
+"(?:[^"\\]|\\.)*"               "STRING"
+'(?:[^"\\]|\\.)'                "CHAR"
 
-(?:(?://|#)[^\n]*\n)     ;
-[\t\r\n ]+ ;
+(?:(?://|#)[^\n]*\n)            ;
+[\t\r\n ]+                      ;

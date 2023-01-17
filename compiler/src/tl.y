@@ -102,6 +102,7 @@ Operator -> Result<Operator, ()>:
     | 'LTE' { Ok(Operator::Lte($span)) }
     | 'GT' { Ok(Operator::Gt($span)) }
     | 'GTE' { Ok(Operator::Gte($span)) }
+    | 'RETURN' { Ok(Operator::Return($span)) }
     | 'HOLE' { Ok(Operator::Hole($span)) }
     | 'AS' 'LP' Identifier 'RP' { Ok(Operator::As($span, $3?)) }
     | 'SIZEOF' 'LP' Identifier 'RP' { Ok(Operator::SizeOf($span, $3?)) }
@@ -175,6 +176,8 @@ pub enum Operator {
     Lte(Span),
     Gt(Span),
     Gte(Span),
+
+    Return(Span),
 
     As(Span, Identifier),
     SizeOf(Span, Identifier),

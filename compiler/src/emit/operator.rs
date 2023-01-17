@@ -1,7 +1,6 @@
 use lrpar::Span;
 use crate::emit::type_check::{check_and_apply_multiple_stack_transitions, check_and_apply_stack_transition};
-use crate::emit::types::{ErrWithSpan, FunctionState, GlobalState, tasm, Type, TypeSize};
-use crate::emit::types::Type::U16;
+use crate::emit::types::{ErrWithSpan, FunctionState, gen, GlobalState, ptr, tasm, Type, TypeSize, u16};
 use crate::tl_y::Operator;
 
 pub fn emit_operator(block_id: &str, r: &Operator, global_state: &GlobalState, function_state: &mut FunctionState) -> Result<String, (Span, String)> {
@@ -21,20 +20,18 @@ pub fn emit_operator(block_id: &str, r: &Operator, global_state: &GlobalState, f
             &vec![
                     (
                         vec![
-                            Type::Pointer(1, Box::new(Type::new_generic("$a"))),
-                            Type::U16,
-                        ], vec![Type::Pointer(1, Box::new(Type::new_generic("$a")))]
+                            ptr!(gen!("$a")),
+                            u16!(),
+                        ], vec![ptr!(gen!("$a"))]
                     ),
                     (
                         vec![
-                            Type::U16,
-                            Type::Pointer(1, Box::new(Type::new_generic("$a"))),
-                        ], vec![Type::Pointer(1, Box::new(Type::new_generic("$a")))]
+                            u16!(),
+                            ptr!(gen!("$a")),
+                        ], vec![ptr!(gen!("$a"))]
                     ),
                     (
-                        vec![
-                            Type::U16, Type::U16
-                        ], vec![Type::U16]
+                        vec![u16!(), u16!()], vec![u16!()]
                     ),
                 ])?;
         }
@@ -51,21 +48,15 @@ pub fn emit_operator(block_id: &str, r: &Operator, global_state: &GlobalState, f
            &vec![
                    (
                        vec![
-                           Type::Pointer(1, Box::new(Type::new_generic("$a"))),
-                           Type::U16,
-                       ], vec![Type::Pointer(1, Box::new(Type::new_generic("$a")))]
+                           ptr!(gen!("$a")),
+                           u16!()
+                       ], vec![ptr!(gen!("$a"))]
                    ),
                    (
-                       vec![
-                           Type::Pointer(1, Box::new(Type::new_generic("$a"))),
-                           Type::Pointer(1, Box::new(Type::new_generic("$a"))),
-                       ], vec![Type::U16]
+                       vec![ptr!(gen!("$a")),ptr!(gen!("$a"))], vec![u16!()]
                    ),
                    (
-                       vec![
-                           Type::U16,
-                           Type::U16,
-                       ], vec![Type::U16]
+                       vec![u16!(),u16!()], vec![u16!()]
                    ),
                ])?;
         }
@@ -78,7 +69,7 @@ pub fn emit_operator(block_id: &str, r: &Operator, global_state: &GlobalState, f
     push! t0
                             "
                         );
-            check_and_apply_stack_transition("|", span, function_state, &vec![Type::U16, Type::U16], &vec![Type::U16])?;
+            check_and_apply_stack_transition("|", span, function_state, &vec![u16!(),u16!()], &vec![u16!()])?;
         }
         Operator::BAnd(span) => {
             tasm!(
@@ -89,7 +80,7 @@ pub fn emit_operator(block_id: &str, r: &Operator, global_state: &GlobalState, f
     push! t0
                             "
                         );
-            check_and_apply_stack_transition("&", &span, function_state, &vec![Type::U16, Type::U16], &vec![Type::U16])?;
+            check_and_apply_stack_transition("&", &span, function_state, &vec![u16!(),u16!()], &vec![u16!()])?;
         }
         Operator::BNot(span) => {
             tasm!(
@@ -100,7 +91,7 @@ pub fn emit_operator(block_id: &str, r: &Operator, global_state: &GlobalState, f
     push! t0
                             "
                         );
-            check_and_apply_stack_transition("~", &span, function_state, &vec![Type::U16], &vec![Type::U16])?;
+            check_and_apply_stack_transition("~", &span, function_state, &vec![u16!()], &vec![u16!()])?;
         }
         Operator::Sshr(span) => {
             tasm!(
@@ -111,7 +102,7 @@ pub fn emit_operator(block_id: &str, r: &Operator, global_state: &GlobalState, f
     push! t0
                             "
                         );
-            check_and_apply_stack_transition(">>", &span, function_state, &vec![Type::U16, Type::U16], &vec![Type::U16])?;
+            check_and_apply_stack_transition(">>", &span, function_state, &vec![u16!(),u16!()], &vec![u16!()])?;
         }
         Operator::Shr(span) => {
             tasm!(
@@ -122,7 +113,7 @@ pub fn emit_operator(block_id: &str, r: &Operator, global_state: &GlobalState, f
     push! t0
                             "
                         );
-            check_and_apply_stack_transition(">>>", &span, function_state, &vec![Type::U16, Type::U16], &vec![Type::U16])?;
+            check_and_apply_stack_transition(">>>", &span, function_state, &vec![u16!(),u16!()], &vec![u16!()])?;
         }
         Operator::Shl(span) => {
             tasm!(
@@ -133,7 +124,7 @@ pub fn emit_operator(block_id: &str, r: &Operator, global_state: &GlobalState, f
     push! t0
                             "
                         );
-            check_and_apply_stack_transition("<<", &span, function_state, &vec![Type::U16, Type::U16], &vec![Type::U16])?;
+            check_and_apply_stack_transition("<<", &span, function_state, &vec![u16!(),u16!()], &vec![u16!()])?;
         }
         Operator::Xor(span) => {
             tasm!(
@@ -144,7 +135,7 @@ pub fn emit_operator(block_id: &str, r: &Operator, global_state: &GlobalState, f
     push! t0
                             "
                         );
-            check_and_apply_stack_transition("^", &span, function_state, &vec![Type::U16, Type::U16], &vec![Type::U16])?;
+            check_and_apply_stack_transition("^", &span, function_state, &vec![u16!(),u16!()], &vec![u16!()])?;
         }
 
         Operator::LOr(span) => {
@@ -164,7 +155,7 @@ pub fn emit_operator(block_id: &str, r: &Operator, global_state: &GlobalState, f
     push! t2
                             "
                         );
-            check_and_apply_stack_transition("||", &span, function_state, &vec![Type::U16, Type::U16], &vec![Type::U16])?;
+            check_and_apply_stack_transition("||", &span, function_state, &vec![u16!(),u16!()], &vec![u16!()])?;
         }
 
         Operator::LAnd(span) => {
@@ -184,7 +175,7 @@ pub fn emit_operator(block_id: &str, r: &Operator, global_state: &GlobalState, f
     push! t2
                             "
                         );
-            check_and_apply_stack_transition("&&", &span, function_state, &vec![Type::U16, Type::U16], &vec![Type::U16])?;
+            check_and_apply_stack_transition("&&", &span, function_state, &vec![u16!(),u16!()], &vec![u16!()])?;
         }
 
         Operator::LNot(span) => {
@@ -202,7 +193,7 @@ pub fn emit_operator(block_id: &str, r: &Operator, global_state: &GlobalState, f
     push! t1
                             "
                         );
-            check_and_apply_stack_transition("!", &span, function_state, &vec![Type::U16], &vec![Type::U16])?;
+            check_and_apply_stack_transition("!", &span, function_state, &vec![u16!()], &vec![u16!()])?;
         }
 
         Operator::Eq(span) => {
@@ -220,7 +211,7 @@ pub fn emit_operator(block_id: &str, r: &Operator, global_state: &GlobalState, f
     push! t2
                             "
                         );
-            check_and_apply_stack_transition("=", &span, function_state, &vec![Type::new_generic("$a"), Type::new_generic("$a")], &vec![Type::U16])?;
+            check_and_apply_stack_transition("=", &span, function_state, &vec![gen!("$a"), gen!("$a")], &vec![u16!()])?;
         }
         Operator::Lt(span) => {
             let skip_label = format!("{block_id}_opskip");
@@ -237,7 +228,7 @@ pub fn emit_operator(block_id: &str, r: &Operator, global_state: &GlobalState, f
     push! t2
                             "
                         );
-            check_and_apply_stack_transition("<", &span, function_state, &vec![Type::U16, Type::U16], &vec![Type::U16])?;
+            check_and_apply_stack_transition("<", &span, function_state, &vec![u16!(),u16!()], &vec![u16!()])?;
         }
         Operator::Lte(span) => {
             let skip_label = format!("{block_id}_opskip");
@@ -254,7 +245,7 @@ pub fn emit_operator(block_id: &str, r: &Operator, global_state: &GlobalState, f
     push! t2
                             "
                         );
-            check_and_apply_stack_transition("<=", &span, function_state, &vec![Type::U16, Type::U16], &vec![Type::U16])?;
+            check_and_apply_stack_transition("<=", &span, function_state, &vec![u16!(),u16!()], &vec![u16!()])?;
         }
         Operator::Gt(span) => {
             let skip_label = format!("{block_id}_opskip");
@@ -271,7 +262,7 @@ pub fn emit_operator(block_id: &str, r: &Operator, global_state: &GlobalState, f
     push! t2
                             "
                         );
-            check_and_apply_stack_transition(">", &span, function_state, &vec![Type::U16, Type::U16], &vec![Type::U16])?;
+            check_and_apply_stack_transition(">", &span, function_state, &vec![u16!(),u16!()], &vec![u16!()])?;
         }
         Operator::Gte(span) => {
             let skip_label = format!("{block_id}_opskip");
@@ -288,7 +279,7 @@ pub fn emit_operator(block_id: &str, r: &Operator, global_state: &GlobalState, f
     push! t2
                             "
                         );
-            check_and_apply_stack_transition(">=", &span, function_state, &vec![Type::U16, Type::U16], &vec![Type::U16])?;
+            check_and_apply_stack_transition(">=", &span, function_state, &vec![u16!(),u16!()], &vec![u16!()])?;
         }
         Operator::Hole(span) => {
             println!("Stack at {span:?}: {:?}", function_state.stack_view);
@@ -307,7 +298,7 @@ pub fn emit_operator(block_id: &str, r: &Operator, global_state: &GlobalState, f
     push! t0
                             "
             );
-            check_and_apply_stack_transition(&*format!("sizeof({parsed_t:?})"), &span, function_state, &vec![], &vec![U16])?;
+            check_and_apply_stack_transition(&*format!("sizeof({parsed_t:?})"), &span, function_state, &vec![], &vec![u16!()])?;
         }
         Operator::StructAccess(span, member) => {
             // grab the type at the top of the stack
@@ -343,8 +334,8 @@ pub fn emit_operator(block_id: &str, r: &Operator, global_state: &GlobalState, f
         Operator::ConstArrayAccess(span, offset_literal) => {
             let offset = offset_literal.val;
             let dropped_t = &check_and_apply_stack_transition(&*format!("[{offset}]"), &span, function_state,
-                                             &vec![Type::Pointer(1, Box::new(Type::new_generic("$a")))],
-                                             &vec![Type::Pointer(1, Box::new(Type::new_generic("$a")))])?[0];
+                                             &vec![ptr!(gen!("$a"))],
+                                             &vec![ptr!(gen!("$a"))])?[0];
             let offset_size = offset *
                 dropped_t
                     .de_ref()
@@ -358,6 +349,31 @@ pub fn emit_operator(block_id: &str, r: &Operator, global_state: &GlobalState, f
     imov! t1 {offset_size}
     add  t0 t1
     push! t0
+                "
+            );
+        }
+        Operator::Return(span) => {
+            // assert current stack is the function return stack
+            let label = &function_state.function_out_label;
+
+            if function_state.stack_view != function_state.function_out_stack {
+                return Err((span.clone(),
+                            format!("Cannot return here. Expecting stack contents of {:?} but found {:?}",
+                                    &function_state.function_out_stack,
+                                    &function_state.stack_view)));
+            }
+
+            let num_bindings = function_state.function_let_bindings;
+
+            tasm!(
+                operation;;
+                r"
+    # pop {num_bindings} elements from return stack
+    load!   t0 .ret_stack_ptr
+    imov!   t1 {num_bindings}
+    sub     t0 t1
+    str!    .ret_stack_ptr t0
+    jmp!  .{label}
                 "
             );
         }

@@ -3,6 +3,7 @@ use crate::emit::block::emit_block;
 use crate::emit::types::GlobalState;
 use crate::tl_y::Function;
 use crate::emit::types::*;
+use crate::util::gss::Stack;
 
 pub fn emit_isr(f: &Function, global_state: &mut GlobalState) -> Result<String, (Span, String)> {
     let func_name = &f.name.name;
@@ -14,18 +15,19 @@ pub fn emit_isr(f: &Function, global_state: &mut GlobalState) -> Result<String, 
 
     let mut function_state = FunctionState {
         current_bindings: vec![],
-        stack_view: vec![],
         function_out_stack: vec![],
         function_out_label: function_out_label.clone(),
         function_let_bindings: 0,
     };
 
+    let mut stack_view = Stack::empty();
+
     let block = emit_block(&*format!("{func_name}_body"),
-                           &f.body, global_state, &mut function_state)
+                           &f.body, global_state, &mut function_state, &mut stack_view)
         .map_err(|(span, err)| (span, format!("{func_name}: {err}")))?;
 
-    if !function_state.stack_view.is_empty() {
-        return Err((f.span.clone(), format!("Interrupt service routine (isr) has to handle all stack items, but {:?} remains on the stack.", function_state.stack_view)));
+    if !stack_view.is_empty() {
+        return Err((f.span.clone(), format!("Interrupt service routine (isr) has to handle all stack items, but {:?} remains on the stack.", stack_view)));
     }
 
     let mut func = String::new();
@@ -48,24 +50,23 @@ pub fn emit_function(f: &Function, global_state: &mut GlobalState) -> Result<Str
 
     let (in_t, out_t) = global_state.function_signatures.get(func_name).unwrap();
 
-    let stack_view: Vec<Type> = (*in_t).clone();
-
     let mut function_state = FunctionState {
         current_bindings: vec![],
         function_out_stack: out_t.clone(),
         function_out_label: func_exit.clone(),
         function_let_bindings: 0,
-        stack_view,
     };
 
+    let mut stack_view: Stack<Type> = Stack::from(in_t);
+
     let block = emit_block(&*format!("{func_name}_body"),
-                           &f.body, global_state, &mut function_state)
+                           &f.body, global_state, &mut function_state, &mut stack_view)
         .map_err(|(span, err)| (span, format!("{func_name}: {err}")))?;
 
     let (_, out_t) = global_state.function_signatures.get(func_name).unwrap();
 
-    if out_t != &function_state.stack_view {
-        return Err((f.span.clone(), format!("Function `{func_name}` signature expects return of {:?}, but {:?} was gotten", out_t, function_state.stack_view)));
+    if !stack_view.eq_vec(out_t) {
+        return Err((f.span.clone(), format!("Function `{func_name}` signature expects return of {:?}, but {:?} was gotten", out_t, stack_view)));
     }
 
     func.push_str(&*format!(r"

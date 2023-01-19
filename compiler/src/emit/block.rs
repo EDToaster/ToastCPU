@@ -3,8 +3,9 @@ use crate::emit::operator::emit_operator;
 use crate::emit::type_check::check_and_apply_stack_transition;
 use crate::emit::types::*;
 use crate::tl_y::*;
+use crate::util::gss::Stack;
 
-pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState, function_state: &mut FunctionState) -> Result<String, (Span, String)> {
+pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState, function_state: &mut FunctionState, stack_view: &mut Stack<Type>) -> Result<String, (Span, String)> {
     let mut block = "".to_string();
 
     let mut counter = 0;
@@ -21,7 +22,7 @@ pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState, fun
     push t0
                     "
                 );
-                check_and_apply_stack_transition(val.to_string().as_str(), span, function_state, &vec![], &vec![Type::U16])?;
+                check_and_apply_stack_transition(val.to_string().as_str(), span, stack_view, &vec![], &vec![Type::U16])?;
             }
             Statement::IntArray(IntArray { val, span }) => {
                 let mut string_alloc_label = &*format!("string_alloc_{}", global_state.string_allocs_counter);
@@ -37,7 +38,7 @@ pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState, fun
     push! t0
                     "
                 );
-                check_and_apply_stack_transition(format!("{val:?}").as_str(), span, function_state,
+                check_and_apply_stack_transition(format!("{val:?}").as_str(), span, stack_view,
                                                  &vec![], &vec![Type::Pointer(1, Box::new(Type::U16))])?;
             }
             Statement::Identifier(Identifier { name, span }) => {
@@ -51,7 +52,7 @@ pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState, fun
     push! t0 t0
                             "
                         );
-                        check_and_apply_stack_transition("dup", span, function_state,
+                        check_and_apply_stack_transition("dup", span, stack_view,
                                                          &vec![Type::new_generic("$a")], &vec![Type::new_generic("$a"), Type::new_generic("$a")])?;
                     }
                     "over" => {
@@ -62,7 +63,7 @@ pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState, fun
     push! t1 t0 t1
                             "
                         );
-                        check_and_apply_stack_transition("over", span, function_state,
+                        check_and_apply_stack_transition("over", span, stack_view,
                                                          &vec![Type::new_generic("$a"), Type::new_generic("$b")],
                                                          &vec![Type::new_generic("$a"), Type::new_generic("$b"), Type::new_generic("$a")])?;
                     }
@@ -74,7 +75,7 @@ pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState, fun
     push! t0 t1
                             "
                         );
-                        check_and_apply_stack_transition("swap", span, function_state,
+                        check_and_apply_stack_transition("swap", span, stack_view,
                                                          &vec![Type::new_generic("$a"), Type::new_generic("$b")],
                                                          &vec![Type::new_generic("$b"), Type::new_generic("$a")])?;
                     }
@@ -93,7 +94,7 @@ pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState, fun
     pop! t0
                             "
                         );
-                        check_and_apply_stack_transition("drop", span, function_state,
+                        check_and_apply_stack_transition("drop", span, stack_view,
                                                          &vec![Type::new_generic("$a")],
                                                          &vec![])?;
                     }
@@ -106,7 +107,7 @@ pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState, fun
     push! t0
                             "
                         );
-                        check_and_apply_stack_transition("load", span, function_state,
+                        check_and_apply_stack_transition("load", span, stack_view,
                                                          &vec![Type::Pointer(1, Box::new(Type::new_generic("$a")))],
                                                          &vec![Type::new_generic("$a")])?;
                     }
@@ -118,7 +119,7 @@ pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState, fun
     str  t1 t0
                             "
                         );
-                        check_and_apply_stack_transition("store", span, function_state,
+                        check_and_apply_stack_transition("store", span, stack_view,
                                                          &vec![Type::new_generic("$a"), Type::Pointer(1, Box::new(Type::new_generic("$a")))],
                                                          &vec![])?;
                     }
@@ -143,7 +144,7 @@ pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState, fun
     push!   t0
                                 "
                             );
-                            check_and_apply_stack_transition(s, span, function_state,
+                            check_and_apply_stack_transition(s, span, stack_view,
                                                              &vec![],
                                                              &vec![t.add_ref()])?;
                         } else if let Some((label, t)) = global_state.globals.get(s) {
@@ -155,7 +156,7 @@ pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState, fun
     push! t0
                                 "
                             );
-                            check_and_apply_stack_transition(s, span, function_state,
+                            check_and_apply_stack_transition(s, span, stack_view,
                                                              &vec![],
                                                              &vec![t.add_ref()])?;
                         } else {
@@ -186,14 +187,14 @@ pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState, fun
                             let (in_t, out_t) = global_state.function_signatures
                                 .get(s)
                                 .ok_or((span.clone(), format!("Was not able to find function signature of function {s}")))?;
-                            check_and_apply_stack_transition(s, &span, function_state, in_t, out_t)?;
+                            check_and_apply_stack_transition(s, &span, stack_view, in_t, out_t)?;
                         }
 
                     }
                 }
             }
             Statement::Operator(r) => {
-                let op = emit_operator(format!("{block_id}_{subblock_counter}_operator").as_str(), r, global_state, function_state)?;
+                let op = emit_operator(format!("{block_id}_{subblock_counter}_operator").as_str(), r, global_state, function_state, stack_view)?;
                 subblock_counter += 1;
                 tasm!(
                     block;;
@@ -205,7 +206,7 @@ pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState, fun
             Statement::Block(b) => {
                 let subblock_id = format!("{block_id}_{subblock_counter}");
                 subblock_counter += 1;
-                let subblock = emit_block(&*subblock_id, b, global_state, function_state)?;
+                let subblock = emit_block(&*subblock_id, b, global_state, function_state, stack_view)?;
                 tasm!(
                     block;;
                     r"
@@ -217,7 +218,7 @@ pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState, fun
                 for _ in 0..*val {
                     let subblock_id = format!("{block_id}_{subblock_counter}");
                     subblock_counter += 1;
-                    let subblock = emit_block(&*subblock_id, body, global_state, function_state)?;
+                    let subblock = emit_block(&*subblock_id, body, global_state, function_state, stack_view)?;
                     tasm!(
                         block;;
                         r"
@@ -232,7 +233,7 @@ pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState, fun
                 let if_else_exit = format!("{block_id}_{subblock_counter}_if_exit");
                 subblock_counter += 1;
 
-                match function_state.stack_view.pop() {
+                match stack_view.pop() {
                     None => {
                         Err((span.clone(), "If statement needs an element at the top of the stack to serve as a conditional. Current stack is empty.".to_string()))
                     }
@@ -242,19 +243,18 @@ pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState, fun
                     }
                 }?;
 
-                let else_stack = function_state.stack_view.clone();
-                let if_subblock = emit_block(&*if_id, if_block, global_state, function_state)?;
-                let if_stack = function_state.stack_view.clone();
-                function_state.stack_view = else_stack;
+                let mut else_stack = stack_view.clone();
+                // stack_view is end == if_stack
+                let if_subblock = emit_block(&*if_id, if_block, global_state, function_state, stack_view)?;
 
                 let else_subblock = match else_block {
                     None => "".to_string(),
-                    Some(e) => emit_block(&*else_id, e, global_state, function_state)?,
+                    Some(e) => emit_block(&*else_id, e, global_state, function_state, &mut else_stack)?,
                 };
 
-                if if_stack != function_state.stack_view {
+                if stack_view != &else_stack {
                     return Err((span.clone(), format!("If and else blocks do not have the same elements on the stack after execution. If has {:?} and else has {:?}",
-                                                      if_stack, function_state.stack_view)));
+                                                      stack_view, else_stack)));
                 }
 
                 tasm!(
@@ -280,12 +280,12 @@ pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState, fun
                 let while_eval_exit = format!("{block_id}_{subblock_counter}_while_exit");
                 subblock_counter += 1;
 
-                let before_eval = function_state.stack_view.clone();
+                let before_eval = stack_view.clone();
 
                 let while_eval_subblock =
-                    emit_block(&*while_eval_id, eval, global_state, function_state)?;
+                    emit_block(&*while_eval_id, eval, global_state, function_state, stack_view)?;
 
-                match function_state.stack_view.pop() {
+                match stack_view.pop() {
                     None => {
                         Err((span.clone(), "While statement needs an element at the top of the stack to serve as a conditional. Current stack is empty.".to_string()))
                     }
@@ -295,20 +295,17 @@ pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState, fun
                     }
                 }?;
 
-                let after_eval = function_state.stack_view.clone();
+                // end stack view is after eval
+                let mut after_body = stack_view.clone();
 
                 let while_body_subblock =
-                    emit_block(&*while_body_id, body, global_state, function_state)?;
+                    emit_block(&*while_body_id, body, global_state, function_state, &mut after_body)?;
 
                 // after body == before eval
-                if function_state.stack_view != before_eval {
+                if after_body != before_eval {
                     return Err((span.clone(), format!(
-                        "Stack state after while body and before condition evaluation need to identical. Before evaluation {before_eval:?}, after body {:?}",
-                        function_state.stack_view)))
+                        "Stack state after while body and before condition evaluation need to identical. Before evaluation {before_eval:?}, after body {after_body:?}")))
                 }
-
-                // after eval is new state
-                function_state.stack_view = after_eval;
 
                 tasm!(
                     block;;
@@ -337,7 +334,7 @@ pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState, fun
 
                 // for each binding starting at end
                 for i in bindings.iter().rev() {
-                    let t_opt = function_state.stack_view.pop();
+                    let t_opt = stack_view.pop();
 
                     match t_opt {
                         None => {
@@ -373,7 +370,7 @@ pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState, fun
                 // emit inner block
                 let let_block_id = &*format!("{block_id}_{subblock_counter}_let_block");
                 subblock_counter += 1;
-                let let_block = emit_block(let_block_id, body, global_state, function_state)?;
+                let let_block = emit_block(let_block_id, body, global_state, function_state, stack_view)?;
                 tasm!(
                     block;;
                     r"

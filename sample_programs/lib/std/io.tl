@@ -1,9 +1,14 @@
-
-////// START PRINT MODULE
 // 100 chars by 60 lines
+
+#include<std/mem>
 
 global text_progress u16    100
 global text_ptr      u16*   0x0000
+
+fn print_reset -> {
+    100 text_progress store
+    0x0000 as(u16*) text_ptr store
+}
 
 fn print_char u16 -> {
     dup '\n' = if {
@@ -22,7 +27,7 @@ fn print_char u16 -> {
         text_progress load 1 - dup 0 = if {
             drop 100
         }
-    text_progress store
+        text_progress store
     }
 
     text_ptr load as(u16) 6000 >= if {
@@ -65,6 +70,48 @@ fn print_string u16* -> {
         print_char 1 + dup
     }
     drop drop
+}
+
+// 1 2 3 4 5 6 ...
+// r   w
+// while r != w, read
+struct KeyBuffer {
+    // the next position to read
+    read_offset  u16
+    // the next position to write
+    write_offset u16
+    buffer [32]  u16
+}
+
+global key_buffer KeyBuffer 0
+
+fn keyboard_init -> {
+    key_buffer as(u16*) 0 sizeof(KeyBuffer) memset
+}
+
+fn keyboard_handle_input -> {
+    // write the current position
+    get_keyboard_ascii
+    key_buffer .buffer key_buffer .write_offset load + dup as(u16) print_word
+    store
+
+    // update position
+    key_buffer .write_offset load 1 + 0x001F & ?? key_buffer .write_offset store
+}
+
+fn keyboard_get_input -> u16 {
+    // while r != w
+//    key_buffer .read_offset load key_buffer .write_offset load = ! if {
+//        // read current char
+//        key_buffer .buffer key_buffer .read_offset load + load
+//
+//        // advance read_offset
+//        key_buffer .read_offset load 1 + 0x1F & key_buffer .read_offset store
+//        key_buffer .read_offset load print_word
+//    } else {
+//        0
+//    }
+    key_buffer .buffer [0] load
 }
 
 // inputs

@@ -165,7 +165,6 @@ pub struct GlobalState {
 pub struct FunctionState {
     // [a b c d] means that `d` is at the top of the ret stack
     pub current_bindings: Vec<(String, Type)>,
-    pub stack_view: Vec<Type>,
     pub function_out_stack: Vec<Type>,
     pub function_out_label: String,
     pub function_let_bindings: isize,

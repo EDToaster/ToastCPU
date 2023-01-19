@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::fmt::format;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -27,13 +28,20 @@ pub fn find_first_in_include_path(path: &str, include_paths: &Vec<String>) -> Re
     Err(format!("Could not find include {path} in these places: {checked_paths:?}"))
 }
 
-pub fn preprocess(input: &String, include_paths: &Vec<String>) -> Result<String, String> {
+pub fn preprocess(input: &String, include_paths: &Vec<String>, included_files: &mut HashSet<String>) -> Result<String, String> {
     let mut prog = input.clone();
 
     for m in INCLUDE_REGEX.captures_iter(&*prog.clone()).collect::<Vec<Captures>>().iter().rev() {
         let text = m.get(0).unwrap();
         let range = text.range(); // range in the original text
-        let text = preprocess(&find_first_in_include_path(&m["path"], include_paths)?, include_paths)?;
+        let path = m["path"].trim();
+        if included_files.contains(path) {
+            println!("Path {path} already included, skipping");
+            continue;
+        }
+        println!("Including path {path}");
+        included_files.insert(path.to_string());
+        let text = preprocess(&find_first_in_include_path(path, include_paths)?, include_paths, included_files)?;
         prog.replace_range(range, text.as_str());
     }
 

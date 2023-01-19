@@ -1,4 +1,5 @@
 #include<std/io>
+#include<std/mem>
 #include<std/string>
 
 // teststr, assertstr, cond

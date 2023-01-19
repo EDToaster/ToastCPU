@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use lrlex::{DefaultLexeme, lrlex_mod};
 use lrpar::{LexParseError, lrpar_mod, NonStreamingLexer};
 
@@ -14,6 +15,7 @@ use crate::preprocess::preprocess;
 lrlex_mod!("tl.l");
 lrpar_mod!("tl.y");
 
+mod util;
 mod emit;
 mod preprocess;
 
@@ -51,7 +53,7 @@ fn main() -> Result<(), String> {
 
     println!("Options: {input:?}, {output:?}, {include_paths:?}");
     let mut program_text = fs::read_to_string(input).map_err(|e| e.to_string())?;
-    program_text = preprocess(&program_text, &include_paths)?;
+    program_text = preprocess(&program_text, &include_paths, &mut HashSet::new())?;
 
     let lexer_def = tl_l::lexerdef();
 

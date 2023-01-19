@@ -118,7 +118,7 @@ impl IndexMut<u16> for Registers {
 }
 
 fn parse_program(prog: &str) -> Vec<u16> {
-    let mut program: Vec<u16> = vec![0; ROM_SIZE];
+    let mut program: Vec<u16> = vec![0x7000; ROM_SIZE];
 
     /*
      *  DEPTH = 32768;                -- The size of memory in words

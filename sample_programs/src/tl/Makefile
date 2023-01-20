@@ -6,11 +6,13 @@ else
   RM := rm
 endif
 
-.PRECIOUS: all
-.PHONY: all
+.SECONDARY:
 
 os: os.mif
 	cd ../../../emu && cargo run --package emu --bin emu -- ../sample_programs/src/tl/os.mif
+
+inline: inline.mif
+	cd ../../../emu && cargo run --package emu --bin emu -- ../sample_programs/src/tl/inline.mif
 
 snake: snake.mif
 	cd ../../../emu && cargo run --package emu --bin emu -- ../sample_programs/src/tl/snake.mif
@@ -28,7 +30,7 @@ sigs: sigs.mif
 	cd ../../../emu && cargo run --package emu --bin emu -- ../sample_programs/src/tl/sigs.mif
 
 test: test.mif
-	cd ../../../emu && cargo run --package emu --bin emu -- ../sample_programs/src/tl/test.mif
+	cd ../../../emu && cargo run --release --package emu --bin emu -- ../sample_programs/src/tl/test.mif
 
 %.mif: %.tasm
 	python3 ../../../assembler/assembler.py -i $< -o $@

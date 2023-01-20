@@ -1,4 +1,5 @@
 pub mod block;
+pub mod statement;
 pub mod function;
 pub mod global;
 pub mod module;

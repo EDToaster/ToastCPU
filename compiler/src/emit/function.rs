@@ -35,8 +35,10 @@ pub fn emit_isr(f: &Function, global_state: &mut GlobalState) -> Result<String, 
     r"
 fn .isr
     isr!
+    push! p0 p1 p2 p3 v0 t0 t1 t2 t3 t4
 {block}
 .{function_out_label}
+    pop! t4 t3 t2 t1 t0 v0 p3 p2 p1 p0
     rti!
     ");
     Ok(func)
@@ -46,7 +48,7 @@ pub fn emit_function(f: &Function, global_state: &mut GlobalState) -> Result<Str
     // at this point we really only care about one function
     let func_name = &f.name.name;
     let func_exit = format!("{func_name}_exit", );
-    let mut func = format!("fn .{func_name}\n", );
+    let mut func = format!("\nfn .{func_name}\n", );
 
     let (in_t, out_t) = global_state.function_signatures.get(func_name).unwrap();
 
@@ -75,17 +77,8 @@ pub fn emit_function(f: &Function, global_state: &mut GlobalState) -> Result<Str
 
     func.push_str(&*format!(r"
 .{func_exit}
-    # load the stack ptr addr into t0
-    load!   t0 .ret_stack_ptr
-    isub    t0 1
-
-    # load the return addr
-    load    t1 t0
-
-    # str the stack ptr addr
-    str!    .ret_stack_ptr t0
-
-    jmp     t1
+    pop     t0 t5
+    jmp     t0
 #end .{}
 ", f.name.name));
     Ok(func)

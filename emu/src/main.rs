@@ -4,6 +4,7 @@ mod devices;
 mod diagnostics;
 
 use std::env;
+use std::fmt::{Formatter, LowerHex};
 use std::fs;
 use std::io::stdout;
 use std::ops::{Index, IndexMut};
@@ -14,6 +15,7 @@ use std::thread;
 use std::time::Duration;
 
 use regex::Regex;
+use ringbuffer::{AllocRingBuffer, RingBufferExt, RingBufferWrite};
 use vga::Vga;
 
 use crate::devices::Devices;
@@ -201,8 +203,21 @@ fn alu(op: u16, a: i32, b: i32, sr: &mut StatusRegister) -> u16 {
     (agg & 0xFFFF) as u16
 }
 
+fn hex_vec(v: &Vec<u16>) -> String {
+    let mut s: String = String::new();
+    for i in v {
+        s.push_str(format!("{i:#06x}, ").as_str());
+    }
+    s
+}
+
+fn main() -> Result<(), String> {
+    let mut buffer: AllocRingBuffer<u16> = AllocRingBuffer::with_capacity(128);
+    emulate(&mut buffer).map_err(|e| format!("{e}: {:?}", hex_vec(&buffer.to_vec())))
+}
+
 #[allow(unused_variables)]
-fn main() {
+fn emulate(pc_buffer: &mut AllocRingBuffer<u16>) -> Result<(), String> {
     let args: Vec<String> = env::args().collect();
     if args.len() != 2 {
         let progname = &args[0];
@@ -245,7 +260,7 @@ fn main() {
     let key_handler_thread = thread::spawn(move || 
        key_handler.handle());
 
-    let mut diagnostics: Diagnostics = Diagnostics::new(Arc::clone(&vga), Duration::new(0, 500_000_000));
+    let mut diagnostics: Diagnostics = Diagnostics::new(Arc::clone(&vga), Duration::new(0, 100_000_000));
 
     // main thread
     let mut mem = Devices::new(rom, vga, ram, key);
@@ -253,14 +268,18 @@ fn main() {
         if *irq.lock().unwrap() {
             *irq.lock().unwrap() = false;
             registers.sp -= 1;
-            mem.write(registers.sp, registers.pc);
+            mem.write(registers.sp, registers.pc)
+                .map_err(|e| format!("Issue when jumping to isr storing stack pointer instruction pc={:#06x}: {e}", registers.pc))?;
             registers.sp -= 1;
-            mem.write(registers.sp, registers.sr.sr);
+            mem.write(registers.sp, registers.sr.sr)
+                .map_err(|e| format!("Issue when jumping to isr storing status register instruction pc={:#06x}: {e}", registers.pc))?;
             registers.pc = registers.isr;
             continue;
         }
 
-        let inst: u16 = mem.read(registers.pc);
+        pc_buffer.push(registers.pc);
+
+        let inst: u16 = mem.read(registers.pc).map_err(|e| format!("Issue when read instruction pc={:#06x}: {e}", registers.pc))?;
         let opcode: u16 = (inst & 0xF000) >> 12;
 
         let r1: u16 = (inst & 0x0F00) >> 8;
@@ -275,10 +294,12 @@ fn main() {
 
         match opcode {
             LOAD => {
-                registers[r1] = mem.read(registers[r2] + load_offset);
+                registers[r1] = mem.read(registers[r2] + load_offset)
+                    .map_err(|e| format!("Issue when executing load at pc={:#06x}: {e}", registers.pc))?;
             }
             STR => {
-                mem.write(registers[r1] + load_offset, registers[r2]);
+                mem.write(registers[r1] + load_offset, registers[r2])
+                    .map_err(|e| format!("Issue when executing store at pc={:#06x}: {e}", registers.pc))?;
             }
             IMOV => {
                 registers[r1] = imov_imm8;
@@ -287,12 +308,14 @@ fn main() {
                 registers[r1] = imoh_imm8 | (registers[r1] & 0x00FF);
             }
             PUSH => {
-                registers.sp -= 1;
-                mem.write(registers[r1], registers[r2]);
+                registers[r1] -= 1;
+                mem.write(registers[r1], registers[r2])
+                    .map_err(|e| format!("Issue when executing push at pc={:#06x}: {e}", registers.pc))?;
             }
             POP => {
-                registers[r1] = mem.read(registers[r2]);
-                registers.sp += 1;
+                registers[r1] = mem.read(registers[r2])
+                    .map_err(|e| format!("Issue when executing pop at pc={:#06x}: {e}", registers.pc))?;
+                registers[r2] += 1;
             }
             HALT => {
                 halt = true;
@@ -339,11 +362,13 @@ fn main() {
 
                 if do_jump {
                     if r {
-                        registers.pc = mem.read(registers.sp);
+                        registers.pc = mem.read(registers.sp)
+                            .map_err(|e| format!("Issue when executing jump at pc={:#06x}: {e}", registers.pc))?;
                         registers.sp += 1;
                     } else if l {
                         registers.sp -= 1;
-                        mem.write(registers.sp, registers.pc + 1);
+                        mem.write(registers.sp, registers.pc + 1)
+                            .map_err(|e| format!("Issue when executing jump and link at pc={:#06x}: {e}", registers.pc))?;
 
                         registers.pc = registers[r1];
                     } else {
@@ -353,9 +378,11 @@ fn main() {
                 }
             }
             RTI => {
-                registers.sr.sr = mem.read(registers.sp);
+                registers.sr.sr = mem.read(registers.sp)
+                    .map_err(|e| format!("Issue when executing rti and popping the status register at pc={:#06x}: {e}", registers.pc))?;
                 registers.sp += 1;
-                registers.pc = mem.read(registers.sp);
+                registers.pc = mem.read(registers.sp)
+                    .map_err(|e| format!("Issue when executing rti and popping the return address at pc={:#06x}: {e}", registers.pc))?;
                 registers.sp += 1;
 
                 registers.pc -= 1;
@@ -376,4 +403,5 @@ fn main() {
     
     key_handler_thread.join().unwrap();
 
+    Ok(())
 }

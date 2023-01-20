@@ -14,6 +14,7 @@ pub fn emit_module(m: &Module) -> Result<String, String> {
         string_allocs_counter: 0,
         string_allocs: HashMap::new(),
         globals: HashMap::new(),
+        inlines: HashMap::new(),
     };
 
     // preprocess struct defs
@@ -43,6 +44,13 @@ pub fn emit_module(m: &Module) -> Result<String, String> {
     push! t0
     "#.to_string();
 
+    // preprocess inlines
+    for inline in &m.inlines {
+        global_state.inlines.insert(
+            inline.name.name.clone(),
+            inline.statement.clone());
+    }
+
     for g in &m.globals {
         let (emitted, label, val, var_type) = emit_global(g, &global_state)?;
         global_prog.push_str(emitted.as_str());
@@ -64,17 +72,20 @@ pub fn emit_module(m: &Module) -> Result<String, String> {
                                         ");
 
     let mut prog = format!(r#"
+# allocate 1024 words on the heap
+.ret_stack [0x0400]
+
 .reset
     # setup isr and jump to main
     imov!   isr .isr
 
     # initialize ret stack ptrs
-    imov!   t0 .ret_stack
-    imov!   t1 .reset_ret
+    imov!   t5 .ret_stack
+    imov!   t0 0x03FF
+    add     t5 t0
 
-    str     t0 t1
-    iadd    t0 1
-    str!    .ret_stack_ptr t0
+    imov!   t1 .reset_ret
+    push    t5 t1
 
     # initialize our global variables
     call!   .init_globals
@@ -86,11 +97,6 @@ pub fn emit_module(m: &Module) -> Result<String, String> {
 {global_init_routine}
 
 {global_prog}
-
-# allocate 1024 words on the heap
-.ret_stack_ptr [1]
-.ret_stack [0x0400]
-
 "#);
 
     let mut isr_found = false;

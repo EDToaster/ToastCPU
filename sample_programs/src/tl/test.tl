@@ -1,6 +1,7 @@
 #include<std/io>
 #include<std/mem>
 #include<std/string>
+#include<std/rand>
 
 // teststr, assertstr, cond
 fn assert u16* u16 -> {
@@ -118,6 +119,22 @@ fn test_global -> {
     "var1 = 10"      { 10 var1 store var1 load 10 = } assert
 }
 
+
+global random Random 0
+
+fn test_random -> {
+    "Testing random\n" print_string
+    random 0xDEAD rand_init
+
+    // period
+    0
+    while { random rand_int 0xDEAD = ! } {
+        1 +
+    }
+
+    "Random period = 2^16-1" { over 0xFFFE = } assert drop
+}
+
 fn main -> {
     "Hello from ToastLang!\n" print_string
 
@@ -125,10 +142,11 @@ fn main -> {
     test_arith
     test_logical
     test_strlen
-    test_streq
     test_let
+    test_streq
     test_mul
     test_global
+    test_random
 
     "Passed All Test Cases!" print_string
 }

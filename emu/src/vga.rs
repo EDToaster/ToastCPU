@@ -22,7 +22,7 @@ pub struct Vga {
     buffer: Vec<u16>,
     stdout: Stdout,
 
-    pub write_count: u16,
+    pub write_count: usize,
 }
 
 impl Vga {
@@ -51,10 +51,10 @@ impl Vga {
             ).expect("Something went wrong writing to the virtual terminal!");
         }
 
-        self.put_dianostics(0, "Starting ...");
+        self.put_diagnostics(0, "Starting ...");
     }
 
-    pub fn put_dianostics(&mut self, x: u16, s: &str) {
+    pub fn put_diagnostics(&mut self, x: u16, s: &str) {
         execute!(
             self.stdout,
             SetColors(Colors::new(Color::White, Color::Blue)),

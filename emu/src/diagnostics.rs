@@ -29,11 +29,11 @@ impl Diagnostics {
 
             let count = self.vga.lock().unwrap().write_count;
 
-            self.vga.lock().unwrap().put_dianostics(0, format!("{per_second} i/s {count}").as_str());
+            self.vga.lock().unwrap().put_diagnostics(0, format!("{per_second} i/s {count}").as_str());
         }
     }
 
     pub fn halt(&mut self, pc: u16) {
-        self.vga.lock().unwrap().put_dianostics(0, format!("Halted at {pc:04x}").as_str());
+        self.vga.lock().unwrap().put_diagnostics(0, format!("Halted at {pc:04x}").as_str());
     }
 }

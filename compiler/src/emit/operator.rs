@@ -366,10 +366,8 @@ pub fn emit_operator(block_id: &str, r: &Operator, global_state: &GlobalState, f
                 operation;;
                 r"
     # pop {num_bindings} elements from return stack
-    load!   t0 .ret_stack_ptr
-    imov!   t1 {num_bindings}
-    sub     t0 t1
-    str!    .ret_stack_ptr t0
+    imov!   t0 {num_bindings}
+    add     t5 t0
     jmp!  .{label}
                 "
             );

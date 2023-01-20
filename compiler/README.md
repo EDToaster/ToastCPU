@@ -51,7 +51,7 @@ the sum on to the stack. The `p` function prints out the resulting number in hex
   - [x] `global foo [12] u16 0` Add support for array allocation in global variables
 - [ ] Add `const` and `inline`
   - [ ] `const foo u16 100` pushes the address of foo to the stack. Similar to strings but better and reused!
-  - [ ] `inline foo 100` pushes the *value* of foo to the stack. The substitution happens at compile time, and 
+  - [x] `inline foo 100` pushes the *value* of foo to the stack. The substitution happens at compile time, and 
         doesn't require any rom allocation. Inline values are expanded out like macros.
 - [x] Add support for pattern matched type defs
   - `pub fn foo $a $a* $b -> $b* { ... }` Generics!

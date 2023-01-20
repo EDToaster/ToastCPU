@@ -1,23 +1,25 @@
 
 #include<std/io>
 #include<std/mem>
+#include<std/rand>
 
 fn isr -> {
     keyboard_handle_input
 }
 
+global random Random 0
+
 fn main -> {
     keyboard_init
+    random 0xDEAD rand_init
     while { 1 } {
-        keyboard_get_input drop print_reset
-
-        0 while { dup 60000 < } {
-            1 +
-        } drop
         // handle all inputs this frame
-//        while { keyboard_get_input dup } {
-//            print_char
-//        }
-//        drop
+        while { keyboard_get_input dup } {
+            drop
+
+            random rand_int print_word
+            ' ' print_char
+        }
+        drop
     }
 }

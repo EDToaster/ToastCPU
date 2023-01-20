@@ -9,6 +9,7 @@ extern crate argparse;
 extern crate core;
 
 use argparse::{ArgumentParser, Collect, Store};
+use regex::Regex;
 use crate::emit::module::emit_module;
 use crate::preprocess::preprocess;
 
@@ -75,8 +76,9 @@ fn main() -> Result<(), String> {
     let r = res.ok_or("Some parser thing went wrong!")?
         .map_err(|_| "Some parser thing went wrong!")?;
 
-    let tasm = emit_module(&r);
-    fs::write(output, tasm?).expect("Unable to write file");
+    let newline_nuke = Regex::new(r"(\n|\r\n)\s*(\n|\r\n)").unwrap();
+    let tasm = newline_nuke.replace_all(emit_module(&r)?.as_str(), "\n").to_string();
+    fs::write(output, tasm).expect("Unable to write file");
 
     Ok(())
 }

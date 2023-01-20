@@ -19,27 +19,28 @@ impl Devices {
         Devices { rom, vga, ram, key }
     }
 
-    pub fn read(&self, addr: u16) -> u16 {
+    pub fn read(&self, addr: u16) -> Result<u16, String> {
         match addr {
-            0..=0x7FFF => self.rom[addr as usize],
-            0x8000..=0xBFFF => self.ram[(addr - 0x8000) as usize],
+            0..=0x7FFF => Ok(self.rom[addr as usize]),
+            0x8000..=0xBFFF => Ok(self.ram[(addr - 0x8000) as usize]),
             0xFFFF => {
                 let a = *self.key.lock().unwrap();
                 // println!("{:04x} at {:04x}", a, addr);
-                a
+                Ok(a)
             },
-            _ => todo!("Memory location {addr:#06x}"),
+            _ => Err(format!("Memory location {addr:#06x} not implemented")),
         }
     }
 
-    pub fn write(&mut self, addr: u16, val: u16) {
+    pub fn write(&mut self, addr: u16, val: u16) -> Result<(), String> {
         match addr {
             0..=0x7FFF => {
                 // println!("{:04x} at {:04x}", val, addr);
                 self.vga.lock().unwrap().put_char(addr.into(), val);
             },
             0x8000..=0xBFFF => Rc::get_mut(&mut self.ram).unwrap()[(addr - 0x8000) as usize] = val,
-            _ => todo!("Memory location {addr:#06x}={val:#06x}"),
+            _ => return Err(format!("Memory location {addr:#06x}={val:#06x}")),
         }
+        Ok(())
     }
 }

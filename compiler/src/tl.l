@@ -36,6 +36,7 @@
 \}              "RB"
 
 global          "GLOBAL"
+inline          "INLINE"
 fn              "FN"
 let             "LET"
 struct          "STRUCT"

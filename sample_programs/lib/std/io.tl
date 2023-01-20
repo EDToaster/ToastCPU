@@ -92,26 +92,24 @@ fn keyboard_init -> {
 fn keyboard_handle_input -> {
     // write the current position
     get_keyboard_ascii
-    key_buffer .buffer key_buffer .write_offset load + dup as(u16) print_word
+    key_buffer .buffer key_buffer .write_offset load +
     store
 
     // update position
-    key_buffer .write_offset load 1 + 0x001F & ?? key_buffer .write_offset store
+    key_buffer .write_offset load 1 + 0x1F & key_buffer .write_offset store
 }
 
 fn keyboard_get_input -> u16 {
     // while r != w
-//    key_buffer .read_offset load key_buffer .write_offset load = ! if {
-//        // read current char
-//        key_buffer .buffer key_buffer .read_offset load + load
-//
-//        // advance read_offset
-//        key_buffer .read_offset load 1 + 0x1F & key_buffer .read_offset store
-//        key_buffer .read_offset load print_word
-//    } else {
-//        0
-//    }
-    key_buffer .buffer [0] load
+    key_buffer .read_offset load key_buffer .write_offset load = ! if {
+        // read current char
+        key_buffer .buffer key_buffer .read_offset load + load
+
+        // advance read_offset
+        key_buffer .read_offset load 1 + 0x1F & key_buffer .read_offset store
+    } else {
+        0
+    }
 }
 
 // inputs

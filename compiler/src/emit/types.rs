@@ -5,7 +5,7 @@ use std::iter;
 use lazy_static::lazy_static;
 use lrpar::Span;
 use regex::Regex;
-use crate::tl_y::Identifier;
+use crate::tl_y::{Identifier, Statement};
 
 macro_rules! tasm {
     ($prog:ident; $($params:expr),*; $asm:literal) => {
@@ -160,6 +160,7 @@ pub struct GlobalState {
     pub struct_defs: HashMap<String, StructDefinition>,
     pub function_signatures: HashMap<String, (Vec<Type>, Vec<Type>)>,
     pub globals: HashMap<String, (String, Type)>, // name -> label
+    pub inlines: HashMap<String, Statement>,
 }
 
 pub struct FunctionState {

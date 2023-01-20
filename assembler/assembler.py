@@ -256,9 +256,17 @@ class Instruction:
             instr += jumpr_opcodes[opcode]
         elif opcode in no_arg_opcodes:
             instr += "0" * 12
+        elif opcode == "push" and len(self.words) >= 3 and isinstance(self.words[1], Register) and isinstance(self.words[2], Register):
+            instr += self.words[1].to_binary(4)
+            instr += self.words[2].to_binary(4)
+            instr += "0" * 4
         elif opcode == "push":
             instr += "1101"
             instr += self.words[1].to_binary(4)
+            instr += "0" * 4
+        elif opcode == "pop" and len(self.words) >= 3 and isinstance(self.words[1], Register) and isinstance(self.words[2], Register):
+            instr += self.words[1].to_binary(4)
+            instr += self.words[2].to_binary(4)
             instr += "0" * 4
         elif opcode == "pop":
             instr += self.words[1].to_binary(4)
@@ -587,7 +595,7 @@ class Program:
         # print()
         # [print (line) for line in labels_replaced]
 
-        return [(line.text, line.to_binary()) for line in labels_replaced]
+        return [(line.text + f"\t\t\t{{{line.labels if len(line.labels) != 0 else ''}}}", line.to_binary()) for line in labels_replaced]
 
 
 def read_raw_lines(file_name: str) -> List[str]:

@@ -2,9 +2,10 @@
 %%
 
 Module -> Result<Module, ()>:
-    { Ok(Module { span: $span, globals: vec![], functions: vec![], struct_defs: vec![] }) }
+    { Ok(Module { span: $span, globals: vec![], inlines: vec![], functions: vec![], struct_defs: vec![] }) }
     | Module Function { let mut m = $1?; m.functions.push($2?); Ok(m) }
     | Module Global { let mut m = $1?; m.globals.push($2?); Ok(m) }
+    | Module Inline { let mut m = $1?; m.inlines.push($2?); Ok(m) }
     | Module StructDef { let mut m = $1?; m.struct_defs.push($2?); Ok(m) }
     ;
 
@@ -25,6 +26,10 @@ Function -> Result<Function, ()>:
 Global -> Result<Global, ()>:
     'GLOBAL' Identifier Identifier IntLiteral { Ok(Global { span: $span, name: $2?, var_type: $3?, val: $4?, size: 1 }) }
     | 'GLOBAL' Identifier 'LS' IntLiteral 'RS' Identifier IntLiteral { Ok(Global { span: $span, name: $2?, size: $4?.val, var_type: $6?, val: $7? }) }
+    ;
+
+Inline -> Result<Inline, ()>:
+    'INLINE' Identifier Statement { Ok(Inline { span: $span, name: $2?, statement: $3? }) }
     ;
 
 StructDef -> Result<StructDef, ()>:
@@ -155,7 +160,7 @@ IntArray -> Result<IntArray, ()>:
 
 use lrpar::Span;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Operator {
     Add(Span),
     Sub(Span),
@@ -187,25 +192,25 @@ pub enum Operator {
     Hole(Span),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct IntLiteral {
     pub span: Span,
     pub val: isize,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct IntArray {
     pub span: Span,
     pub val: Vec<u16>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Identifier {
     pub span: Span,
     pub name: String,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Statement {
     IntLiteral(IntLiteral),
     IntArray(IntArray),
@@ -218,41 +223,41 @@ pub enum Statement {
     Let(Let),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Unroll {
     pub span: Span,
     pub times: IntLiteral,
     pub body: Block,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct If {
     pub span: Span,
     pub if_block: Block,
     pub else_block: Option<Block>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct While {
     pub span: Span,
     pub eval: Block,
     pub body: Block,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Let {
     pub span: Span,
     pub bindings: Vec<Identifier>,
     pub body: Block,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Block {
     pub span: Span,
     pub body: Vec<Statement>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Function {
     pub span: Span,
     pub name: Identifier,
@@ -261,7 +266,7 @@ pub struct Function {
     pub body: Block,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Global {
     pub span: Span,
     pub name: Identifier,
@@ -270,14 +275,21 @@ pub struct Global {
     pub val: IntLiteral,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
+pub struct Inline {
+    pub span: Span,
+    pub name: Identifier,
+    pub statement: Statement,
+}
+
+#[derive(Debug, Clone)]
 pub struct StructDef {
     pub span: Span,
     pub name: Identifier,
     pub members: Vec<StructMember>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct StructMember {
     pub span: Span,
     pub name: Identifier,
@@ -285,10 +297,11 @@ pub struct StructMember {
     pub size: isize,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Module {
     pub span: Span,
     pub globals: Vec<Global>,
+    pub inlines: Vec<Inline>,
     pub functions: Vec<Function>,
     pub struct_defs: Vec<StructDef>,
 }

@@ -1,10 +1,9 @@
-mod key;
-mod vga;
 mod devices;
 mod diagnostics;
+mod key;
+mod vga;
 
 use std::env;
-use std::fmt::{Formatter, LowerHex};
 use std::fs;
 use std::io::stdout;
 use std::ops::{Index, IndexMut};
@@ -257,10 +256,10 @@ fn emulate(pc_buffer: &mut AllocRingBuffer<u16>) -> Result<(), String> {
 
     // start keyboard thread
     let mut key_handler = Key::new(Arc::clone(&irq), Arc::clone(&key));
-    let key_handler_thread = thread::spawn(move || 
-       key_handler.handle());
+    let key_handler_thread = thread::spawn(move || key_handler.handle());
 
-    let mut diagnostics: Diagnostics = Diagnostics::new(Arc::clone(&vga), Duration::new(0, 100_000_000));
+    let mut diagnostics: Diagnostics =
+        Diagnostics::new(Arc::clone(&vga), Duration::new(0, 100_000_000));
 
     // main thread
     let mut mem = Devices::new(rom, vga, ram, key);
@@ -268,18 +267,28 @@ fn emulate(pc_buffer: &mut AllocRingBuffer<u16>) -> Result<(), String> {
         if *irq.lock().unwrap() {
             *irq.lock().unwrap() = false;
             registers.sp -= 1;
-            mem.write(registers.sp, registers.pc)
-                .map_err(|e| format!("Issue when jumping to isr storing stack pointer instruction pc={:#06x}: {e}", registers.pc))?;
+            mem.write(registers.sp, registers.pc).map_err(|e| {
+                format!(
+                    "Issue when jumping to isr storing stack pointer instruction pc={:#06x}: {e}",
+                    registers.pc
+                )
+            })?;
             registers.sp -= 1;
-            mem.write(registers.sp, registers.sr.sr)
-                .map_err(|e| format!("Issue when jumping to isr storing status register instruction pc={:#06x}: {e}", registers.pc))?;
+            mem.write(registers.sp, registers.sr.sr).map_err(|e| {
+                format!(
+                    "Issue when jumping to isr storing status register instruction pc={:#06x}: {e}",
+                    registers.pc
+                )
+            })?;
             registers.pc = registers.isr;
             continue;
         }
 
         pc_buffer.push(registers.pc);
 
-        let inst: u16 = mem.read(registers.pc).map_err(|e| format!("Issue when read instruction pc={:#06x}: {e}", registers.pc))?;
+        let inst: u16 = mem
+            .read(registers.pc)
+            .map_err(|e| format!("Issue when read instruction pc={:#06x}: {e}", registers.pc))?;
         let opcode: u16 = (inst & 0xF000) >> 12;
 
         let r1: u16 = (inst & 0x0F00) >> 8;
@@ -294,12 +303,18 @@ fn emulate(pc_buffer: &mut AllocRingBuffer<u16>) -> Result<(), String> {
 
         match opcode {
             LOAD => {
-                registers[r1] = mem.read(registers[r2] + load_offset)
-                    .map_err(|e| format!("Issue when executing load at pc={:#06x}: {e}", registers.pc))?;
+                registers[r1] = mem.read(registers[r2] + load_offset).map_err(|e| {
+                    format!("Issue when executing load at pc={:#06x}: {e}", registers.pc)
+                })?;
             }
             STR => {
                 mem.write(registers[r1] + load_offset, registers[r2])
-                    .map_err(|e| format!("Issue when executing store at pc={:#06x}: {e}", registers.pc))?;
+                    .map_err(|e| {
+                        format!(
+                            "Issue when executing store at pc={:#06x}: {e}",
+                            registers.pc
+                        )
+                    })?;
             }
             IMOV => {
                 registers[r1] = imov_imm8;
@@ -309,12 +324,14 @@ fn emulate(pc_buffer: &mut AllocRingBuffer<u16>) -> Result<(), String> {
             }
             PUSH => {
                 registers[r1] -= 1;
-                mem.write(registers[r1], registers[r2])
-                    .map_err(|e| format!("Issue when executing push at pc={:#06x}: {e}", registers.pc))?;
+                mem.write(registers[r1], registers[r2]).map_err(|e| {
+                    format!("Issue when executing push at pc={:#06x}: {e}", registers.pc)
+                })?;
             }
             POP => {
-                registers[r1] = mem.read(registers[r2])
-                    .map_err(|e| format!("Issue when executing pop at pc={:#06x}: {e}", registers.pc))?;
+                registers[r1] = mem.read(registers[r2]).map_err(|e| {
+                    format!("Issue when executing pop at pc={:#06x}: {e}", registers.pc)
+                })?;
                 registers[r2] += 1;
             }
             HALT => {
@@ -362,13 +379,18 @@ fn emulate(pc_buffer: &mut AllocRingBuffer<u16>) -> Result<(), String> {
 
                 if do_jump {
                     if r {
-                        registers.pc = mem.read(registers.sp)
-                            .map_err(|e| format!("Issue when executing jump at pc={:#06x}: {e}", registers.pc))?;
+                        registers.pc = mem.read(registers.sp).map_err(|e| {
+                            format!("Issue when executing jump at pc={:#06x}: {e}", registers.pc)
+                        })?;
                         registers.sp += 1;
                     } else if l {
                         registers.sp -= 1;
-                        mem.write(registers.sp, registers.pc + 1)
-                            .map_err(|e| format!("Issue when executing jump and link at pc={:#06x}: {e}", registers.pc))?;
+                        mem.write(registers.sp, registers.pc + 1).map_err(|e| {
+                            format!(
+                                "Issue when executing jump and link at pc={:#06x}: {e}",
+                                registers.pc
+                            )
+                        })?;
 
                         registers.pc = registers[r1];
                     } else {
@@ -400,7 +422,7 @@ fn emulate(pc_buffer: &mut AllocRingBuffer<u16>) -> Result<(), String> {
 
     // println!("Program halted at PC={last_pc:04x}");
     // println!("Program halted at v0={v0:04x}");
-    
+
     key_handler_thread.join().unwrap();
 
     Ok(())

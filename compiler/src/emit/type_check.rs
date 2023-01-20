@@ -63,7 +63,6 @@ pub fn check_and_apply_stack_transition(s: &str, span: &Span, stack_view: &mut S
     }
 
     let mut generics: HashMap<String, Type> = HashMap::new();
-    let new_length = length-in_t.len();
     let stack_view_slice = stack_view.peek_n(in_t.len());
 
     for (i, t) in stack_view_slice.iter().enumerate() {
@@ -74,7 +73,7 @@ pub fn check_and_apply_stack_transition(s: &str, span: &Span, stack_view: &mut S
 
     // passed input type check, remove elements from stack and resolve output
     let mut dropped = vec![];
-    for i in 0..in_t.len() {
+    for _ in 0..in_t.len() {
         dropped.push(stack_view.pop().unwrap());
     }
 

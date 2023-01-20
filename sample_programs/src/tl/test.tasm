@@ -1,0 +1,3210 @@
+
+# allocate 1024 words on the heap
+.ret_stack [0x0400]
+.reset
+    # setup isr and jump to main
+    imov!   isr .isr
+    # initialize ret stack ptrs
+    imov!   t5 .ret_stack
+    imov!   t0 0x03FF
+    add     t5 t0
+    imov!   t1 .reset_ret
+    push    t5 t1
+    # initialize our global variables
+    call!   .init_globals
+    jmp!    .main
+.reset_ret
+    halt
+.init_globals
+    push! t0
+    imov!  t0 100
+    str!   .variable_alloc_text_progress t0
+    imov!  t0 0
+    str!   .variable_alloc_text_ptr t0
+    imov!  t0 0
+    str!   .variable_alloc_key_buffer t0
+    imov!  t0 57005
+    str!   .variable_alloc_var1 t0
+    imov!  t0 0
+    str!   .variable_alloc_random t0
+    pop! t0
+    jmpr
+.variable_alloc_text_progress [1]
+.variable_alloc_text_ptr [1]
+.variable_alloc_key_buffer [34]
+.variable_alloc_var1 [1]
+.variable_alloc_random [1]
+fn .isr
+    isr!
+    rti!
+#end .isr
+.string_alloc_43
+    0x73
+    0x74
+    0x72
+    0x6C
+    0x65
+    0x6E
+    0x28
+    0x22
+    0x61
+    0x62
+    0x63
+    0x64
+    0x22
+    0x29
+    0x0
+.string_alloc_31
+    0x38
+    0x20
+    0x3C
+    0x20
+    0x37
+    0x0
+.string_alloc_30
+    0x37
+    0x20
+    0x3C
+    0x20
+    0x37
+    0x0
+.string_alloc_32
+    0x36
+    0x20
+    0x3C
+    0x3D
+    0x20
+    0x37
+    0x0
+.string_alloc_76
+    0x63
+    0x32
+    0x0
+.string_alloc_68
+    0x61
+    0x31
+    0x0
+.string_alloc_60
+    0x73
+    0x74
+    0x72
+    0x65
+    0x71
+    0x28
+    0x22
+    0x61
+    0x61
+    0x61
+    0x22
+    0x2C
+    0x20
+    0x22
+    0x61
+    0x61
+    0x61
+    0x62
+    0x22
+    0x2C
+    0x20
+    0x33
+    0x29
+    0x0
+.string_alloc_74
+    0x62
+    0x32
+    0x0
+.string_alloc_23
+    0x36
+    0x20
+    0x3E
+    0x20
+    0x37
+    0x0
+.string_alloc_48
+    0x73
+    0x74
+    0x72
+    0x65
+    0x71
+    0x28
+    0x22
+    0x22
+    0x2C
+    0x20
+    0x22
+    0x22
+    0x2C
+    0x20
+    0x30
+    0x29
+    0x0
+.string_alloc_39
+    0x31
+    0x20
+    0x7C
+    0x7C
+    0x20
+    0x30
+    0x0
+.string_alloc_37
+    0x30
+    0x20
+    0x26
+    0x26
+    0x20
+    0x31
+    0x0
+.string_alloc_36
+    0x31
+    0x20
+    0x26
+    0x26
+    0x20
+    0x31
+    0x0
+.string_alloc_72
+    0x61
+    0x32
+    0x0
+.string_alloc_45
+    0x73
+    0x74
+    0x72
+    0x6C
+    0x65
+    0x6E
+    0x28
+    0x22
+    0x22
+    0x29
+    0x0
+.string_alloc_51
+    0x73
+    0x74
+    0x72
+    0x65
+    0x71
+    0x28
+    0x22
+    0x61
+    0x22
+    0x2C
+    0x20
+    0x22
+    0x22
+    0x2C
+    0x20
+    0x30
+    0x29
+    0x0
+.string_alloc_86
+    0x54
+    0x65
+    0x73
+    0x74
+    0x69
+    0x6E
+    0x67
+    0x20
+    0x72
+    0x61
+    0x6E
+    0x64
+    0x6F
+    0x6D
+    0xA
+    0x0
+.string_alloc_85
+    0x76
+    0x61
+    0x72
+    0x31
+    0x20
+    0x3D
+    0x20
+    0x31
+    0x30
+    0x0
+.string_alloc_41
+    0x30
+    0x20
+    0x21
+    0x0
+.string_alloc_38
+    0x30
+    0x20
+    0x7C
+    0x7C
+    0x20
+    0x30
+    0x0
+.string_alloc_66
+    0x54
+    0x65
+    0x73
+    0x74
+    0x69
+    0x6E
+    0x67
+    0x20
+    0x6C
+    0x65
+    0x74
+    0xA
+    0x0
+.string_alloc_34
+    0x38
+    0x20
+    0x3C
+    0x3D
+    0x20
+    0x37
+    0x0
+.string_alloc_67
+    0x31
+    0x31
+    0x0
+.string_alloc_84
+    0x76
+    0x61
+    0x72
+    0x31
+    0x20
+    0x3D
+    0x3D
+    0x20
+    0x30
+    0x78
+    0x44
+    0x45
+    0x41
+    0x44
+    0x0
+.string_alloc_40
+    0x31
+    0x20
+    0x21
+    0x0
+.string_alloc_61
+    0x61
+    0x61
+    0x61
+    0x0
+.string_alloc_29
+    0x36
+    0x20
+    0x3C
+    0x20
+    0x37
+    0x0
+.string_alloc_80
+    0x32
+    0x20
+    0x78
+    0x20
+    0x35
+    0x0
+.string_alloc_52
+    0x61
+    0x0
+.string_alloc_78
+    0x54
+    0x65
+    0x73
+    0x74
+    0x69
+    0x6E
+    0x67
+    0x20
+    0x6D
+    0x75
+    0x6C
+    0xA
+    0x0
+.string_alloc_25
+    0x38
+    0x20
+    0x3E
+    0x20
+    0x37
+    0x0
+.string_alloc_46
+    0x0
+.string_alloc_57
+    0x73
+    0x74
+    0x72
+    0x65
+    0x71
+    0x28
+    0x22
+    0x61
+    0x22
+    0x2C
+    0x20
+    0x22
+    0x62
+    0x22
+    0x2C
+    0x20
+    0x31
+    0x29
+    0x0
+.string_alloc_83
+    0x54
+    0x65
+    0x73
+    0x74
+    0x69
+    0x6E
+    0x67
+    0x20
+    0x67
+    0x6C
+    0x6F
+    0x62
+    0x61
+    0x6C
+    0x20
+    0x76
+    0x61
+    0x72
+    0x73
+    0xA
+    0x0
+.string_alloc_9
+    0x41
+    0x73
+    0x73
+    0x65
+    0x72
+    0x74
+    0x20
+    0x46
+    0x61
+    0x69
+    0x6C
+    0x65
+    0x64
+    0xA
+    0x0
+.string_alloc_79
+    0x31
+    0x20
+    0x78
+    0x20
+    0x32
+    0x0
+.string_alloc_27
+    0x37
+    0x20
+    0x3E
+    0x3D
+    0x20
+    0x37
+    0x0
+.string_alloc_59
+    0x62
+    0x0
+.string_alloc_35
+    0x54
+    0x65
+    0x73
+    0x74
+    0x69
+    0x6E
+    0x67
+    0x20
+    0x4C
+    0x6F
+    0x67
+    0x69
+    0x63
+    0x61
+    0x6C
+    0xA
+    0x0
+.string_alloc_70
+    0x62
+    0x31
+    0x0
+.string_alloc_89
+    0x50
+    0x61
+    0x73
+    0x73
+    0x65
+    0x64
+    0x20
+    0x41
+    0x6C
+    0x6C
+    0x20
+    0x54
+    0x65
+    0x73
+    0x74
+    0x20
+    0x43
+    0x61
+    0x73
+    0x65
+    0x73
+    0x21
+    0x0
+.string_alloc_24
+    0x37
+    0x20
+    0x3E
+    0x20
+    0x37
+    0x0
+.string_alloc_22
+    0x36
+    0x20
+    0x3D
+    0x20
+    0x37
+    0x0
+.string_alloc_82
+    0x31
+    0x30
+    0x20
+    0x78
+    0x20
+    0x30
+    0x0
+.string_alloc_21
+    0x37
+    0x20
+    0x3D
+    0x20
+    0x37
+    0x0
+.string_alloc_0
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x60
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x71
+    0x31
+    0x20
+    0x20
+    0x20
+    0x7A
+    0x73
+    0x61
+    0x77
+    0x32
+    0x20
+    0x20
+    0x63
+    0x78
+    0x64
+    0x65
+    0x34
+    0x33
+    0x20
+    0x20
+    0x20
+    0x76
+    0x66
+    0x74
+    0x72
+    0x35
+    0x20
+    0x20
+    0x6E
+    0x62
+    0x68
+    0x67
+    0x79
+    0x36
+    0x20
+    0x20
+    0x20
+    0x6D
+    0x6A
+    0x75
+    0x37
+    0x38
+    0x20
+    0x20
+    0x2C
+    0x6B
+    0x69
+    0x6F
+    0x30
+    0x39
+    0x20
+    0x20
+    0x2E
+    0x2F
+    0x6C
+    0x3B
+    0x70
+    0x2D
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x5B
+    0x3D
+    0x20
+    0x20
+    0x20
+    0x20
+    0xA
+    0x5D
+    0x20
+    0x5C
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x20
+    0x0
+.string_alloc_88
+    0x48
+    0x65
+    0x6C
+    0x6C
+    0x6F
+    0x20
+    0x66
+    0x72
+    0x6F
+    0x6D
+    0x20
+    0x54
+    0x6F
+    0x61
+    0x73
+    0x74
+    0x4C
+    0x61
+    0x6E
+    0x67
+    0x21
+    0xA
+    0x0
+.string_alloc_17
+    0x54
+    0x65
+    0x73
+    0x74
+    0x69
+    0x6E
+    0x67
+    0x20
+    0x53
+    0x75
+    0x6D
+    0xA
+    0x0
+.string_alloc_19
+    0x73
+    0x75
+    0x6D
+    0x28
+    0x32
+    0x32
+    0x29
+    0x20
+    0x3D
+    0x3D
+    0x20
+    0x32
+    0x35
+    0x33
+    0x0
+.string_alloc_20
+    0x54
+    0x65
+    0x73
+    0x74
+    0x69
+    0x6E
+    0x67
+    0x20
+    0x41
+    0x72
+    0x69
+    0x74
+    0x68
+    0xA
+    0x0
+.string_alloc_18
+    0x73
+    0x75
+    0x6D
+    0x28
+    0x37
+    0x29
+    0x20
+    0x3D
+    0x3D
+    0x20
+    0x32
+    0x31
+    0x0
+.string_alloc_47
+    0x54
+    0x65
+    0x73
+    0x74
+    0x69
+    0x6E
+    0x67
+    0x20
+    0x73
+    0x74
+    0x72
+    0x65
+    0x71
+    0xA
+    0x0
+.string_alloc_28
+    0x38
+    0x20
+    0x3E
+    0x3D
+    0x20
+    0x37
+    0x0
+.string_alloc_26
+    0x36
+    0x20
+    0x3E
+    0x3D
+    0x20
+    0x37
+    0x0
+.string_alloc_44
+    0x61
+    0x62
+    0x63
+    0x64
+    0x0
+.string_alloc_33
+    0x37
+    0x20
+    0x3C
+    0x3D
+    0x20
+    0x37
+    0x0
+.string_alloc_54
+    0x73
+    0x74
+    0x72
+    0x65
+    0x71
+    0x28
+    0x22
+    0x61
+    0x22
+    0x2C
+    0x20
+    0x22
+    0x61
+    0x22
+    0x2C
+    0x20
+    0x31
+    0x29
+    0x0
+.string_alloc_87
+    0x52
+    0x61
+    0x6E
+    0x64
+    0x6F
+    0x6D
+    0x20
+    0x70
+    0x65
+    0x72
+    0x69
+    0x6F
+    0x64
+    0x20
+    0x3D
+    0x20
+    0x32
+    0x5E
+    0x31
+    0x36
+    0x2D
+    0x31
+    0x0
+.string_alloc_42
+    0x54
+    0x65
+    0x73
+    0x74
+    0x69
+    0x6E
+    0x67
+    0x20
+    0x73
+    0x74
+    0x72
+    0x6C
+    0x65
+    0x6E
+    0xA
+    0x0
+.string_alloc_63
+    0x73
+    0x74
+    0x72
+    0x65
+    0x71
+    0x28
+    0x22
+    0x61
+    0x61
+    0x61
+    0x22
+    0x2C
+    0x20
+    0x22
+    0x61
+    0x61
+    0x61
+    0x62
+    0x22
+    0x2C
+    0x20
+    0x34
+    0x29
+    0x0
+.string_alloc_62
+    0x61
+    0x61
+    0x61
+    0x62
+    0x0
+.string_alloc_81
+    0x30
+    0x20
+    0x78
+    0x20
+    0x31
+    0x30
+    0x0
+.string_alloc_64
+    0x61
+    0x61
+    0x61
+    0x61
+    0x0
+fn .print_reset
+    imov! t0 100
+    push t0
+    imov! t0 .variable_alloc_text_progress
+    push! t0
+    pop! t1 t0
+    str  t1 t0
+    imov! t0 0
+    push t0
+    imov! t0 .variable_alloc_text_ptr
+    push! t0
+    pop! t1 t0
+    str  t1 t0
+.print_reset_exit
+    pop     t0 t5
+    jmp     t0
+#end .print_reset
+fn .print_char
+    pop! t0
+    push! t0 t0
+    imov! t0 10
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jz!  .print_char_body_0_operator_opskip
+    imov t2 0
+.print_char_body_0_operator_opskip
+    push! t2
+    pop! t0
+    tst  t0
+    jz!  .print_char_body_1_else
+.print_char_body_1_if
+    pop! t0
+    imov! t0 .variable_alloc_text_ptr
+    push! t0
+    pop! t0
+    load t0 t0
+    push! t0
+    imov! t0 .variable_alloc_text_progress
+    push! t0
+    pop! t0
+    load t0 t0
+    push! t0
+    pop!  t1 t0
+    add   t0 t1
+    push! t0
+    imov! t0 .variable_alloc_text_ptr
+    push! t0
+    pop! t1 t0
+    str  t1 t0
+    imov! t0 100
+    push t0
+    imov! t0 .variable_alloc_text_progress
+    push! t0
+    pop! t1 t0
+    str  t1 t0
+    jmp! .print_char_body_1_if_exit
+.print_char_body_1_else
+    imov! t0 .variable_alloc_text_ptr
+    push! t0
+    pop! t0
+    load t0 t0
+    push! t0
+    pop! t0 t1
+    push! t0 t1
+    imov! t0 14336
+    push t0
+    pop!  t1 t0
+    or    t0 t1
+    push! t0
+    pop! t0 t1
+    push! t1 t0 t1
+    pop! t1 t0
+    str  t1 t0
+    imov! t0 1
+    push t0
+    pop!  t1 t0
+    add   t0 t1
+    push! t0
+    imov! t0 .variable_alloc_text_ptr
+    push! t0
+    pop! t1 t0
+    str  t1 t0
+    imov! t0 .variable_alloc_text_progress
+    push! t0
+    pop! t0
+    load t0 t0
+    push! t0
+    imov! t0 1
+    push t0
+    pop!  t1 t0
+    sub   t0 t1
+    push! t0
+    pop! t0
+    push! t0 t0
+    imov! t0 0
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jz!  .print_char_body_1_else_3_operator_opskip
+    imov t2 0
+.print_char_body_1_else_3_operator_opskip
+    push! t2
+    pop! t0
+    tst  t0
+    jz!  .print_char_body_1_else_4_else
+.print_char_body_1_else_4_if
+    pop! t0
+    imov! t0 100
+    push t0
+    jmp! .print_char_body_1_else_4_if_exit
+.print_char_body_1_else_4_else
+.print_char_body_1_else_4_if_exit
+    imov! t0 .variable_alloc_text_progress
+    push! t0
+    pop! t1 t0
+    str  t1 t0
+.print_char_body_1_if_exit
+    imov! t0 .variable_alloc_text_ptr
+    push! t0
+    pop! t0
+    load t0 t0
+    push! t0
+    imov! t0 6000
+    push t0
+    pop! t1 t0
+    imov t2 0  # default value
+    sub  t0 t1
+    jn!  .print_char_body_3_operator_opskip
+    imov t2 1
+.print_char_body_3_operator_opskip
+    push! t2
+    pop! t0
+    tst  t0
+    jz!  .print_char_body_4_else
+.print_char_body_4_if
+    halt
+    imov! t0 0
+    push t0
+    imov! t0 .variable_alloc_text_ptr
+    push! t0
+    pop! t1 t0
+    str  t1 t0
+    imov! t0 100
+    push t0
+    imov! t0 .variable_alloc_text_progress
+    push! t0
+    pop! t1 t0
+    str  t1 t0
+    jmp! .print_char_body_4_if_exit
+.print_char_body_4_else
+.print_char_body_4_if_exit
+.print_char_exit
+    pop     t0 t5
+    jmp     t0
+#end .print_char
+fn .print_hex
+    pop! t0
+    push! t0 t0
+    imov! t0 10
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jn!  .print_hex_body_0_operator_opskip
+    imov t2 0
+.print_hex_body_0_operator_opskip
+    push! t2
+    pop! t0
+    tst  t0
+    jz!  .print_hex_body_1_else
+.print_hex_body_1_if
+    imov! t0 48
+    push t0
+    pop!  t1 t0
+    add   t0 t1
+    push! t0
+    imov!   t0 .print_hex_body_1_if_retaddr0
+    push    t5 t0
+    jmp!    .print_char
+.print_hex_body_1_if_retaddr0
+    jmp! .print_hex_body_1_if_exit
+.print_hex_body_1_else
+    imov! t0 10
+    push t0
+    pop!  t1 t0
+    sub   t0 t1
+    push! t0
+    imov! t0 65
+    push t0
+    pop!  t1 t0
+    add   t0 t1
+    push! t0
+    imov!   t0 .print_hex_body_1_else_retaddr0
+    push    t5 t0
+    jmp!    .print_char
+.print_hex_body_1_else_retaddr0
+.print_hex_body_1_if_exit
+.print_hex_exit
+    pop     t0 t5
+    jmp     t0
+#end .print_hex
+fn .print_nibble
+    pop! t0
+    push! t0 t0
+    imov! t0 4
+    push t0
+    pop!  t1 t0
+    sshr  t0 t1
+    push! t0
+    imov! t0 15
+    push t0
+    pop!  t1 t0
+    and   t0 t1
+    push! t0
+    imov!   t0 .print_nibble_body_retaddr0
+    push    t5 t0
+    jmp!    .print_hex
+.print_nibble_body_retaddr0
+    pop! t0
+    push! t0 t0
+    imov! t0 15
+    push t0
+    pop!  t1 t0
+    and   t0 t1
+    push! t0
+    imov!   t0 .print_nibble_body_retaddr1
+    push    t5 t0
+    jmp!    .print_hex
+.print_nibble_body_retaddr1
+    pop! t0
+.print_nibble_exit
+    pop     t0 t5
+    jmp     t0
+#end .print_nibble
+fn .print_word
+    pop! t0
+    push! t0 t0
+    imov! t0 8
+    push t0
+    pop!  t1 t0
+    sshr  t0 t1
+    push! t0
+    imov! t0 255
+    push t0
+    pop!  t1 t0
+    and   t0 t1
+    push! t0
+    imov!   t0 .print_word_body_retaddr0
+    push    t5 t0
+    jmp!    .print_nibble
+.print_word_body_retaddr0
+    pop! t0
+    push! t0 t0
+    imov! t0 255
+    push t0
+    pop!  t1 t0
+    and   t0 t1
+    push! t0
+    imov!   t0 .print_word_body_retaddr1
+    push    t5 t0
+    jmp!    .print_nibble
+.print_word_body_retaddr1
+    pop! t0
+.print_word_exit
+    pop     t0 t5
+    jmp     t0
+#end .print_word
+fn .print_string
+    pop! t0
+    push! t0 t0
+.print_string_body_0_while_eval
+    pop! t0
+    load t0 t0
+    push! t0
+    pop! t0
+    push! t0 t0
+    pop! t0
+    tst  t0
+    jz!  .print_string_body_0_while_exit
+.print_string_body_0_while_block
+    imov!   t0 .print_string_body_0_while_block_retaddr0
+    push    t5 t0
+    jmp!    .print_char
+.print_string_body_0_while_block_retaddr0
+    imov! t0 1
+    push t0
+    pop!  t1 t0
+    add   t0 t1
+    push! t0
+    pop! t0
+    push! t0 t0
+    jmp! .print_string_body_0_while_eval
+.print_string_body_0_while_exit
+    pop! t0
+    pop! t0
+.print_string_exit
+    pop     t0 t5
+    jmp     t0
+#end .print_string
+fn .keyboard_init
+    imov! t0 .variable_alloc_key_buffer
+    push! t0
+    imov! t0 0
+    push t0
+    imov! t0 34
+    push! t0
+    imov!   t0 .keyboard_init_body_retaddr0
+    push    t5 t0
+    jmp!    .memset
+.keyboard_init_body_retaddr0
+.keyboard_init_exit
+    pop     t0 t5
+    jmp     t0
+#end .keyboard_init
+fn .keyboard_handle_input
+    imov!   t0 .keyboard_handle_input_body_retaddr0
+    push    t5 t0
+    jmp!    .get_keyboard_ascii
+.keyboard_handle_input_body_retaddr0
+    imov! t0 .variable_alloc_key_buffer
+    push! t0
+    pop! t0
+    imov! t1 2
+    add  t0 t1
+    push! t0
+    imov! t0 .variable_alloc_key_buffer
+    push! t0
+    pop! t0
+    imov! t1 1
+    add  t0 t1
+    push! t0
+    pop! t0
+    load t0 t0
+    push! t0
+    pop!  t1 t0
+    add   t0 t1
+    push! t0
+    pop! t1 t0
+    str  t1 t0
+    imov! t0 .variable_alloc_key_buffer
+    push! t0
+    pop! t0
+    imov! t1 1
+    add  t0 t1
+    push! t0
+    pop! t0
+    load t0 t0
+    push! t0
+    imov! t0 1
+    push t0
+    pop!  t1 t0
+    add   t0 t1
+    push! t0
+    imov! t0 31
+    push t0
+    pop!  t1 t0
+    and   t0 t1
+    push! t0
+    imov! t0 .variable_alloc_key_buffer
+    push! t0
+    pop! t0
+    imov! t1 1
+    add  t0 t1
+    push! t0
+    pop! t1 t0
+    str  t1 t0
+.keyboard_handle_input_exit
+    pop     t0 t5
+    jmp     t0
+#end .keyboard_handle_input
+fn .keyboard_get_input
+    imov! t0 .variable_alloc_key_buffer
+    push! t0
+    pop! t0
+    imov! t1 0
+    add  t0 t1
+    push! t0
+    pop! t0
+    load t0 t0
+    push! t0
+    imov! t0 .variable_alloc_key_buffer
+    push! t0
+    pop! t0
+    imov! t1 1
+    add  t0 t1
+    push! t0
+    pop! t0
+    load t0 t0
+    push! t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jz!  .keyboard_get_input_body_2_operator_opskip
+    imov t2 0
+.keyboard_get_input_body_2_operator_opskip
+    push! t2
+    pop! t0
+    imov t1 1
+    tst  t0
+    jz! .keyboard_get_input_body_3_operator_nottrue
+    imov t1 0
+.keyboard_get_input_body_3_operator_nottrue
+    push! t1
+    pop! t0
+    tst  t0
+    jz!  .keyboard_get_input_body_4_else
+.keyboard_get_input_body_4_if
+    imov! t0 .variable_alloc_key_buffer
+    push! t0
+    pop! t0
+    imov! t1 2
+    add  t0 t1
+    push! t0
+    imov! t0 .variable_alloc_key_buffer
+    push! t0
+    pop! t0
+    imov! t1 0
+    add  t0 t1
+    push! t0
+    pop! t0
+    load t0 t0
+    push! t0
+    pop!  t1 t0
+    add   t0 t1
+    push! t0
+    pop! t0
+    load t0 t0
+    push! t0
+    imov! t0 .variable_alloc_key_buffer
+    push! t0
+    pop! t0
+    imov! t1 0
+    add  t0 t1
+    push! t0
+    pop! t0
+    load t0 t0
+    push! t0
+    imov! t0 1
+    push t0
+    pop!  t1 t0
+    add   t0 t1
+    push! t0
+    imov! t0 31
+    push t0
+    pop!  t1 t0
+    and   t0 t1
+    push! t0
+    imov! t0 .variable_alloc_key_buffer
+    push! t0
+    pop! t0
+    imov! t1 0
+    add  t0 t1
+    push! t0
+    pop! t1 t0
+    str  t1 t0
+    jmp! .keyboard_get_input_body_4_if_exit
+.keyboard_get_input_body_4_else
+    imov! t0 0
+    push t0
+.keyboard_get_input_body_4_if_exit
+.keyboard_get_input_exit
+    pop     t0 t5
+    jmp     t0
+#end .keyboard_get_input
+fn .get_keyboard_ascii
+    imov! t0 .string_alloc_0
+    push! t0
+    imov! t0 65535
+    push t0
+    pop! t0
+    load t0 t0
+    push! t0
+    pop!  t1 t0
+    add   t0 t1
+    push! t0
+    pop! t0
+    load t0 t0
+    push! t0
+.get_keyboard_ascii_exit
+    pop     t0 t5
+    jmp     t0
+#end .get_keyboard_ascii
+fn .memset
+    # pop from the data stack
+    # push to return stack
+    pop!    t1
+    push    t5 t1
+    # pop from the data stack
+    # push to return stack
+    pop!    t1
+    push    t5 t1
+    # pop from the data stack
+    # push to return stack
+    pop!    t1
+    push    t5 t1
+    imov! t0 0
+    push t0
+.memset_body_0_let_block_0_while_eval
+    pop! t0
+    push! t0 t0
+    mov     t0 t5
+    imov!   t1 2
+    add     t0 t1
+    push    t0
+    pop! t0
+    load t0 t0
+    push! t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jn!  .memset_body_0_let_block_0_while_eval_0_operator_opskip
+    imov t2 0
+.memset_body_0_let_block_0_while_eval_0_operator_opskip
+    push! t2
+    pop! t0
+    tst  t0
+    jz!  .memset_body_0_let_block_0_while_exit
+.memset_body_0_let_block_0_while_block
+    mov     t0 t5
+    imov!   t1 1
+    add     t0 t1
+    push    t0
+    pop! t0
+    load t0 t0
+    push! t0
+    pop! t0 t1
+    push! t1 t0 t1
+    mov     t0 t5
+    imov!   t1 0
+    add     t0 t1
+    push    t0
+    pop! t0
+    load t0 t0
+    push! t0
+    pop!  t1 t0
+    add   t0 t1
+    push! t0
+    pop! t1 t0
+    str  t1 t0
+    imov! t0 1
+    push t0
+    pop!  t1 t0
+    add   t0 t1
+    push! t0
+    jmp! .memset_body_0_let_block_0_while_eval
+.memset_body_0_let_block_0_while_exit
+    pop! t0
+    # pop 3 elements from return stack
+    imov!   t0 3
+    add     t5 t0
+.memset_exit
+    pop     t0 t5
+    jmp     t0
+#end .memset
+fn .memdump
+    pop! t0 t1
+    push! t0 t1
+    pop! t0 t1
+    push! t0 t1
+    # pop from the data stack
+    # push to return stack
+    pop!    t1
+    push    t5 t1
+    # pop from the data stack
+    # push to return stack
+    pop!    t1
+    push    t5 t1
+    imov! t0 0
+    push t0
+.memdump_body_1_let_block_0_while_eval
+    pop! t0
+    push! t0 t0
+    mov     t0 t5
+    imov!   t1 1
+    add     t0 t1
+    push    t0
+    pop! t0
+    load t0 t0
+    push! t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jn!  .memdump_body_1_let_block_0_while_eval_0_operator_opskip
+    imov t2 0
+.memdump_body_1_let_block_0_while_eval_0_operator_opskip
+    push! t2
+    pop! t0
+    tst  t0
+    jz!  .memdump_body_1_let_block_0_while_exit
+.memdump_body_1_let_block_0_while_block
+    mov     t0 t5
+    imov!   t1 0
+    add     t0 t1
+    push    t0
+    pop! t0
+    load t0 t0
+    push! t0
+    pop! t0 t1
+    push! t1 t0 t1
+    pop!  t1 t0
+    add   t0 t1
+    push! t0
+    pop! t0
+    load t0 t0
+    push! t0
+    imov!   t0 .memdump_body_1_let_block_0_while_block_retaddr0
+    push    t5 t0
+    jmp!    .print_word
+.memdump_body_1_let_block_0_while_block_retaddr0
+    imov! t0 1
+    push t0
+    pop!  t1 t0
+    add   t0 t1
+    push! t0
+    jmp! .memdump_body_1_let_block_0_while_eval
+.memdump_body_1_let_block_0_while_exit
+    pop! t0
+    # pop 2 elements from return stack
+    imov!   t0 2
+    add     t5 t0
+.memdump_exit
+    pop     t0 t5
+    jmp     t0
+#end .memdump
+fn .strlen
+    pop! t0
+    push! t0 t0
+.strlen_body_0_while_eval
+    pop! t0
+    push! t0 t0
+    pop! t0
+    load t0 t0
+    push! t0
+    pop! t0
+    tst  t0
+    jz!  .strlen_body_0_while_exit
+.strlen_body_0_while_block
+    imov! t0 1
+    push t0
+    pop!  t1 t0
+    add   t0 t1
+    push! t0
+    jmp! .strlen_body_0_while_eval
+.strlen_body_0_while_exit
+    pop! t0 t1
+    push! t0 t1
+    pop!  t1 t0
+    sub   t0 t1
+    push! t0
+.strlen_exit
+    pop     t0 t5
+    jmp     t0
+#end .strlen
+fn .streq
+    # pop from the data stack
+    # push to return stack
+    pop!    t1
+    push    t5 t1
+.streq_body_0_let_block_0_while_eval
+    mov     t0 t5
+    imov!   t1 0
+    add     t0 t1
+    push    t0
+    pop! t0
+    load t0 t0
+    push! t0
+    imov! t0 0
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jp!  .streq_body_0_let_block_0_while_eval_0_operator_opskip
+    imov t2 0
+.streq_body_0_let_block_0_while_eval_0_operator_opskip
+    push! t2
+    pop! t0
+    tst  t0
+    jz!  .streq_body_0_let_block_0_while_exit
+.streq_body_0_let_block_0_while_block
+    pop! t0 t1
+    push! t1 t0 t1
+    pop! t0
+    load t0 t0
+    push! t0
+    pop! t0 t1
+    push! t1 t0 t1
+    pop! t0
+    load t0 t0
+    push! t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jz!  .streq_body_0_let_block_0_while_block_0_operator_opskip
+    imov t2 0
+.streq_body_0_let_block_0_while_block_0_operator_opskip
+    push! t2
+    pop! t0
+    imov t1 1
+    tst  t0
+    jz! .streq_body_0_let_block_0_while_block_1_operator_nottrue
+    imov t1 0
+.streq_body_0_let_block_0_while_block_1_operator_nottrue
+    push! t1
+    pop! t0
+    tst  t0
+    jz!  .streq_body_0_let_block_0_while_block_2_else
+.streq_body_0_let_block_0_while_block_2_if
+    pop! t0
+    pop! t0
+    imov! t0 0
+    push t0
+    # pop 1 elements from return stack
+    imov!   t0 1
+    add     t5 t0
+    jmp!  .streq_exit
+    pop! t0
+    imov! t0 0
+    push t0
+    imov! t0 0
+    push t0
+    jmp! .streq_body_0_let_block_0_while_block_2_if_exit
+.streq_body_0_let_block_0_while_block_2_else
+.streq_body_0_let_block_0_while_block_2_if_exit
+    imov! t0 1
+    push t0
+    pop!  t1 t0
+    add   t0 t1
+    push! t0
+    pop! t0 t1
+    push! t0 t1
+    imov! t0 1
+    push t0
+    pop!  t1 t0
+    add   t0 t1
+    push! t0
+    pop! t0 t1
+    push! t0 t1
+    mov     t0 t5
+    imov!   t1 0
+    add     t0 t1
+    push    t0
+    pop! t0
+    load t0 t0
+    push! t0
+    imov! t0 1
+    push t0
+    pop!  t1 t0
+    sub   t0 t1
+    push! t0
+    mov     t0 t5
+    imov!   t1 0
+    add     t0 t1
+    push    t0
+    pop! t1 t0
+    str  t1 t0
+    jmp! .streq_body_0_let_block_0_while_eval
+.streq_body_0_let_block_0_while_exit
+    # pop 1 elements from return stack
+    imov!   t0 1
+    add     t5 t0
+    pop! t0
+    pop! t0
+    imov! t0 1
+    push t0
+.streq_exit
+    pop     t0 t5
+    jmp     t0
+#end .streq
+fn .rand_init
+    pop! t0 t1
+    push! t1 t0 t1
+    pop! t0
+    imov! t1 0
+    add  t0 t1
+    push! t0
+    pop! t1 t0
+    str  t1 t0
+    pop! t0
+.rand_init_exit
+    pop     t0 t5
+    jmp     t0
+#end .rand_init
+fn .rand_int
+    pop! t0
+    push! t0 t0
+    pop! t0
+    imov! t1 0
+    add  t0 t1
+    push! t0
+    pop! t0
+    load t0 t0
+    push! t0
+    pop! t0
+    push! t0 t0
+    imov! t0 7
+    push t0
+    pop!  t1 t0
+    shr   t0 t1
+    push! t0
+    pop!  t1 t0
+    xor   t0 t1
+    push! t0
+    pop! t0
+    push! t0 t0
+    imov! t0 9
+    push t0
+    pop!  t1 t0
+    shl   t0 t1
+    push! t0
+    pop!  t1 t0
+    xor   t0 t1
+    push! t0
+    pop! t0
+    push! t0 t0
+    imov! t0 13
+    push t0
+    pop!  t1 t0
+    shr   t0 t1
+    push! t0
+    pop!  t1 t0
+    xor   t0 t1
+    push! t0
+    pop! t0 t1
+    push! t0 t1
+    pop! t0 t1
+    push! t1 t0 t1
+    pop! t0 t1
+    push! t0 t1
+    pop! t0
+    imov! t1 0
+    add  t0 t1
+    push! t0
+    pop! t1 t0
+    str  t1 t0
+.rand_int_exit
+    pop     t0 t5
+    jmp     t0
+#end .rand_int
+fn .assert
+    pop! t0
+    tst  t0
+    jz!  .assert_body_0_else
+.assert_body_0_if
+    jmp! .assert_body_0_if_exit
+.assert_body_0_else
+    pop! t0
+    push! t0 t0
+    imov!   t0 .assert_body_0_else_retaddr0
+    push    t5 t0
+    jmp!    .print_string
+.assert_body_0_else_retaddr0
+    imov! t0 32
+    push t0
+    imov!   t0 .assert_body_0_else_retaddr1
+    push    t5 t0
+    jmp!    .print_char
+.assert_body_0_else_retaddr1
+    imov! t0 .string_alloc_9
+    push! t0
+    imov!   t0 .assert_body_0_else_retaddr2
+    push    t5 t0
+    jmp!    .print_string
+.assert_body_0_else_retaddr2
+    halt
+.assert_body_0_if_exit
+    pop! t0
+.assert_exit
+    pop     t0 t5
+    jmp     t0
+#end .assert
+fn .sum
+    imov! t0 0
+    push t0
+    pop! t0 t1
+    push! t0 t1
+.sum_body_0_while_eval
+    pop! t0
+    push! t0 t0
+    pop! t0
+    tst  t0
+    jz!  .sum_body_0_while_exit
+.sum_body_0_while_block
+    pop! t0 t1
+    push! t0 t1
+    pop! t0 t1
+    push! t1 t0 t1
+    pop!  t1 t0
+    add   t0 t1
+    push! t0
+    pop! t0 t1
+    push! t0 t1
+    imov! t0 1
+    push t0
+    pop!  t1 t0
+    sub   t0 t1
+    push! t0
+    jmp! .sum_body_0_while_eval
+.sum_body_0_while_exit
+    pop! t0
+.sum_exit
+    pop     t0 t5
+    jmp     t0
+#end .sum
+fn .mul
+    imov! t0 0
+    push t0
+    # pop from the data stack
+    # push to return stack
+    pop!    t1
+    push    t5 t1
+    # pop from the data stack
+    # push to return stack
+    pop!    t1
+    push    t5 t1
+    # pop from the data stack
+    # push to return stack
+    pop!    t1
+    push    t5 t1
+.mul_body_0_let_block_0_while_eval
+    mov     t0 t5
+    imov!   t1 1
+    add     t0 t1
+    push    t0
+    pop! t0
+    load t0 t0
+    push! t0
+    pop! t0
+    tst  t0
+    jz!  .mul_body_0_let_block_0_while_exit
+.mul_body_0_let_block_0_while_block
+    mov     t0 t5
+    imov!   t1 2
+    add     t0 t1
+    push    t0
+    pop! t0
+    load t0 t0
+    push! t0
+    mov     t0 t5
+    imov!   t1 0
+    add     t0 t1
+    push    t0
+    pop! t0
+    load t0 t0
+    push! t0
+    pop!  t1 t0
+    add   t0 t1
+    push! t0
+    mov     t0 t5
+    imov!   t1 2
+    add     t0 t1
+    push    t0
+    pop! t1 t0
+    str  t1 t0
+    mov     t0 t5
+    imov!   t1 1
+    add     t0 t1
+    push    t0
+    pop! t0
+    load t0 t0
+    push! t0
+    imov! t0 1
+    push t0
+    pop!  t1 t0
+    sub   t0 t1
+    push! t0
+    mov     t0 t5
+    imov!   t1 1
+    add     t0 t1
+    push    t0
+    pop! t1 t0
+    str  t1 t0
+    jmp! .mul_body_0_let_block_0_while_eval
+.mul_body_0_let_block_0_while_exit
+    mov     t0 t5
+    imov!   t1 2
+    add     t0 t1
+    push    t0
+    pop! t0
+    load t0 t0
+    push! t0
+    # pop 3 elements from return stack
+    imov!   t0 3
+    add     t5 t0
+.mul_exit
+    pop     t0 t5
+    jmp     t0
+#end .mul
+fn .test_sum
+    imov! t0 .string_alloc_17
+    push! t0
+    imov!   t0 .test_sum_body_retaddr0
+    push    t5 t0
+    jmp!    .print_string
+.test_sum_body_retaddr0
+    imov! t0 .string_alloc_18
+    push! t0
+    imov! t0 7
+    push t0
+    imov!   t0 .test_sum_body_0_retaddr0
+    push    t5 t0
+    jmp!    .sum
+.test_sum_body_0_retaddr0
+    imov! t0 28
+    push t0
+    pop!  t1 t0
+    sub   t0 t1
+    push! t0
+    imov! t0 0
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jz!  .test_sum_body_0_1_operator_opskip
+    imov t2 0
+.test_sum_body_0_1_operator_opskip
+    push! t2
+    imov!   t0 .test_sum_body_retaddr1
+    push    t5 t0
+    jmp!    .assert
+.test_sum_body_retaddr1
+    imov! t0 .string_alloc_19
+    push! t0
+    imov! t0 22
+    push t0
+    imov!   t0 .test_sum_body_1_retaddr0
+    push    t5 t0
+    jmp!    .sum
+.test_sum_body_1_retaddr0
+    imov! t0 253
+    push t0
+    pop!  t1 t0
+    sub   t0 t1
+    push! t0
+    imov! t0 0
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jz!  .test_sum_body_1_1_operator_opskip
+    imov t2 0
+.test_sum_body_1_1_operator_opskip
+    push! t2
+    imov!   t0 .test_sum_body_retaddr2
+    push    t5 t0
+    jmp!    .assert
+.test_sum_body_retaddr2
+.test_sum_exit
+    pop     t0 t5
+    jmp     t0
+#end .test_sum
+fn .test_arith
+    imov! t0 .string_alloc_20
+    push! t0
+    imov!   t0 .test_arith_body_retaddr0
+    push    t5 t0
+    jmp!    .print_string
+.test_arith_body_retaddr0
+    imov! t0 .string_alloc_21
+    push! t0
+    imov! t0 7
+    push t0
+    imov! t0 7
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jz!  .test_arith_body_0_0_operator_opskip
+    imov t2 0
+.test_arith_body_0_0_operator_opskip
+    push! t2
+    imov! t0 1
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jz!  .test_arith_body_0_1_operator_opskip
+    imov t2 0
+.test_arith_body_0_1_operator_opskip
+    push! t2
+    imov!   t0 .test_arith_body_retaddr1
+    push    t5 t0
+    jmp!    .assert
+.test_arith_body_retaddr1
+    imov! t0 .string_alloc_22
+    push! t0
+    imov! t0 6
+    push t0
+    imov! t0 7
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jz!  .test_arith_body_1_0_operator_opskip
+    imov t2 0
+.test_arith_body_1_0_operator_opskip
+    push! t2
+    imov! t0 0
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jz!  .test_arith_body_1_1_operator_opskip
+    imov t2 0
+.test_arith_body_1_1_operator_opskip
+    push! t2
+    imov!   t0 .test_arith_body_retaddr2
+    push    t5 t0
+    jmp!    .assert
+.test_arith_body_retaddr2
+    imov! t0 .string_alloc_23
+    push! t0
+    imov! t0 6
+    push t0
+    imov! t0 7
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jp!  .test_arith_body_2_0_operator_opskip
+    imov t2 0
+.test_arith_body_2_0_operator_opskip
+    push! t2
+    imov! t0 0
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jz!  .test_arith_body_2_1_operator_opskip
+    imov t2 0
+.test_arith_body_2_1_operator_opskip
+    push! t2
+    imov!   t0 .test_arith_body_retaddr3
+    push    t5 t0
+    jmp!    .assert
+.test_arith_body_retaddr3
+    imov! t0 .string_alloc_24
+    push! t0
+    imov! t0 7
+    push t0
+    imov! t0 7
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jp!  .test_arith_body_3_0_operator_opskip
+    imov t2 0
+.test_arith_body_3_0_operator_opskip
+    push! t2
+    imov! t0 0
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jz!  .test_arith_body_3_1_operator_opskip
+    imov t2 0
+.test_arith_body_3_1_operator_opskip
+    push! t2
+    imov!   t0 .test_arith_body_retaddr4
+    push    t5 t0
+    jmp!    .assert
+.test_arith_body_retaddr4
+    imov! t0 .string_alloc_25
+    push! t0
+    imov! t0 8
+    push t0
+    imov! t0 7
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jp!  .test_arith_body_4_0_operator_opskip
+    imov t2 0
+.test_arith_body_4_0_operator_opskip
+    push! t2
+    imov! t0 1
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jz!  .test_arith_body_4_1_operator_opskip
+    imov t2 0
+.test_arith_body_4_1_operator_opskip
+    push! t2
+    imov!   t0 .test_arith_body_retaddr5
+    push    t5 t0
+    jmp!    .assert
+.test_arith_body_retaddr5
+    imov! t0 .string_alloc_26
+    push! t0
+    imov! t0 6
+    push t0
+    imov! t0 7
+    push t0
+    pop! t1 t0
+    imov t2 0  # default value
+    sub  t0 t1
+    jn!  .test_arith_body_5_0_operator_opskip
+    imov t2 1
+.test_arith_body_5_0_operator_opskip
+    push! t2
+    imov! t0 0
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jz!  .test_arith_body_5_1_operator_opskip
+    imov t2 0
+.test_arith_body_5_1_operator_opskip
+    push! t2
+    imov!   t0 .test_arith_body_retaddr6
+    push    t5 t0
+    jmp!    .assert
+.test_arith_body_retaddr6
+    imov! t0 .string_alloc_27
+    push! t0
+    imov! t0 7
+    push t0
+    imov! t0 7
+    push t0
+    pop! t1 t0
+    imov t2 0  # default value
+    sub  t0 t1
+    jn!  .test_arith_body_6_0_operator_opskip
+    imov t2 1
+.test_arith_body_6_0_operator_opskip
+    push! t2
+    imov! t0 1
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jz!  .test_arith_body_6_1_operator_opskip
+    imov t2 0
+.test_arith_body_6_1_operator_opskip
+    push! t2
+    imov!   t0 .test_arith_body_retaddr7
+    push    t5 t0
+    jmp!    .assert
+.test_arith_body_retaddr7
+    imov! t0 .string_alloc_28
+    push! t0
+    imov! t0 8
+    push t0
+    imov! t0 7
+    push t0
+    pop! t1 t0
+    imov t2 0  # default value
+    sub  t0 t1
+    jn!  .test_arith_body_7_0_operator_opskip
+    imov t2 1
+.test_arith_body_7_0_operator_opskip
+    push! t2
+    imov! t0 1
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jz!  .test_arith_body_7_1_operator_opskip
+    imov t2 0
+.test_arith_body_7_1_operator_opskip
+    push! t2
+    imov!   t0 .test_arith_body_retaddr8
+    push    t5 t0
+    jmp!    .assert
+.test_arith_body_retaddr8
+    imov! t0 .string_alloc_29
+    push! t0
+    imov! t0 6
+    push t0
+    imov! t0 7
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jn!  .test_arith_body_8_0_operator_opskip
+    imov t2 0
+.test_arith_body_8_0_operator_opskip
+    push! t2
+    imov! t0 1
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jz!  .test_arith_body_8_1_operator_opskip
+    imov t2 0
+.test_arith_body_8_1_operator_opskip
+    push! t2
+    imov!   t0 .test_arith_body_retaddr9
+    push    t5 t0
+    jmp!    .assert
+.test_arith_body_retaddr9
+    imov! t0 .string_alloc_30
+    push! t0
+    imov! t0 7
+    push t0
+    imov! t0 7
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jn!  .test_arith_body_9_0_operator_opskip
+    imov t2 0
+.test_arith_body_9_0_operator_opskip
+    push! t2
+    imov! t0 0
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jz!  .test_arith_body_9_1_operator_opskip
+    imov t2 0
+.test_arith_body_9_1_operator_opskip
+    push! t2
+    imov!   t0 .test_arith_body_retaddr10
+    push    t5 t0
+    jmp!    .assert
+.test_arith_body_retaddr10
+    imov! t0 .string_alloc_31
+    push! t0
+    imov! t0 8
+    push t0
+    imov! t0 7
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jn!  .test_arith_body_10_0_operator_opskip
+    imov t2 0
+.test_arith_body_10_0_operator_opskip
+    push! t2
+    imov! t0 0
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jz!  .test_arith_body_10_1_operator_opskip
+    imov t2 0
+.test_arith_body_10_1_operator_opskip
+    push! t2
+    imov!   t0 .test_arith_body_retaddr11
+    push    t5 t0
+    jmp!    .assert
+.test_arith_body_retaddr11
+    imov! t0 .string_alloc_32
+    push! t0
+    imov! t0 6
+    push t0
+    imov! t0 7
+    push t0
+    pop! t1 t0
+    imov t2 0  # default value
+    sub  t0 t1
+    jp!  .test_arith_body_11_0_operator_opskip
+    imov t2 1
+.test_arith_body_11_0_operator_opskip
+    push! t2
+    imov! t0 1
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jz!  .test_arith_body_11_1_operator_opskip
+    imov t2 0
+.test_arith_body_11_1_operator_opskip
+    push! t2
+    imov!   t0 .test_arith_body_retaddr12
+    push    t5 t0
+    jmp!    .assert
+.test_arith_body_retaddr12
+    imov! t0 .string_alloc_33
+    push! t0
+    imov! t0 7
+    push t0
+    imov! t0 7
+    push t0
+    pop! t1 t0
+    imov t2 0  # default value
+    sub  t0 t1
+    jp!  .test_arith_body_12_0_operator_opskip
+    imov t2 1
+.test_arith_body_12_0_operator_opskip
+    push! t2
+    imov! t0 1
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jz!  .test_arith_body_12_1_operator_opskip
+    imov t2 0
+.test_arith_body_12_1_operator_opskip
+    push! t2
+    imov!   t0 .test_arith_body_retaddr13
+    push    t5 t0
+    jmp!    .assert
+.test_arith_body_retaddr13
+    imov! t0 .string_alloc_34
+    push! t0
+    imov! t0 8
+    push t0
+    imov! t0 7
+    push t0
+    pop! t1 t0
+    imov t2 0  # default value
+    sub  t0 t1
+    jp!  .test_arith_body_13_0_operator_opskip
+    imov t2 1
+.test_arith_body_13_0_operator_opskip
+    push! t2
+    imov! t0 0
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jz!  .test_arith_body_13_1_operator_opskip
+    imov t2 0
+.test_arith_body_13_1_operator_opskip
+    push! t2
+    imov!   t0 .test_arith_body_retaddr14
+    push    t5 t0
+    jmp!    .assert
+.test_arith_body_retaddr14
+.test_arith_exit
+    pop     t0 t5
+    jmp     t0
+#end .test_arith
+fn .test_logical
+    imov! t0 .string_alloc_35
+    push! t0
+    imov!   t0 .test_logical_body_retaddr0
+    push    t5 t0
+    jmp!    .print_string
+.test_logical_body_retaddr0
+    imov! t0 .string_alloc_36
+    push! t0
+    imov! t0 1
+    push t0
+    imov! t0 1
+    push t0
+    pop! t1 t0
+    imov t2 0
+    tst  t0
+    jz! .test_logical_body_0_0_operator_andfalse
+    tst  t1
+    jz! .test_logical_body_0_0_operator_andfalse
+    imov t2 1
+.test_logical_body_0_0_operator_andfalse
+    push! t2
+    imov! t0 1
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jz!  .test_logical_body_0_1_operator_opskip
+    imov t2 0
+.test_logical_body_0_1_operator_opskip
+    push! t2
+    imov!   t0 .test_logical_body_retaddr1
+    push    t5 t0
+    jmp!    .assert
+.test_logical_body_retaddr1
+    imov! t0 .string_alloc_37
+    push! t0
+    imov! t0 0
+    push t0
+    imov! t0 1
+    push t0
+    pop! t1 t0
+    imov t2 0
+    tst  t0
+    jz! .test_logical_body_1_0_operator_andfalse
+    tst  t1
+    jz! .test_logical_body_1_0_operator_andfalse
+    imov t2 1
+.test_logical_body_1_0_operator_andfalse
+    push! t2
+    imov! t0 0
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jz!  .test_logical_body_1_1_operator_opskip
+    imov t2 0
+.test_logical_body_1_1_operator_opskip
+    push! t2
+    imov!   t0 .test_logical_body_retaddr2
+    push    t5 t0
+    jmp!    .assert
+.test_logical_body_retaddr2
+    imov! t0 .string_alloc_38
+    push! t0
+    imov! t0 0
+    push t0
+    imov! t0 0
+    push t0
+    pop! t1 t0
+    imov t2 1
+    tst  t0
+    jnz! .test_logical_body_2_0_operator_ortrue
+    tst  t1
+    jnz! .test_logical_body_2_0_operator_ortrue
+    imov t2 0
+.test_logical_body_2_0_operator_ortrue
+    push! t2
+    imov! t0 0
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jz!  .test_logical_body_2_1_operator_opskip
+    imov t2 0
+.test_logical_body_2_1_operator_opskip
+    push! t2
+    imov!   t0 .test_logical_body_retaddr3
+    push    t5 t0
+    jmp!    .assert
+.test_logical_body_retaddr3
+    imov! t0 .string_alloc_39
+    push! t0
+    imov! t0 1
+    push t0
+    imov! t0 0
+    push t0
+    pop! t1 t0
+    imov t2 1
+    tst  t0
+    jnz! .test_logical_body_3_0_operator_ortrue
+    tst  t1
+    jnz! .test_logical_body_3_0_operator_ortrue
+    imov t2 0
+.test_logical_body_3_0_operator_ortrue
+    push! t2
+    imov! t0 1
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jz!  .test_logical_body_3_1_operator_opskip
+    imov t2 0
+.test_logical_body_3_1_operator_opskip
+    push! t2
+    imov!   t0 .test_logical_body_retaddr4
+    push    t5 t0
+    jmp!    .assert
+.test_logical_body_retaddr4
+    imov! t0 .string_alloc_40
+    push! t0
+    imov! t0 1
+    push t0
+    pop! t0
+    imov t1 1
+    tst  t0
+    jz! .test_logical_body_4_0_operator_nottrue
+    imov t1 0
+.test_logical_body_4_0_operator_nottrue
+    push! t1
+    imov! t0 0
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jz!  .test_logical_body_4_1_operator_opskip
+    imov t2 0
+.test_logical_body_4_1_operator_opskip
+    push! t2
+    imov!   t0 .test_logical_body_retaddr5
+    push    t5 t0
+    jmp!    .assert
+.test_logical_body_retaddr5
+    imov! t0 .string_alloc_41
+    push! t0
+    imov! t0 0
+    push t0
+    pop! t0
+    imov t1 1
+    tst  t0
+    jz! .test_logical_body_5_0_operator_nottrue
+    imov t1 0
+.test_logical_body_5_0_operator_nottrue
+    push! t1
+    imov! t0 1
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jz!  .test_logical_body_5_1_operator_opskip
+    imov t2 0
+.test_logical_body_5_1_operator_opskip
+    push! t2
+    imov!   t0 .test_logical_body_retaddr6
+    push    t5 t0
+    jmp!    .assert
+.test_logical_body_retaddr6
+.test_logical_exit
+    pop     t0 t5
+    jmp     t0
+#end .test_logical
+fn .test_strlen
+    imov! t0 .string_alloc_42
+    push! t0
+    imov!   t0 .test_strlen_body_retaddr0
+    push    t5 t0
+    jmp!    .print_string
+.test_strlen_body_retaddr0
+    imov! t0 .string_alloc_43
+    push! t0
+    imov! t0 .string_alloc_44
+    push! t0
+    imov!   t0 .test_strlen_body_0_retaddr0
+    push    t5 t0
+    jmp!    .strlen
+.test_strlen_body_0_retaddr0
+    imov! t0 4
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jz!  .test_strlen_body_0_0_operator_opskip
+    imov t2 0
+.test_strlen_body_0_0_operator_opskip
+    push! t2
+    imov!   t0 .test_strlen_body_retaddr1
+    push    t5 t0
+    jmp!    .assert
+.test_strlen_body_retaddr1
+    imov! t0 .string_alloc_45
+    push! t0
+    imov! t0 .string_alloc_46
+    push! t0
+    imov!   t0 .test_strlen_body_1_retaddr0
+    push    t5 t0
+    jmp!    .strlen
+.test_strlen_body_1_retaddr0
+    imov! t0 0
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jz!  .test_strlen_body_1_0_operator_opskip
+    imov t2 0
+.test_strlen_body_1_0_operator_opskip
+    push! t2
+    imov!   t0 .test_strlen_body_retaddr2
+    push    t5 t0
+    jmp!    .assert
+.test_strlen_body_retaddr2
+.test_strlen_exit
+    pop     t0 t5
+    jmp     t0
+#end .test_strlen
+fn .test_streq
+    imov! t0 .string_alloc_47
+    push! t0
+    imov!   t0 .test_streq_body_retaddr0
+    push    t5 t0
+    jmp!    .print_string
+.test_streq_body_retaddr0
+    imov! t0 .string_alloc_48
+    push! t0
+    imov! t0 .string_alloc_46
+    push! t0
+    imov! t0 .string_alloc_46
+    push! t0
+    imov! t0 0
+    push t0
+    imov!   t0 .test_streq_body_0_retaddr0
+    push    t5 t0
+    jmp!    .streq
+.test_streq_body_0_retaddr0
+    imov!   t0 .test_streq_body_retaddr1
+    push    t5 t0
+    jmp!    .assert
+.test_streq_body_retaddr1
+    imov! t0 .string_alloc_51
+    push! t0
+    imov! t0 .string_alloc_52
+    push! t0
+    imov! t0 .string_alloc_46
+    push! t0
+    imov! t0 0
+    push t0
+    imov!   t0 .test_streq_body_1_retaddr0
+    push    t5 t0
+    jmp!    .streq
+.test_streq_body_1_retaddr0
+    imov!   t0 .test_streq_body_retaddr2
+    push    t5 t0
+    jmp!    .assert
+.test_streq_body_retaddr2
+    imov! t0 .string_alloc_54
+    push! t0
+    imov! t0 .string_alloc_52
+    push! t0
+    imov! t0 .string_alloc_52
+    push! t0
+    imov! t0 1
+    push t0
+    imov!   t0 .test_streq_body_2_retaddr0
+    push    t5 t0
+    jmp!    .streq
+.test_streq_body_2_retaddr0
+    imov!   t0 .test_streq_body_retaddr3
+    push    t5 t0
+    jmp!    .assert
+.test_streq_body_retaddr3
+    imov! t0 .string_alloc_57
+    push! t0
+    imov! t0 .string_alloc_52
+    push! t0
+    imov! t0 .string_alloc_59
+    push! t0
+    imov! t0 1
+    push t0
+    imov!   t0 .test_streq_body_3_retaddr0
+    push    t5 t0
+    jmp!    .streq
+.test_streq_body_3_retaddr0
+    imov! t0 0
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jz!  .test_streq_body_3_0_operator_opskip
+    imov t2 0
+.test_streq_body_3_0_operator_opskip
+    push! t2
+    imov!   t0 .test_streq_body_retaddr4
+    push    t5 t0
+    jmp!    .assert
+.test_streq_body_retaddr4
+    imov! t0 .string_alloc_60
+    push! t0
+    imov! t0 .string_alloc_61
+    push! t0
+    imov! t0 .string_alloc_62
+    push! t0
+    imov! t0 3
+    push t0
+    imov!   t0 .test_streq_body_4_retaddr0
+    push    t5 t0
+    jmp!    .streq
+.test_streq_body_4_retaddr0
+    imov!   t0 .test_streq_body_retaddr5
+    push    t5 t0
+    jmp!    .assert
+.test_streq_body_retaddr5
+    imov! t0 .string_alloc_63
+    push! t0
+    imov! t0 .string_alloc_64
+    push! t0
+    imov! t0 .string_alloc_62
+    push! t0
+    imov! t0 4
+    push t0
+    imov!   t0 .test_streq_body_5_retaddr0
+    push    t5 t0
+    jmp!    .streq
+.test_streq_body_5_retaddr0
+    imov! t0 0
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jz!  .test_streq_body_5_0_operator_opskip
+    imov t2 0
+.test_streq_body_5_0_operator_opskip
+    push! t2
+    imov!   t0 .test_streq_body_retaddr6
+    push    t5 t0
+    jmp!    .assert
+.test_streq_body_retaddr6
+.test_streq_exit
+    pop     t0 t5
+    jmp     t0
+#end .test_streq
+fn .test_let
+    imov! t0 .string_alloc_66
+    push! t0
+    imov!   t0 .test_let_body_retaddr0
+    push    t5 t0
+    jmp!    .print_string
+.test_let_body_retaddr0
+    imov! t0 11
+    push t0
+    imov! t0 10
+    push t0
+    imov! t0 11
+    push t0
+    # pop from the data stack
+    # push to return stack
+    pop!    t1
+    push    t5 t1
+    # pop from the data stack
+    # push to return stack
+    pop!    t1
+    push    t5 t1
+    imov! t0 11
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jz!  .test_let_body_0_let_block_0_0_operator_opskip
+    imov t2 0
+.test_let_body_0_let_block_0_0_operator_opskip
+    push! t2
+    imov! t0 .string_alloc_67
+    push! t0
+    pop! t0 t1
+    push! t0 t1
+    imov!   t0 .test_let_body_0_let_block_retaddr0
+    push    t5 t0
+    jmp!    .assert
+.test_let_body_0_let_block_retaddr0
+    imov! t0 .string_alloc_68
+    push! t0
+    mov     t0 t5
+    imov!   t1 0
+    add     t0 t1
+    push    t0
+    pop! t0
+    load t0 t0
+    push! t0
+    imov! t0 10
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jz!  .test_let_body_0_let_block_1_0_operator_opskip
+    imov t2 0
+.test_let_body_0_let_block_1_0_operator_opskip
+    push! t2
+    imov!   t0 .test_let_body_0_let_block_retaddr1
+    push    t5 t0
+    jmp!    .assert
+.test_let_body_0_let_block_retaddr1
+    imov! t0 .string_alloc_70
+    push! t0
+    mov     t0 t5
+    imov!   t1 1
+    add     t0 t1
+    push    t0
+    pop! t0
+    load t0 t0
+    push! t0
+    imov! t0 11
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jz!  .test_let_body_0_let_block_2_0_operator_opskip
+    imov t2 0
+.test_let_body_0_let_block_2_0_operator_opskip
+    push! t2
+    imov!   t0 .test_let_body_0_let_block_retaddr2
+    push    t5 t0
+    jmp!    .assert
+.test_let_body_0_let_block_retaddr2
+    imov! t0 12
+    push t0
+    imov! t0 13
+    push t0
+    # pop from the data stack
+    # push to return stack
+    pop!    t1
+    push    t5 t1
+    # pop from the data stack
+    # push to return stack
+    pop!    t1
+    push    t5 t1
+    imov! t0 .string_alloc_72
+    push! t0
+    mov     t0 t5
+    imov!   t1 2
+    add     t0 t1
+    push    t0
+    pop! t0
+    load t0 t0
+    push! t0
+    imov! t0 10
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jz!  .test_let_body_0_let_block_3_let_block_0_0_operator_opskip
+    imov t2 0
+.test_let_body_0_let_block_3_let_block_0_0_operator_opskip
+    push! t2
+    imov!   t0 .test_let_body_0_let_block_3_let_block_retaddr0
+    push    t5 t0
+    jmp!    .assert
+.test_let_body_0_let_block_3_let_block_retaddr0
+    imov! t0 .string_alloc_74
+    push! t0
+    mov     t0 t5
+    imov!   t1 0
+    add     t0 t1
+    push    t0
+    pop! t0
+    load t0 t0
+    push! t0
+    imov! t0 12
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jz!  .test_let_body_0_let_block_3_let_block_1_0_operator_opskip
+    imov t2 0
+.test_let_body_0_let_block_3_let_block_1_0_operator_opskip
+    push! t2
+    imov!   t0 .test_let_body_0_let_block_3_let_block_retaddr1
+    push    t5 t0
+    jmp!    .assert
+.test_let_body_0_let_block_3_let_block_retaddr1
+    imov! t0 .string_alloc_76
+    push! t0
+    mov     t0 t5
+    imov!   t1 1
+    add     t0 t1
+    push    t0
+    pop! t0
+    load t0 t0
+    push! t0
+    imov! t0 13
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jz!  .test_let_body_0_let_block_3_let_block_2_0_operator_opskip
+    imov t2 0
+.test_let_body_0_let_block_3_let_block_2_0_operator_opskip
+    push! t2
+    imov!   t0 .test_let_body_0_let_block_3_let_block_retaddr2
+    push    t5 t0
+    jmp!    .assert
+.test_let_body_0_let_block_3_let_block_retaddr2
+    # pop 2 elements from return stack
+    imov!   t0 2
+    add     t5 t0
+    # pop 2 elements from return stack
+    imov!   t0 2
+    add     t5 t0
+.test_let_exit
+    pop     t0 t5
+    jmp     t0
+#end .test_let
+fn .test_mul
+    imov! t0 .string_alloc_78
+    push! t0
+    imov!   t0 .test_mul_body_retaddr0
+    push    t5 t0
+    jmp!    .print_string
+.test_mul_body_retaddr0
+    imov! t0 .string_alloc_79
+    push! t0
+    imov! t0 1
+    push t0
+    imov! t0 2
+    push t0
+    imov!   t0 .test_mul_body_0_retaddr0
+    push    t5 t0
+    jmp!    .mul
+.test_mul_body_0_retaddr0
+    imov! t0 2
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jz!  .test_mul_body_0_0_operator_opskip
+    imov t2 0
+.test_mul_body_0_0_operator_opskip
+    push! t2
+    imov!   t0 .test_mul_body_retaddr1
+    push    t5 t0
+    jmp!    .assert
+.test_mul_body_retaddr1
+    imov! t0 .string_alloc_80
+    push! t0
+    imov! t0 2
+    push t0
+    imov! t0 5
+    push t0
+    imov!   t0 .test_mul_body_1_retaddr0
+    push    t5 t0
+    jmp!    .mul
+.test_mul_body_1_retaddr0
+    imov! t0 10
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jz!  .test_mul_body_1_0_operator_opskip
+    imov t2 0
+.test_mul_body_1_0_operator_opskip
+    push! t2
+    imov!   t0 .test_mul_body_retaddr2
+    push    t5 t0
+    jmp!    .assert
+.test_mul_body_retaddr2
+    imov! t0 .string_alloc_81
+    push! t0
+    imov! t0 0
+    push t0
+    imov! t0 10
+    push t0
+    imov!   t0 .test_mul_body_2_retaddr0
+    push    t5 t0
+    jmp!    .mul
+.test_mul_body_2_retaddr0
+    imov! t0 0
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jz!  .test_mul_body_2_0_operator_opskip
+    imov t2 0
+.test_mul_body_2_0_operator_opskip
+    push! t2
+    imov!   t0 .test_mul_body_retaddr3
+    push    t5 t0
+    jmp!    .assert
+.test_mul_body_retaddr3
+    imov! t0 .string_alloc_82
+    push! t0
+    imov! t0 10
+    push t0
+    imov! t0 0
+    push t0
+    imov!   t0 .test_mul_body_3_retaddr0
+    push    t5 t0
+    jmp!    .mul
+.test_mul_body_3_retaddr0
+    imov! t0 0
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jz!  .test_mul_body_3_0_operator_opskip
+    imov t2 0
+.test_mul_body_3_0_operator_opskip
+    push! t2
+    imov!   t0 .test_mul_body_retaddr4
+    push    t5 t0
+    jmp!    .assert
+.test_mul_body_retaddr4
+.test_mul_exit
+    pop     t0 t5
+    jmp     t0
+#end .test_mul
+fn .test_global
+    imov! t0 .string_alloc_83
+    push! t0
+    imov!   t0 .test_global_body_retaddr0
+    push    t5 t0
+    jmp!    .print_string
+.test_global_body_retaddr0
+    imov! t0 .string_alloc_84
+    push! t0
+    imov! t0 .variable_alloc_var1
+    push! t0
+    pop! t0
+    load t0 t0
+    push! t0
+    imov! t0 57005
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jz!  .test_global_body_0_0_operator_opskip
+    imov t2 0
+.test_global_body_0_0_operator_opskip
+    push! t2
+    imov!   t0 .test_global_body_retaddr1
+    push    t5 t0
+    jmp!    .assert
+.test_global_body_retaddr1
+    imov! t0 .string_alloc_85
+    push! t0
+    imov! t0 10
+    push t0
+    imov! t0 .variable_alloc_var1
+    push! t0
+    pop! t1 t0
+    str  t1 t0
+    imov! t0 .variable_alloc_var1
+    push! t0
+    pop! t0
+    load t0 t0
+    push! t0
+    imov! t0 10
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jz!  .test_global_body_1_0_operator_opskip
+    imov t2 0
+.test_global_body_1_0_operator_opskip
+    push! t2
+    imov!   t0 .test_global_body_retaddr2
+    push    t5 t0
+    jmp!    .assert
+.test_global_body_retaddr2
+.test_global_exit
+    pop     t0 t5
+    jmp     t0
+#end .test_global
+fn .test_random
+    imov! t0 .string_alloc_86
+    push! t0
+    imov!   t0 .test_random_body_retaddr0
+    push    t5 t0
+    jmp!    .print_string
+.test_random_body_retaddr0
+    imov! t0 .variable_alloc_random
+    push! t0
+    imov! t0 57005
+    push t0
+    imov!   t0 .test_random_body_retaddr1
+    push    t5 t0
+    jmp!    .rand_init
+.test_random_body_retaddr1
+    imov! t0 0
+    push t0
+.test_random_body_0_while_eval
+    imov! t0 .variable_alloc_random
+    push! t0
+    imov!   t0 .test_random_body_0_while_eval_retaddr0
+    push    t5 t0
+    jmp!    .rand_int
+.test_random_body_0_while_eval_retaddr0
+    imov! t0 57005
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jz!  .test_random_body_0_while_eval_0_operator_opskip
+    imov t2 0
+.test_random_body_0_while_eval_0_operator_opskip
+    push! t2
+    pop! t0
+    imov t1 1
+    tst  t0
+    jz! .test_random_body_0_while_eval_1_operator_nottrue
+    imov t1 0
+.test_random_body_0_while_eval_1_operator_nottrue
+    push! t1
+    pop! t0
+    tst  t0
+    jz!  .test_random_body_0_while_exit
+.test_random_body_0_while_block
+    imov! t0 1
+    push t0
+    pop!  t1 t0
+    add   t0 t1
+    push! t0
+    jmp! .test_random_body_0_while_eval
+.test_random_body_0_while_exit
+    imov! t0 .string_alloc_87
+    push! t0
+    pop! t0 t1
+    push! t1 t0 t1
+    imov! t0 65534
+    push t0
+    pop! t1 t0
+    imov t2 1  # default value
+    sub  t0 t1
+    jz!  .test_random_body_1_0_operator_opskip
+    imov t2 0
+.test_random_body_1_0_operator_opskip
+    push! t2
+    imov!   t0 .test_random_body_retaddr2
+    push    t5 t0
+    jmp!    .assert
+.test_random_body_retaddr2
+    pop! t0
+.test_random_exit
+    pop     t0 t5
+    jmp     t0
+#end .test_random
+fn .main
+    imov! t0 .string_alloc_88
+    push! t0
+    imov!   t0 .main_body_retaddr0
+    push    t5 t0
+    jmp!    .print_string
+.main_body_retaddr0
+    imov!   t0 .main_body_retaddr1
+    push    t5 t0
+    jmp!    .test_sum
+.main_body_retaddr1
+    imov!   t0 .main_body_retaddr2
+    push    t5 t0
+    jmp!    .test_arith
+.main_body_retaddr2
+    imov!   t0 .main_body_retaddr3
+    push    t5 t0
+    jmp!    .test_logical
+.main_body_retaddr3
+    imov!   t0 .main_body_retaddr4
+    push    t5 t0
+    jmp!    .test_strlen
+.main_body_retaddr4
+    imov!   t0 .main_body_retaddr5
+    push    t5 t0
+    jmp!    .test_let
+.main_body_retaddr5
+    imov!   t0 .main_body_retaddr6
+    push    t5 t0
+    jmp!    .test_streq
+.main_body_retaddr6
+    imov!   t0 .main_body_retaddr7
+    push    t5 t0
+    jmp!    .test_mul
+.main_body_retaddr7
+    imov!   t0 .main_body_retaddr8
+    push    t5 t0
+    jmp!    .test_global
+.main_body_retaddr8
+    imov!   t0 .main_body_retaddr9
+    push    t5 t0
+    jmp!    .test_random
+.main_body_retaddr9
+    imov! t0 .string_alloc_89
+    push! t0
+    imov!   t0 .main_body_retaddr10
+    push    t5 t0
+    jmp!    .print_string
+.main_body_retaddr10
+.main_exit
+    pop     t0 t5
+    jmp     t0
+#end .main

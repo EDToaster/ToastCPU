@@ -1,7 +1,6 @@
 use std::collections::HashSet;
-use std::fmt::format;
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use lazy_static::lazy_static;
 use regex::{Captures, Regex};
 

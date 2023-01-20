@@ -1,4 +1,7 @@
-use std::{rc::Rc, sync::{Arc, Mutex}};
+use std::{
+    rc::Rc,
+    sync::{Arc, Mutex},
+};
 
 use crate::vga::Vga;
 
@@ -27,7 +30,7 @@ impl Devices {
                 let a = *self.key.lock().unwrap();
                 // println!("{:04x} at {:04x}", a, addr);
                 Ok(a)
-            },
+            }
             _ => Err(format!("Memory location {addr:#06x} not implemented")),
         }
     }
@@ -37,7 +40,7 @@ impl Devices {
             0..=0x7FFF => {
                 // println!("{:04x} at {:04x}", val, addr);
                 self.vga.lock().unwrap().put_char(addr.into(), val);
-            },
+            }
             0x8000..=0xBFFF => Rc::get_mut(&mut self.ram).unwrap()[(addr - 0x8000) as usize] = val,
             _ => return Err(format!("Memory location {addr:#06x}={val:#06x}")),
         }

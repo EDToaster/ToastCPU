@@ -1,5 +1,5 @@
 use std::collections::HashSet;
-use lrlex::{DefaultLexeme, lrlex_mod};
+use lrlex::lrlex_mod;
 use lrpar::{LexParseError, lrpar_mod, NonStreamingLexer};
 
 use std::error::Error;

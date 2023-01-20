@@ -1,4 +1,4 @@
-use crate::emit::types::{GlobalState, parse_types, Type, TypeSize};
+use crate::emit::types::{GlobalState, Type, TypeSize};
 use crate::tl_y::Global;
 
 // return emitted code, label, initial value

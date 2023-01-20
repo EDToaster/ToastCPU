@@ -1,7 +1,5 @@
 use lrpar::Span;
-use crate::emit::operator::emit_operator;
 use crate::emit::statement::emit_statement;
-use crate::emit::type_check::check_and_apply_stack_transition;
 use crate::emit::types::*;
 use crate::tl_y::*;
 use crate::util::gss::Stack;

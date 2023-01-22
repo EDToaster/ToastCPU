@@ -43,6 +43,7 @@ the sum on to the stack. The `p` function prints out the resulting number in hex
 - [x] Add const array offset support `0xDEAD ptr [2] store`
 - [ ] Add better control flow
   - [x] `return` Jump to end of function 
+    - [ ] todo: Make better control flow checks when returning or breaking 
   - [ ] `break` Jump out of current loop
   - [ ] Refactor type checking to account for early return or break
 - [ ] Better static compiler check error messages

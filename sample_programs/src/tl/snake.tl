@@ -1,4 +1,3 @@
-
 #include<std/io>
 #include<std/mem>
 #include<std/rand>

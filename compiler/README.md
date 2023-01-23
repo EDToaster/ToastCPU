@@ -46,6 +46,7 @@ the sum on to the stack. The `p` function prints out the resulting number in hex
     - [ ] todo: Make better control flow checks when returning or breaking 
   - [ ] `break` Jump out of current loop
   - [ ] Refactor type checking to account for early return or break
+  - [ ] Implement switch/match statements + if/elseif/else statements, and lower them to nested ifs.
 - [ ] Better static compiler check error messages
 - [x] Add global static memory allocation
   - [x] `global foo u16 100` Denotes global variable called `foo` which will be initialized with `u16: 100`

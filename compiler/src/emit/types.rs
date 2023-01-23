@@ -160,7 +160,7 @@ pub struct GlobalState {
     pub struct_defs: HashMap<String, StructDefinition>,
     pub function_signatures: HashMap<String, (Vec<Type>, Vec<Type>)>,
     pub globals: HashMap<String, (String, Type)>, // name -> label
-    pub inlines: HashMap<String, Statement>,
+    pub inlines: HashMap<String, Statement>,      // name -> statement
 }
 
 pub struct FunctionState {

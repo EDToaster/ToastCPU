@@ -156,6 +156,9 @@ IntArray -> Result<IntArray, ()>:
         }
     ;
 
+Unmatched -> ():
+    "UNMATCHED" { } 
+    ;
 %%
 
 use lrpar::Span;

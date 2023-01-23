@@ -58,3 +58,5 @@ return          "RETURN"
 
 (?:(?://|#)[^\n]*\n)            ;
 [\t\r\n ]+                      ;
+
+.               "UNMATCHED"

@@ -15,7 +15,6 @@ pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState, fun
 {statement}
             "
         );
-
     }
 
     Ok(block)

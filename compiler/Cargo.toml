@@ -12,14 +12,6 @@ argparse = "0.2.2"
 lazy_static = "1.4.0"
 regex = "1.7.0"
 
-[dependencies.uuid]
-version = "1.2.2"
-features = [
-    "v4",                # Lets you generate random UUIDs
-    "fast-rng",          # Use a faster (but still sufficiently random) RNG
-    "macro-diagnostics", # Enable better diagnostics for compile-time UUIDs
-]
-
 [build-dependencies]
 lrlex   = "0.12.0"
 lrpar   = "0.12.0"

@@ -93,7 +93,7 @@ impl Vga {
 
         execute!(
             self.stdout,
-            SetColors(Colors::new(COLORS[fg], COLORS[bg])),
+            SetColors(Colors::new(COLORS[fg], COLORS[bg ])),
             MoveTo(x as u16, y as u16),
             Print((val & 0x00FF) as u8 as char),
         )

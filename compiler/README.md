@@ -35,6 +35,13 @@ fn main -> {
 This piece of code pushes `1` and `2` on to the stack. Then, the `+` operator pops two values from the stack and pushes 
 the sum on to the stack. The `p` function prints out the resulting number in hex notation.
 
+### Turing Completeness
+
+Very technically (and not *really* rooted in reality), `toastlang` (and by extension, `toastasm` and `toastcpu`) is turing complete, since it is able to implement a 100-cell wide 
+r110 cellular automata.
+
+![Rule 110 Implemented on tl](./assets/r110.png)
+
 ## Todo
 - [x] Add static type checking to functions
 - [x] File include system

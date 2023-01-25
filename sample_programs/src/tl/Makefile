@@ -7,9 +7,13 @@ else
 endif
 
 .SECONDARY:
+.PHONY: all
 
 os: os.mif
 	cd ../../../emu && cargo run --package emu --bin emu -- ../sample_programs/src/tl/os.mif
+
+r110: r110.mif
+	cd ../../../emu && cargo run --package emu --bin emu -- ../sample_programs/src/tl/r110.mif
 
 inline: inline.mif
 	cd ../../../emu && cargo run --package emu --bin emu -- ../sample_programs/src/tl/inline.mif

@@ -31,7 +31,6 @@ fn print_char u16 -> {
     }
 
     text_ptr load as(u16) 6000 >= if {
-        halt
         0 as(u16*) text_ptr store
         100 text_progress store
     }

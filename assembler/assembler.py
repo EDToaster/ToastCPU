@@ -441,7 +441,8 @@ def optimize_push_pop(instructions: List[Instruction]) -> List[Instruction]:
 
         inst2 = instructions[i + 1]
 
-        if inst.words[0] == Opcode("push") and inst2.words[0] == Opcode("pop") and len(inst.words) == 2 and len(inst2.words) == 2 and len(inst2.labels) == 0:
+        # make sure none of the two ops have labels, since we may not emit any operation.
+        if inst.words[0] == Opcode("push") and inst2.words[0] == Opcode("pop") and len(inst.words) == 2 and len(inst2.words) == 2 and len(inst.labels) == 0 and len(inst2.labels) == 0:
             r0: Register = inst.words[1]
             r1: Register = inst2.words[1]
             if r0 == r1:

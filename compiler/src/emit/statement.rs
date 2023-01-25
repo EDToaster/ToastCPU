@@ -26,7 +26,7 @@ pub fn emit_statement(
                 r"
     imov! t0 {}
     push  t0
-                    "
+                "
             );
             check_and_apply_stack_transition(
                 val.to_string().as_str(),
@@ -51,7 +51,7 @@ pub fn emit_statement(
                 r"
     imov! t0 .{string_alloc_label}
     push! t0
-                    "
+                "
             );
             check_and_apply_stack_transition(
                 format!("{val:?}").as_str(),
@@ -70,14 +70,14 @@ pub fn emit_statement(
                         r"
     pop!  t0
     push! t0 t0
-                            "
+                        "
                     );
                     check_and_apply_stack_transition(
                         "dup",
                         span,
                         stack_view,
-                        &vec![Type::new_generic("$a")],
-                        &[Type::new_generic("$a"), Type::new_generic("$a")],
+                        &vec![gen!("$a")],
+                        &[gen!("$a"), gen!("$a")],
                     )?;
                 }
                 "over" => {
@@ -86,16 +86,16 @@ pub fn emit_statement(
                         r"
     pop!  t0 t1
     push! t1 t0 t1
-                            "
+                        "
                     );
                     check_and_apply_stack_transition(
                         "over",
                         span,
                         stack_view,
-                        &vec![Type::new_generic("$a"), Type::new_generic("$b")],
-                        &[Type::new_generic("$a"),
-                            Type::new_generic("$b"),
-                            Type::new_generic("$a")],
+                        &vec![gen!("$a"), gen!("$b")],
+                        &[gen!("$a"),
+                            gen!("$b"),
+                            gen!("$a")],
                     )?;
                 }
                 "swap" => {
@@ -104,14 +104,27 @@ pub fn emit_statement(
                         r"
     pop!  t0 t1
     push! t0 t1
-                            "
+                        "
                     );
                     check_and_apply_stack_transition(
                         "swap",
                         span,
                         stack_view,
-                        &vec![Type::new_generic("$a"), Type::new_generic("$b")],
-                        &[Type::new_generic("$b"), Type::new_generic("$a")],
+                        &vec![gen!("$a"), gen!("$b")],
+                        &[gen!("$b"), gen!("$a")],
+                    )?;
+                }
+                "rot" => {
+                    tasm!(
+                        block;;
+                        r"
+    pop!  t0 t1 t2
+    push! t1 t0 t2
+                        "
+                    );
+                    check_and_apply_stack_transition("rot", span, stack_view, 
+                        &vec![gen!("$a"), gen!("$b"), gen!("$c")],
+                        &[gen!("$b"), gen!("$c"), gen!("$a")]
                     )?;
                 }
                 "halt" => {
@@ -127,13 +140,13 @@ pub fn emit_statement(
                         block;;
                         r"
     pop!  t0
-                            "
+                        "
                     );
                     check_and_apply_stack_transition(
                         "drop",
                         span,
                         stack_view,
-                        &vec![Type::new_generic("$a")],
+                        &vec![gen!("$a")],
                         &[],
                     )?;
                 }
@@ -144,14 +157,14 @@ pub fn emit_statement(
     pop!  t0
     load  t0 t0
     push! t0
-                            "
+                        "
                     );
                     check_and_apply_stack_transition(
                         "load",
                         span,
                         stack_view,
-                        &vec![Type::Pointer(1, Box::new(Type::new_generic("$a")))],
-                        &[Type::new_generic("$a")],
+                        &vec![ptr!(gen!("$a"))],
+                        &[gen!("$a")],
                     )?;
                 }
                 "store" => {
@@ -160,15 +173,15 @@ pub fn emit_statement(
                         r"
     pop!  t1 t0
     str   t1 t0
-                            "
+                        "
                     );
                     check_and_apply_stack_transition(
                         "store",
                         span,
                         stack_view,
                         &vec![
-                            Type::new_generic("$a"),
-                            Type::Pointer(1, Box::new(Type::new_generic("$a"))),
+                            gen!("$a"),
+                            Type::Pointer(1, Box::new(gen!("$a"))),
                         ],
                         &[],
                     )?;
@@ -194,7 +207,7 @@ pub fn emit_statement(
     imov! t1 {offset}
     add   t0 t1
     push  t0
-                                "
+                            "
                         );
                         global_state.string_allocs_counter += 1;
                         check_and_apply_stack_transition(
@@ -211,7 +224,7 @@ pub fn emit_statement(
                             r"
     imov! t0 .{label}
     push! t0
-                                "
+                            "
                         );
                         check_and_apply_stack_transition(
                             s,
@@ -245,7 +258,7 @@ pub fn emit_statement(
     push  t5 t0
     jmp!  .{s}
 .{ret_label}
-                                "
+                            "
                         );
                         // todo: temporary while we get static analysis going
                         let (in_t, out_t) = global_state.function_signatures.get(s).ok_or((
@@ -269,7 +282,7 @@ pub fn emit_statement(
                 block;;
                 r"
 {op}
-                    "
+                "
             );
         }
         Statement::Block(b) => {
@@ -284,7 +297,7 @@ pub fn emit_statement(
                 block;;
                 r"
 {subblock}
-                    "
+                "
             );
         }
         Statement::Unroll(Unroll {
@@ -304,7 +317,7 @@ pub fn emit_statement(
                     block;;
                     r"
 {subblock}
-                        "
+                    "
                 );
             }
         }
@@ -353,7 +366,7 @@ pub fn emit_statement(
 .{else_id}
 {else_subblock}
 .{if_else_exit}
-                    "
+                "
             );
         }
         Statement::While(While { eval, body, span }) => {
@@ -412,7 +425,7 @@ pub fn emit_statement(
 {while_body_subblock}
     jmp!  .{while_eval_id}
 .{while_eval_exit}
-                    "
+                "
             );
         }
         Statement::Let(Let {
@@ -449,7 +462,7 @@ pub fn emit_statement(
     # push to return stack
     pop!  t1
     push  t5 t1
-                        "
+                    "
                 );
             }
 
@@ -466,7 +479,7 @@ pub fn emit_statement(
     # pop {num_bindings} elements from return stack
     imov! t0 {num_bindings}
     add   t5 t0
-                    "
+                "
             );
 
             // pop bindings off

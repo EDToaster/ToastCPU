@@ -60,7 +60,7 @@
 				{
 					"comment": "Matches builtins",
 					"name": "variable.parameter.function.builtin.toastlang",
-					"match": "(^|(?<=\\s))(return|dup|over|swap|halt|drop|load|store|\\||&|\\|\\||&&|\\+|-|=|)\\s"
+					"match": "(^|(?<=\\s))(return|dup|over|swap|halt|drop|load|store|rot|\\||&|\\|\\||&&|\\+|-|=|)\\s"
 				},
 				{
 					"comment": "Matches parameterized builtins",

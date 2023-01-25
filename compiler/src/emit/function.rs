@@ -9,10 +9,10 @@ pub fn emit_isr(f: &Function, global_state: &mut GlobalState) -> Result<String, 
     let func_name = &f.name.name;
     let function_out_label = format!("{func_name}_exit");
 
-    if f.in_t.len() > 0 || f.out_t.len() > 0 {
+    if !f.in_t.is_empty() || !f.out_t.is_empty() {
         return Err((
-            f.span.clone(),
-            format!("Interrupt service routine (isr) cannot take in or emit stack items."),
+            f.span,
+            "Interrupt service routine (isr) cannot take in or emit stack items.".to_string(),
         ));
     }
 
@@ -26,7 +26,7 @@ pub fn emit_isr(f: &Function, global_state: &mut GlobalState) -> Result<String, 
     let mut stack_view = Stack::empty();
 
     let block = emit_block(
-        &*format!("{func_name}_body"),
+        &format!("{func_name}_body"),
         &f.body,
         global_state,
         &mut function_state,
@@ -35,7 +35,7 @@ pub fn emit_isr(f: &Function, global_state: &mut GlobalState) -> Result<String, 
     .map_err(|(span, err)| (span, format!("{func_name}: {err}")))?;
 
     if !stack_view.is_empty() {
-        return Err((f.span.clone(), format!("Interrupt service routine (isr) has to handle all stack items, but {:?} remains on the stack.", stack_view)));
+        return Err((f.span, format!("Interrupt service routine (isr) has to handle all stack items, but {stack_view:?} remains on the stack.")));
     }
 
     let mut func = String::new();
@@ -74,7 +74,7 @@ pub fn emit_function(
     let mut stack_view: Stack<Type> = Stack::from(in_t);
 
     let block = emit_block(
-        &*format!("{func_name}_body"),
+        &format!("{func_name}_body"),
         &f.body,
         global_state,
         &mut function_state,
@@ -86,21 +86,18 @@ pub fn emit_function(
 
     if !stack_view.eq_vec(out_t) {
         return Err((
-            f.span.clone(),
-            format!(
-                "Function `{func_name}` signature expects return of {:?}, but {:?} was gotten",
-                out_t, stack_view
-            ),
+            f.span,
+            format!("Function `{func_name}` signature expects return of {out_t:?}, but {stack_view:?} was gotten"),
         ));
     }
 
-    func.push_str(&*format!(
+    func.push_str(&format!(
         r"
 {block}
     "
     ));
 
-    func.push_str(&*format!(
+    func.push_str(&format!(
         r"
 .{func_exit}
     pop   t0 t5

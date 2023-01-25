@@ -1,7 +1,6 @@
 use core::fmt;
 use std::collections::HashMap;
 use std::fmt::Formatter;
-use std::iter;
 use lazy_static::lazy_static;
 use lrpar::Span;
 use regex::Regex;
@@ -40,7 +39,7 @@ impl fmt::Debug for Type {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
             Type::U16 => { write!(f, "u16") }
-            Type::Pointer(i, t) => { write!(f, "{:?}{}", t, iter::repeat('*').take(*i as usize).collect::<String>()) }
+            Type::Pointer(i, t) => { write!(f, "{:?}{}", t, "*".repeat(*i as usize)) }
             Type::Struct(s) => { write!(f, "{s}") }
             Type::Generic(s) => { write!(f, "{s}")}
         }
@@ -53,7 +52,7 @@ pub trait ErrWithSpan<T, U> {
 
 impl<T, U> ErrWithSpan<T, U> for Result<T, U> {
     fn err_with_span(self, span: &Span) -> Result<T, (Span, U)> where Self: Sized, T: Sized, U: Sized {
-        self.map_err(|e| (span.clone(), e))
+        self.map_err(|e| (*span, e))
     }
 }
 
@@ -119,8 +118,8 @@ impl Type {
                     let pointer_layers = &caps["pointers"].len();
                     Ok(Type::Pointer(*pointer_layers as isize, Box::new(base_type)))
                 } else if let Some(caps) = TYPE_GENERICS_REGEX.captures(s) {
-                    Ok(Type::Generic((&caps["alias"]).to_string()))
-                } else if let Some(_) = struct_defs.get(s) {
+                    Ok(Type::Generic(caps["alias"].to_string()))
+                } else if struct_defs.get(s).is_some() {
                     Ok(Type::Struct(s.to_string()))
                 } else {
                     Err(())
@@ -148,7 +147,7 @@ impl Type {
             Type::Pointer(i, t) if *i > 1 => {
                 Ok(Type::Pointer(i - 1, t.clone()))
             }
-            p => { Err(format!("Type {p:?} was not matched").to_string()) }
+            p => { Err(format!("Type {p:?} was not matched")) }
         }
     }
 }
@@ -171,7 +170,7 @@ pub struct FunctionState {
     pub function_let_bindings: isize,
 }
 
-pub fn parse_types(in_t: &Vec<Identifier>, out_t: &Vec<Identifier>, struct_defs: &HashMap<String, StructDefinition>) -> Result<(Vec<Type>, Vec<Type>), ()> {
+pub fn parse_types(in_t: &[Identifier], out_t: &[Identifier], struct_defs: &HashMap<String, StructDefinition>) -> Result<(Vec<Type>, Vec<Type>), ()> {
     let in_parsed: Vec<Type> = in_t.iter().map(|t| Type::parse(&t.name, struct_defs)).collect::<Result<Vec<Type>, ()>>()?;
     let out_parsed: Vec<Type> = out_t.iter().map(|t| Type::parse(&t.name, struct_defs)).collect::<Result<Vec<Type>, ()>>()?;
     Ok((in_parsed, out_parsed))

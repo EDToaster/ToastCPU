@@ -427,6 +427,53 @@ class Instruction:
 class Ignore:
     pass
 
+def optimize_push_pop(instructions: List[Instruction]) -> List[Instruction]:
+    skip = 0
+    optimized = []
+    # look for pairs of instructions like `push t0` `pop t1`. This can be transformed to `mov t1 t0`
+    for i, inst in enumerate(instructions):
+        if skip > 0:
+            skip -= 1
+            continue
+        if i == len(instructions) - 1:
+            optimized.append(inst)
+            continue
+
+        inst2 = instructions[i + 1]
+
+        if inst.words[0] == Opcode("push") and inst2.words[0] == Opcode("pop") and len(inst.words) == 2 and len(inst2.words) == 2 and len(inst2.labels) == 0:
+            r0: Register = inst.words[1]
+            r1: Register = inst2.words[1]
+            if r0 == r1:
+                skip = 1
+                continue
+
+            optimized.append(Instruction(inst.text + "\n             -- " + inst2.text, inst.labels, [Opcode("mov"), r1, r0]))
+            # optimized.append(inst)
+            # optimized.append(inst2)
+            skip = 1
+        else:
+            optimized.append(inst)
+    return optimized
+            
+def keep_optimizing(instructions: List[Instruction], func, limit=10) -> List[Instruction]:
+    i = 0
+    inst_size = len(instructions)
+    print(inst_size)
+    while i < limit:
+        instructions = func(instructions)
+        if not len(instructions) < inst_size:
+            break
+        inst_size = len(instructions)
+        print(inst_size)
+    return instructions
+
+
+def optimize(instructions: List[Instruction]) -> List[Instruction]:
+    instructions = keep_optimizing(instructions, optimize_push_pop)
+
+
+    return instructions
 
 class Program:
     def __init__(self):
@@ -568,13 +615,11 @@ class Program:
         for instruction in labeled_instructions:
             expanded_instructions += instruction.expand_and_convert_mask()
 
-        # print()
-        # print()
-        # print()
-        # [print (line) for line in expanded_instructions]
+        # do some optimizations
+        optimized_instructions = optimize(expanded_instructions)
 
         # find label locations
-        for i, line in enumerate(expanded_instructions):
+        for i, line in enumerate(optimized_instructions):
             for label in line.labels:
                 if label in label_locations:
                     raise Exception(f"Label {label} is a duplicate")
@@ -585,15 +630,10 @@ class Program:
 
         # replace labels with numbers
         labels_replaced = []
-        for line in expanded_instructions:
+        for line in optimized_instructions:
             word = Instruction(line.text, line.labels,
                                [(l.to_number(label_locations) if isinstance(l, LabelMask) else l) for l in line.words])
             labels_replaced.append(word)
-
-        # print()
-        # print()
-        # print()
-        # [print (line) for line in labels_replaced]
 
         return [(line.text + f"\t\t\t{{{line.labels if len(line.labels) != 0 else ''}}}", line.to_binary()) for line in labels_replaced]
 

@@ -1,0 +1,120 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "ToastLang",
+	"patterns": [
+		{
+			"include": "#directives"
+		},
+		{
+			"include": "#comments"
+		},
+		{
+			"include": "#opcodes"
+		},
+		{
+			"include": "#numbers"
+		},
+		{
+			"include": "#strings"
+		},
+		{
+			"include": "#chars"
+		}
+	],
+	"repository": {
+		"directives": {
+			"patterns": [
+				{
+					"name": "keyword.control.directive.include.toastlang",
+					"begin": "(^|(?<=\\s))(#include)",
+					"end": "\\s",
+					"patterns": [
+						{
+							"name": "string.quoted.lt-gt.include.toastlang",
+							"match": "<([\\w\\-. /]+)>"
+						}
+					]
+				}
+			]
+		},
+		"comments": {
+			"patterns": [
+				{
+					"name": "comment.line.toastlang",
+					"match": "([//@].*)"
+				}
+			]
+		},
+		"opcodes": {
+			"patterns": [
+				{
+					"comment": "Matches control flow",
+					"name": "keyword.control.control.toastlang",
+					"match": "(^|(?<=\\s))(unroll|if|else|while)\\s"
+				},
+				{
+					"comment": "Matches declarations",
+					"name": "keyword.declaration.toastlang",
+					"match": "(^|(?<=\\s))(global|inline|fn|let|struct)\\s"
+				},
+				{
+					"comment": "Matches builtins",
+					"name": "variable.parameter.function.builtin.toastlang",
+					"match": "(^|(?<=\\s))(return|dup|over|swap|halt|drop|load|store|\\||&|\\|\\||&&|\\+|-|=|)\\s"
+				},
+				{
+					"comment": "Matches parameterized builtins",
+					"name": "variable.parameter.function.builtin.toastlang",
+					"match": "(^|(?<=\\s))(as|sizeof)\\s*\\([^)]+\\)"
+				},
+				{
+					"comment": "Matches declarations",
+					"name": "keyword.name.function.declaration.toastlang",
+					"match": "(^|(?<=\\s))(global|inline|fn|let|struct)\\s"
+				}
+			]
+		},
+		"numbers": {
+			"patterns": [
+				{
+					"comment": "Matches hex numbers",
+					"name": "constant.numeric.hex.toastlang",
+					"match": "\\b(0x[0-9A-Fa-f]+)\\b"
+				},
+				{
+					"comment": "Matches dec numbers",
+					"name": "constant.numeric.dec.toastlang",
+					"match": "\\b([0-9]+)\\b"
+				},
+				{
+					"comment": "Matches bin numbers",
+					"name": "constant.numeric.bin.toastlang",
+					"match": "\\b(0b[01]+)\\b"
+				}
+			]
+		},
+		"strings": {
+			"name": "string.quoted.double.toastlang",
+			"begin": "\"",
+			"end": "\"",
+			"patterns": [
+				{
+					"name": "constant.character.escape.toastlang",
+					"match": "\\\\."
+				}
+			]
+		},
+		"chars": {
+			"name": "string.quoted.double.toastlang",
+			"begin": "'",
+			"end": "'",
+			"patterns": [
+				{
+					"name": "constant.character.escape.toastlang",
+					"match": "\\\\."
+				}
+			]
+		}
+	},
+	"scopeName": "source.toastlang"
+}

@@ -27,10 +27,10 @@ pub fn find_first_in_include_path(path: &str, include_paths: &Vec<String>) -> Re
     Err(format!("Could not find include {path} in these places: {checked_paths:?}"))
 }
 
-pub fn preprocess(input: &String, include_paths: &Vec<String>, included_files: &mut HashSet<String>) -> Result<String, String> {
-    let mut prog = input.clone();
+pub fn preprocess(input: &str, include_paths: &Vec<String>, included_files: &mut HashSet<String>) -> Result<String, String> {
+    let mut prog = input.to_string();
 
-    for m in INCLUDE_REGEX.captures_iter(&*prog.clone()).collect::<Vec<Captures>>().iter().rev() {
+    for m in INCLUDE_REGEX.captures_iter(&prog.clone()).collect::<Vec<Captures>>().iter().rev() {
         let text = m.get(0).unwrap();
         let range = text.range(); // range in the original text
         let path = m["path"].trim();

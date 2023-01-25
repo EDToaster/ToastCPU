@@ -123,10 +123,10 @@ fn .init_globals
         match &*f.name.name {
             "isr" => {
                 isr_found = true;
-                functions.push_str(&*emit_isr(&f, &mut global_state).map_err(|(_, b)| b)?);
+                functions.push_str(&emit_isr(f, &mut global_state).map_err(|(_, b)| b)?);
             }
             _ => {
-                functions.push_str(&*emit_function(&f, &mut global_state).map_err(|(_, b)| b)?);
+                functions.push_str(&emit_function(f, &mut global_state).map_err(|(_, b)| b)?);
             }
         }
     }
@@ -143,8 +143,8 @@ fn .isr
     }
 
     // gather string defs
-    prog.push_str(&*emit_string_defs(&global_state));
+    prog.push_str(&emit_string_defs(&global_state));
 
-    prog.push_str(&*functions);
+    prog.push_str(&functions);
     Ok(prog)
 }

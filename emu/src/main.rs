@@ -230,10 +230,10 @@ fn emulate(pc_buffer: &mut AllocRingBuffer<u16>) -> Result<(), String> {
     let prog_string = fs::read_to_string(mif_file).expect("Should have been able to read the file");
 
     let bytes = prog_string.len();
-    println!("read {} bytes from file", bytes);
+    println!("read {bytes} bytes from file");
 
     // INIT ROM
-    print!("Parsing {} bytes to instructions ... ", bytes);
+    print!("Parsing {bytes} bytes to instructions ... ");
     let rom: Rc<Vec<u16>> = Rc::new(parse_program(&prog_string));
     println!("rom is sized {}", rom.len());
 

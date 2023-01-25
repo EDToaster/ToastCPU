@@ -29,7 +29,7 @@ pub fn emit_operator(
             );
             check_and_apply_multiple_stack_transitions(
                 "+",
-                &span,
+                span,
                 stack_view,
                 &vec![
                     (vec![ptr!(gen!("$a")), u16!()], vec![ptr!(gen!("$a"))]),
@@ -49,7 +49,7 @@ pub fn emit_operator(
             );
             check_and_apply_multiple_stack_transitions(
                 "-",
-                &span,
+                span,
                 stack_view,
                 &vec![
                     (vec![ptr!(gen!("$a")), u16!()], vec![ptr!(gen!("$a"))]),
@@ -72,7 +72,7 @@ pub fn emit_operator(
                 span,
                 stack_view,
                 &vec![u16!(), u16!()],
-                &vec![u16!()],
+                &[u16!()],
             )?;
         }
         Operator::BAnd(span) => {
@@ -86,10 +86,10 @@ pub fn emit_operator(
             );
             check_and_apply_stack_transition(
                 "&",
-                &span,
+                span,
                 stack_view,
                 &vec![u16!(), u16!()],
-                &vec![u16!()],
+                &[u16!()],
             )?;
         }
         Operator::BNot(span) => {
@@ -101,7 +101,7 @@ pub fn emit_operator(
     push! t0
                             "
             );
-            check_and_apply_stack_transition("~", &span, stack_view, &vec![u16!()], &vec![u16!()])?;
+            check_and_apply_stack_transition("~", span, stack_view, &vec![u16!()], &[u16!()])?;
         }
         Operator::Sshr(span) => {
             tasm!(
@@ -114,10 +114,10 @@ pub fn emit_operator(
             );
             check_and_apply_stack_transition(
                 ">>",
-                &span,
+                span,
                 stack_view,
                 &vec![u16!(), u16!()],
-                &vec![u16!()],
+                &[u16!()],
             )?;
         }
         Operator::Shr(span) => {
@@ -131,10 +131,10 @@ pub fn emit_operator(
             );
             check_and_apply_stack_transition(
                 ">>>",
-                &span,
+                span,
                 stack_view,
                 &vec![u16!(), u16!()],
-                &vec![u16!()],
+                &[u16!()],
             )?;
         }
         Operator::Shl(span) => {
@@ -148,10 +148,10 @@ pub fn emit_operator(
             );
             check_and_apply_stack_transition(
                 "<<",
-                &span,
+                span,
                 stack_view,
                 &vec![u16!(), u16!()],
-                &vec![u16!()],
+                &[u16!()],
             )?;
         }
         Operator::Xor(span) => {
@@ -165,10 +165,10 @@ pub fn emit_operator(
             );
             check_and_apply_stack_transition(
                 "^",
-                &span,
+                span,
                 stack_view,
                 &vec![u16!(), u16!()],
-                &vec![u16!()],
+                &[u16!()],
             )?;
         }
 
@@ -191,10 +191,10 @@ pub fn emit_operator(
             );
             check_and_apply_stack_transition(
                 "||",
-                &span,
+                span,
                 stack_view,
                 &vec![u16!(), u16!()],
-                &vec![u16!()],
+                &[u16!()],
             )?;
         }
 
@@ -217,10 +217,10 @@ pub fn emit_operator(
             );
             check_and_apply_stack_transition(
                 "&&",
-                &span,
+                span,
                 stack_view,
                 &vec![u16!(), u16!()],
-                &vec![u16!()],
+                &[u16!()],
             )?;
         }
 
@@ -239,7 +239,7 @@ pub fn emit_operator(
     push! t1
                             "
             );
-            check_and_apply_stack_transition("!", &span, stack_view, &vec![u16!()], &vec![u16!()])?;
+            check_and_apply_stack_transition("!", span, stack_view, &vec![u16!()], &[u16!()])?;
         }
 
         Operator::Eq(span) => {
@@ -259,10 +259,10 @@ pub fn emit_operator(
             );
             check_and_apply_stack_transition(
                 "=",
-                &span,
+                span,
                 stack_view,
                 &vec![gen!("$a"), gen!("$a")],
-                &vec![u16!()],
+                &[u16!()],
             )?;
         }
         Operator::Lt(span) => {
@@ -282,10 +282,10 @@ pub fn emit_operator(
             );
             check_and_apply_stack_transition(
                 "<",
-                &span,
+                span,
                 stack_view,
                 &vec![u16!(), u16!()],
-                &vec![u16!()],
+                &[u16!()],
             )?;
         }
         Operator::Lte(span) => {
@@ -305,10 +305,10 @@ pub fn emit_operator(
             );
             check_and_apply_stack_transition(
                 "<=",
-                &span,
+                span,
                 stack_view,
                 &vec![u16!(), u16!()],
-                &vec![u16!()],
+                &[u16!()],
             )?;
         }
         Operator::Gt(span) => {
@@ -328,10 +328,10 @@ pub fn emit_operator(
             );
             check_and_apply_stack_transition(
                 ">",
-                &span,
+                span,
                 stack_view,
                 &vec![u16!(), u16!()],
-                &vec![u16!()],
+                &[u16!()],
             )?;
         }
         Operator::Gte(span) => {
@@ -351,29 +351,29 @@ pub fn emit_operator(
             );
             check_and_apply_stack_transition(
                 ">=",
-                &span,
+                span,
                 stack_view,
                 &vec![u16!(), u16!()],
-                &vec![u16!()],
+                &[u16!()],
             )?;
         }
         Operator::Hole(span) => {
-            println!("Stack at {span:?}: {:?}", stack_view);
+            println!("Stack at {span:?}: {stack_view:?}");
         }
         Operator::As(span, t) => {
             let parsed_t = Type::parse(&t.name, &global_state.struct_defs)
-                .map_err(|_| (span.clone(), format!("Could not parse type {}.", &t.name)))?;
+                .map_err(|_| (*span, format!("Could not parse type {}.", &t.name)))?;
             check_and_apply_stack_transition(
-                &*format!("as({parsed_t:?})"),
-                &span,
+                &format!("as({parsed_t:?})"),
+                span,
                 stack_view,
                 &vec![Type::new_generic("$a")],
-                &vec![parsed_t],
+                &[parsed_t],
             )?;
         }
         Operator::SizeOf(span, t) => {
             let parsed_t = Type::parse(&t.name, &global_state.struct_defs)
-                .map_err(|_| (span.clone(), format!("Could not parse type {}.", &t.name)))?;
+                .map_err(|_| (*span, format!("Could not parse type {}.", &t.name)))?;
             let size = parsed_t
                 .type_size(&global_state.struct_defs)
                 .err_with_span(span)?;
@@ -385,25 +385,25 @@ pub fn emit_operator(
                             "
             );
             check_and_apply_stack_transition(
-                &*format!("sizeof({parsed_t:?})"),
-                &span,
+                &format!("sizeof({parsed_t:?})"),
+                span,
                 stack_view,
                 &vec![],
-                &vec![u16!()],
+                &[u16!()],
             )?;
         }
         Operator::StructAccess(span, member) => {
             // grab the type at the top of the stack
             let t = stack_view.peek()
-                .ok_or((span.clone(), format!("Struct access .{member} requires one struct pointer at the top of the stack. Current stack is empty.")))?;
+                .ok_or((*span, format!("Struct access .{member} requires one struct pointer at the top of the stack. Current stack is empty.")))?;
             let base_t = t.de_ref()
-                .map_err(|_| (span.clone(), format!("Struct access .{member} requires one struct pointer at the top of the stack. Current stack is {stack_view:?}.")))?;
+                .map_err(|_| (*span, format!("Struct access .{member} requires one struct pointer at the top of the stack. Current stack is {stack_view:?}.")))?;
 
             if let Type::Struct(label) = base_t {
                 let struct_def = global_state.struct_defs.get(&*label)
-                    .ok_or((span.clone(), format!("Struct access .{member} requires one struct pointer at the top of the stack. Current stack is {stack_view:?}.")))?;
+                    .ok_or((*span, format!("Struct access .{member} requires one struct pointer at the top of the stack. Current stack is {stack_view:?}.")))?;
                 let (offset, member_t) = struct_def.members.get(member).ok_or((
-                    span.clone(),
+                    *span,
                     format!("Struct `{label}` does not have a member `{member}`."),
                 ))?;
 
@@ -417,24 +417,24 @@ pub fn emit_operator(
                     "
                 );
                 check_and_apply_stack_transition(
-                    &*format!(".{member}"),
-                    &span,
+                    &format!(".{member}"),
+                    span,
                     stack_view,
-                    &vec![t.clone()],
-                    &vec![member_t.add_ref()],
+                    &vec![t],
+                    &[member_t.add_ref()],
                 )?;
             } else {
-                return Err((span.clone(), format!("Struct access .{member} requires one struct pointer at the top of the stack. Current stack is {stack_view:?}.")));
+                return Err((*span, format!("Struct access .{member} requires one struct pointer at the top of the stack. Current stack is {stack_view:?}.")));
             }
         }
         Operator::ConstArrayAccess(span, offset_literal) => {
             let offset = offset_literal.val;
             let dropped_t = &check_and_apply_stack_transition(
-                &*format!("[{offset}]"),
-                &span,
+                &format!("[{offset}]"),
+                span,
                 stack_view,
                 &vec![ptr!(gen!("$a"))],
-                &vec![ptr!(gen!("$a"))],
+                &[ptr!(gen!("$a"))],
             )?[0];
             let offset_size = offset
                 * dropped_t
@@ -457,7 +457,7 @@ pub fn emit_operator(
             let label = &function_state.function_out_label;
 
             if !stack_view.eq_vec(&function_state.function_out_stack) {
-                return Err((span.clone(),
+                return Err((*span,
                             format!("Cannot return here. Expecting stack contents of {:?} but found {stack_view:?}",
                                     &function_state.function_out_stack)));
             }

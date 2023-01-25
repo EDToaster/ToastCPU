@@ -1,0 +1,26 @@
+{
+  "name": "toastlang",
+  "displayName": "toastlang",
+  "description": "",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.71.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Themes"
+  ],
+  "contributes": {
+    "languages": [{
+      "id": "toastlang",
+      "aliases": ["toastlang", "tl"],
+      "extensions": [".tl"],
+      "configuration": "./language-configuration.json"
+    }],
+    "grammars": [{
+      "language": "toastlang",
+      "scopeName": "source.toastlang",
+      "path": "./syntaxes/toastlang.tmLanguage.json"
+    }]
+  }
+}

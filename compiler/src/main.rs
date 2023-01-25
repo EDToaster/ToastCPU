@@ -46,7 +46,7 @@ fn get_args() -> Result<(String, String, Vec<String>), ArgParseError> {
         ap.parse_args()
     }
     .map(|_| (input, output, include_paths))
-    .map_err(|i| ArgParseError(i))
+    .map_err(ArgParseError)
 }
 
 fn main() -> Result<(), String> {
@@ -58,7 +58,7 @@ fn main() -> Result<(), String> {
 
     let lexer_def = tl_l::lexerdef();
 
-    let lexer = lexer_def.lexer(&*program_text);
+    let lexer = lexer_def.lexer(&program_text);
     let (res, errs) = tl_y::parse(&lexer);
     for e in errs {
         println!("Error found: {}", e.pp(&lexer, &tl_y::token_epp));
@@ -69,8 +69,6 @@ fn main() -> Result<(), String> {
             }
             LexParseError::ParseError(_) => {}
         }
-
-        return Err(e.to_string())
     }
 
     let r = res.ok_or("Some parser thing went wrong!")?

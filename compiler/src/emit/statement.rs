@@ -33,7 +33,7 @@ pub fn emit_statement(
                 span,
                 stack_view,
                 &vec![],
-                &vec![Type::U16],
+                &[Type::U16],
             )?;
         }
         Statement::IntArray(IntArray { val, span }) => {
@@ -58,7 +58,7 @@ pub fn emit_statement(
                 span,
                 stack_view,
                 &vec![],
-                &vec![Type::Pointer(1, Box::new(Type::U16))],
+                &[Type::Pointer(1, Box::new(Type::U16))],
             )?;
         }
         Statement::Identifier(Identifier { name, span }) => {
@@ -77,7 +77,7 @@ pub fn emit_statement(
                         span,
                         stack_view,
                         &vec![Type::new_generic("$a")],
-                        &vec![Type::new_generic("$a"), Type::new_generic("$a")],
+                        &[Type::new_generic("$a"), Type::new_generic("$a")],
                     )?;
                 }
                 "over" => {
@@ -93,11 +93,9 @@ pub fn emit_statement(
                         span,
                         stack_view,
                         &vec![Type::new_generic("$a"), Type::new_generic("$b")],
-                        &vec![
-                            Type::new_generic("$a"),
+                        &[Type::new_generic("$a"),
                             Type::new_generic("$b"),
-                            Type::new_generic("$a"),
-                        ],
+                            Type::new_generic("$a")],
                     )?;
                 }
                 "swap" => {
@@ -113,7 +111,7 @@ pub fn emit_statement(
                         span,
                         stack_view,
                         &vec![Type::new_generic("$a"), Type::new_generic("$b")],
-                        &vec![Type::new_generic("$b"), Type::new_generic("$a")],
+                        &[Type::new_generic("$b"), Type::new_generic("$a")],
                     )?;
                 }
                 "halt" => {
@@ -136,7 +134,7 @@ pub fn emit_statement(
                         span,
                         stack_view,
                         &vec![Type::new_generic("$a")],
-                        &vec![],
+                        &[],
                     )?;
                 }
                 "load" => {
@@ -153,7 +151,7 @@ pub fn emit_statement(
                         span,
                         stack_view,
                         &vec![Type::Pointer(1, Box::new(Type::new_generic("$a")))],
-                        &vec![Type::new_generic("$a")],
+                        &[Type::new_generic("$a")],
                     )?;
                 }
                 "store" => {
@@ -172,7 +170,7 @@ pub fn emit_statement(
                             Type::new_generic("$a"),
                             Type::Pointer(1, Box::new(Type::new_generic("$a"))),
                         ],
-                        &vec![],
+                        &[],
                     )?;
                 }
                 s => {
@@ -204,7 +202,7 @@ pub fn emit_statement(
                             span,
                             stack_view,
                             &vec![],
-                            &vec![t.add_ref()],
+                            &[t.add_ref()],
                         )?;
                     } else if let Some((label, t)) = global_state.globals.get(s) {
                         // global variable
@@ -220,9 +218,9 @@ pub fn emit_statement(
                             span,
                             stack_view,
                             &vec![],
-                            &vec![t.add_ref()],
+                            &[t.add_ref()],
                         )?;
-                    } else if let Some(statement) = global_state.inlines.get(s).map(|e| e.clone()) {
+                    } else if let Some(statement) = global_state.inlines.get(s).cloned() {
                         // is an inline value
                         let expansion = emit_statement(
                             block_id,
@@ -251,17 +249,17 @@ pub fn emit_statement(
                         );
                         // todo: temporary while we get static analysis going
                         let (in_t, out_t) = global_state.function_signatures.get(s).ok_or((
-                            span.clone(),
+                            *span,
                             format!("Was not able to find function signature of function {s}"),
                         ))?;
-                        check_and_apply_stack_transition(s, &span, stack_view, in_t, out_t)?;
+                        check_and_apply_stack_transition(s, span, stack_view, in_t, out_t)?;
                     }
                 }
             }
         }
         Statement::Operator(r) => {
             let op = emit_operator(
-                &*generate_label_with_context(block_id, "operator"),
+                &generate_label_with_context(block_id, "operator"),
                 r,
                 global_state,
                 function_state,
@@ -276,7 +274,7 @@ pub fn emit_statement(
         }
         Statement::Block(b) => {
             let subblock = emit_block(
-                &*generate_label(block_id),
+                &generate_label(block_id),
                 b,
                 global_state,
                 function_state,
@@ -296,7 +294,7 @@ pub fn emit_statement(
         }) => {
             for _ in 0..*val {
                 let subblock = emit_block(
-                    &*generate_label(block_id),
+                    &generate_label(block_id),
                     body,
                     global_state,
                     function_state,
@@ -321,27 +319,26 @@ pub fn emit_statement(
 
             match stack_view.pop() {
                 None => {
-                    Err((span.clone(), "If statement needs an element at the top of the stack to serve as a conditional. Current stack is empty.".to_string()))
+                    Err((*span, "If statement needs an element at the top of the stack to serve as a conditional. Current stack is empty.".to_string()))
                 }
                 Some(Type::Pointer(..)) | Some(Type::U16) => { Ok(()) }
                 e => {
-                    Err((span.clone(), format!("Element `{e:?}` at the top of the stack cannot be used as the conditional for the if statement.")))
+                    Err((*span, format!("Element `{e:?}` at the top of the stack cannot be used as the conditional for the if statement.")))
                 }
             }?;
 
             let mut else_stack = stack_view.clone();
             // stack_view is end == if_stack
             let if_subblock =
-                emit_block(&*if_id, if_block, global_state, function_state, stack_view)?;
+                emit_block(&if_id, if_block, global_state, function_state, stack_view)?;
 
             let else_subblock = match else_block {
                 None => "".to_string(),
-                Some(e) => emit_block(&*else_id, e, global_state, function_state, &mut else_stack)?,
+                Some(e) => emit_block(&else_id, e, global_state, function_state, &mut else_stack)?,
             };
 
             if stack_view != &else_stack {
-                return Err((span.clone(), format!("If and else blocks do not have the same elements on the stack after execution. If has {:?} and else has {:?}",
-                                                  stack_view, else_stack)));
+                return Err((*span, format!("If and else blocks do not have the same elements on the stack after execution. If has {stack_view:?} and else has {else_stack:?}")));
             }
 
             tasm!(
@@ -369,7 +366,7 @@ pub fn emit_statement(
             let before_eval = stack_view.clone();
 
             let while_eval_subblock = emit_block(
-                &*while_eval_id,
+                &while_eval_id,
                 eval,
                 global_state,
                 function_state,
@@ -378,11 +375,11 @@ pub fn emit_statement(
 
             match stack_view.pop() {
                 None => {
-                    Err((span.clone(), "While statement needs an element at the top of the stack to serve as a conditional. Current stack is empty.".to_string()))
+                    Err((*span, "While statement needs an element at the top of the stack to serve as a conditional. Current stack is empty.".to_string()))
                 }
                 Some(Type::Pointer(..)) | Some(Type::U16) => { Ok(()) }
                 e => {
-                    Err((span.clone(), format!("Element `{e:?}` at the top of the stack cannot be used as the conditional for the while statement.")))
+                    Err((*span, format!("Element `{e:?}` at the top of the stack cannot be used as the conditional for the while statement.")))
                 }
             }?;
 
@@ -390,7 +387,7 @@ pub fn emit_statement(
             let mut after_body = stack_view.clone();
 
             let while_body_subblock = emit_block(
-                &*while_body_id,
+                &while_body_id,
                 body,
                 global_state,
                 function_state,
@@ -399,7 +396,7 @@ pub fn emit_statement(
 
             // after body == before eval
             if after_body != before_eval {
-                return Err((span.clone(), format!(
+                return Err((*span, format!(
                     "Stack state after while body and before condition evaluation need to identical. Before evaluation {before_eval:?}, after body {after_body:?}")));
             }
 
@@ -432,7 +429,7 @@ pub fn emit_statement(
                 match t_opt {
                     None => {
                         return Err((
-                            span.clone(),
+                            *span,
                             format!(
                                 "Cannot bind `{}` since the stack is empty at this point.",
                                 i.name

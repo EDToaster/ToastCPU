@@ -1,0 +1,1143 @@
+
+# allocate 1024 words on the heap
+.ret_stack [0x0400]
+fn .reset
+    # setup isr and jump to main
+    imov! isr .isr
+    # initialize ret stack ptrs
+    imov! t5 .ret_stack
+    imov! t0 0x03FF
+    add   t5 t0
+    imov! t1 .reset_ret
+    push  t5 t1
+    # initialize our global variables
+    call! .init_globals
+    jmp!  .main
+.reset_ret
+    halt
+#end .reset
+fn .init_globals
+    push! t0
+    imov! t0 100
+    str!  .variable_alloc_text_progress t0
+    imov! t0 0
+    str!  .variable_alloc_text_ptr t0
+    imov! t0 0
+    str!  .variable_alloc_key_buffer t0
+    imov! t0 0
+    str!  .variable_alloc_head_pos t0
+    pop!  t0
+    jmpr
+#end .init_globals
+.variable_alloc_text_progress [1]
+.variable_alloc_text_ptr [1]
+.variable_alloc_key_buffer [34]
+.variable_alloc_head_pos [1]
+.string_alloc_0
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0060 # '` '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0071 # 'q '
+    0x0031 # '1 '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x007A # 'z '
+    0x0073 # 's '
+    0x0061 # 'a '
+    0x0077 # 'w '
+    0x0032 # '2 '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0063 # 'c '
+    0x0078 # 'x '
+    0x0064 # 'd '
+    0x0065 # 'e '
+    0x0034 # '4 '
+    0x0033 # '3 '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0076 # 'v '
+    0x0066 # 'f '
+    0x0074 # 't '
+    0x0072 # 'r '
+    0x0035 # '5 '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x006E # 'n '
+    0x0062 # 'b '
+    0x0068 # 'h '
+    0x0067 # 'g '
+    0x0079 # 'y '
+    0x0036 # '6 '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x006D # 'm '
+    0x006A # 'j '
+    0x0075 # 'u '
+    0x0037 # '7 '
+    0x0038 # '8 '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x002C # ', '
+    0x006B # 'k '
+    0x0069 # 'i '
+    0x006F # 'o '
+    0x0030 # '0 '
+    0x0039 # '9 '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x002E # '. '
+    0x002F # '/ '
+    0x006C # 'l '
+    0x003B # '; '
+    0x0070 # 'p '
+    0x002D # '- '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x005B # '[ '
+    0x003D # '= '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x000A # '\n'
+    0x005D # '] '
+    0x0020 # '  '
+    0x005C # '\ '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0020 # '  '
+    0x0000 # '\0'
+fn .print_reset
+    imov! t0 100
+    push  t0
+    imov! t0 .variable_alloc_text_progress
+    push! t0
+    pop!  t1 t0
+    str   t1 t0
+    imov! t0 0
+    push  t0
+    imov! t0 .variable_alloc_text_ptr
+    push! t0
+    pop!  t1 t0
+    str   t1 t0
+.print_reset_exit
+    pop   t0 t5
+    jmp   t0
+#end .print_reset
+fn .print_char
+    pop!  t0
+    push! t0 t0
+    imov! t0 10
+    push  t0
+    pop!  t1 t0
+    imov  t2 1  # default value
+    sub   t0 t1
+    jz!   .print_char_body_operator_2_opskip
+    imov  t2 0
+.print_char_body_operator_2_opskip
+    push! t2
+    pop!  t0
+    tst   t0
+    jz!   .print_char_body_else_4
+.print_char_body_if_3
+    pop!  t0
+    imov! t0 .variable_alloc_text_ptr
+    push! t0
+    pop!  t0
+    load  t0 t0
+    push! t0
+    imov! t0 .variable_alloc_text_progress
+    push! t0
+    pop!  t0
+    load  t0 t0
+    push! t0
+    pop!  t1 t0
+    add   t0 t1
+    push! t0
+    imov! t0 .variable_alloc_text_ptr
+    push! t0
+    pop!  t1 t0
+    str   t1 t0
+    imov! t0 100
+    push  t0
+    imov! t0 .variable_alloc_text_progress
+    push! t0
+    pop!  t1 t0
+    str   t1 t0
+    jmp!  .print_char_body_if_exit_5
+.print_char_body_else_4
+    imov! t0 .variable_alloc_text_ptr
+    push! t0
+    pop!  t0
+    load  t0 t0
+    push! t0
+    pop!  t0 t1
+    push! t0 t1
+    imov! t0 14336
+    push  t0
+    pop!  t1 t0
+    or    t0 t1
+    push! t0
+    pop!  t0 t1
+    push! t1 t0 t1
+    pop!  t1 t0
+    str   t1 t0
+    imov! t0 1
+    push  t0
+    pop!  t1 t0
+    add   t0 t1
+    push! t0
+    imov! t0 .variable_alloc_text_ptr
+    push! t0
+    pop!  t1 t0
+    str   t1 t0
+    imov! t0 .variable_alloc_text_progress
+    push! t0
+    pop!  t0
+    load  t0 t0
+    push! t0
+    imov! t0 1
+    push  t0
+    pop!  t1 t0
+    sub   t0 t1
+    push! t0
+    pop!  t0
+    push! t0 t0
+    imov! t0 0
+    push  t0
+    pop!  t1 t0
+    imov  t2 1  # default value
+    sub   t0 t1
+    jz!   .print_char_body_else_4_operator_10_opskip
+    imov  t2 0
+.print_char_body_else_4_operator_10_opskip
+    push! t2
+    pop!  t0
+    tst   t0
+    jz!   .print_char_body_else_4_else_12
+.print_char_body_else_4_if_11
+    pop!  t0
+    imov! t0 100
+    push  t0
+    jmp!  .print_char_body_else_4_if_exit_13
+.print_char_body_else_4_else_12
+.print_char_body_else_4_if_exit_13
+    imov! t0 .variable_alloc_text_progress
+    push! t0
+    pop!  t1 t0
+    str   t1 t0
+.print_char_body_if_exit_5
+    imov! t0 .variable_alloc_text_ptr
+    push! t0
+    pop!  t0
+    load  t0 t0
+    push! t0
+    imov! t0 6000
+    push  t0
+    pop!  t1 t0
+    imov  t2 0  # default value
+    sub   t0 t1
+    jn!   .print_char_body_operator_15_opskip
+    imov  t2 1
+.print_char_body_operator_15_opskip
+    push! t2
+    pop!  t0
+    tst   t0
+    jz!   .print_char_body_else_17
+.print_char_body_if_16
+    halt
+    imov! t0 0
+    push  t0
+    imov! t0 .variable_alloc_text_ptr
+    push! t0
+    pop!  t1 t0
+    str   t1 t0
+    imov! t0 100
+    push  t0
+    imov! t0 .variable_alloc_text_progress
+    push! t0
+    pop!  t1 t0
+    str   t1 t0
+    jmp!  .print_char_body_if_exit_18
+.print_char_body_else_17
+.print_char_body_if_exit_18
+.print_char_exit
+    pop   t0 t5
+    jmp   t0
+#end .print_char
+fn .print_hex
+    pop!  t0
+    push! t0 t0
+    imov! t0 10
+    push  t0
+    pop!  t1 t0
+    imov  t2 1  # default value
+    sub   t0 t1
+    jn!   .print_hex_body_operator_20_opskip
+    imov  t2 0
+.print_hex_body_operator_20_opskip
+    push! t2
+    pop!  t0
+    tst   t0
+    jz!   .print_hex_body_else_22
+.print_hex_body_if_21
+    imov! t0 48
+    push  t0
+    pop!  t1 t0
+    add   t0 t1
+    push! t0
+    imov! t0 .print_hex_body_if_21_retaddr_25
+    push  t5 t0
+    jmp!  .print_char
+.print_hex_body_if_21_retaddr_25
+    jmp!  .print_hex_body_if_exit_23
+.print_hex_body_else_22
+    imov! t0 10
+    push  t0
+    pop!  t1 t0
+    sub   t0 t1
+    push! t0
+    imov! t0 65
+    push  t0
+    pop!  t1 t0
+    add   t0 t1
+    push! t0
+    imov! t0 .print_hex_body_else_22_retaddr_28
+    push  t5 t0
+    jmp!  .print_char
+.print_hex_body_else_22_retaddr_28
+.print_hex_body_if_exit_23
+.print_hex_exit
+    pop   t0 t5
+    jmp   t0
+#end .print_hex
+fn .print_nibble
+    pop!  t0
+    push! t0 t0
+    imov! t0 4
+    push  t0
+    pop!  t1 t0
+    sshr  t0 t1
+    push! t0
+    imov! t0 15
+    push  t0
+    pop!  t1 t0
+    and   t0 t1
+    push! t0
+    imov! t0 .print_nibble_body_retaddr_31
+    push  t5 t0
+    jmp!  .print_hex
+.print_nibble_body_retaddr_31
+    pop!  t0
+    push! t0 t0
+    imov! t0 15
+    push  t0
+    pop!  t1 t0
+    and   t0 t1
+    push! t0
+    imov! t0 .print_nibble_body_retaddr_33
+    push  t5 t0
+    jmp!  .print_hex
+.print_nibble_body_retaddr_33
+    pop!  t0
+.print_nibble_exit
+    pop   t0 t5
+    jmp   t0
+#end .print_nibble
+fn .print_word
+    pop!  t0
+    push! t0 t0
+    imov! t0 8
+    push  t0
+    pop!  t1 t0
+    sshr  t0 t1
+    push! t0
+    imov! t0 255
+    push  t0
+    pop!  t1 t0
+    and   t0 t1
+    push! t0
+    imov! t0 .print_word_body_retaddr_36
+    push  t5 t0
+    jmp!  .print_nibble
+.print_word_body_retaddr_36
+    pop!  t0
+    push! t0 t0
+    imov! t0 255
+    push  t0
+    pop!  t1 t0
+    and   t0 t1
+    push! t0
+    imov! t0 .print_word_body_retaddr_38
+    push  t5 t0
+    jmp!  .print_nibble
+.print_word_body_retaddr_38
+    pop!  t0
+.print_word_exit
+    pop   t0 t5
+    jmp   t0
+#end .print_word
+fn .print_string
+    pop!  t0
+    push! t0 t0
+.print_string_body_while_eval_39
+    pop!  t0
+    load  t0 t0
+    push! t0
+    pop!  t0
+    push! t0 t0
+    pop!  t0
+    tst   t0
+    jz!   .print_string_body_while_exit_41
+.print_string_body_while_body_40
+    imov! t0 .print_string_body_while_body_40_retaddr_42
+    push  t5 t0
+    jmp!  .print_char
+.print_string_body_while_body_40_retaddr_42
+    imov! t0 1
+    push  t0
+    pop!  t1 t0
+    add   t0 t1
+    push! t0
+    pop!  t0
+    push! t0 t0
+    jmp!  .print_string_body_while_eval_39
+.print_string_body_while_exit_41
+    pop!  t0
+    pop!  t0
+.print_string_exit
+    pop   t0 t5
+    jmp   t0
+#end .print_string
+fn .keyboard_init
+    imov! t0 .variable_alloc_key_buffer
+    push! t0
+    imov! t0 0
+    push  t0
+    imov! t0 34
+    push! t0
+    imov! t0 .keyboard_init_body_retaddr_46
+    push  t5 t0
+    jmp!  .memset
+.keyboard_init_body_retaddr_46
+.keyboard_init_exit
+    pop   t0 t5
+    jmp   t0
+#end .keyboard_init
+fn .keyboard_handle_input
+    imov! t0 .keyboard_handle_input_body_retaddr_47
+    push  t5 t0
+    jmp!  .get_keyboard_ascii
+.keyboard_handle_input_body_retaddr_47
+    imov! t0 .variable_alloc_key_buffer
+    push! t0
+    pop!  t0
+    imov! t1 2
+    add   t0 t1
+    push! t0
+    imov! t0 .variable_alloc_key_buffer
+    push! t0
+    pop!  t0
+    imov! t1 1
+    add   t0 t1
+    push! t0
+    pop!  t0
+    load  t0 t0
+    push! t0
+    pop!  t1 t0
+    add   t0 t1
+    push! t0
+    pop!  t1 t0
+    str   t1 t0
+    imov! t0 .variable_alloc_key_buffer
+    push! t0
+    pop!  t0
+    imov! t1 1
+    add   t0 t1
+    push! t0
+    pop!  t0
+    load  t0 t0
+    push! t0
+    imov! t0 1
+    push  t0
+    pop!  t1 t0
+    add   t0 t1
+    push! t0
+    imov! t0 31
+    push  t0
+    pop!  t1 t0
+    and   t0 t1
+    push! t0
+    imov! t0 .variable_alloc_key_buffer
+    push! t0
+    pop!  t0
+    imov! t1 1
+    add   t0 t1
+    push! t0
+    pop!  t1 t0
+    str   t1 t0
+.keyboard_handle_input_exit
+    pop   t0 t5
+    jmp   t0
+#end .keyboard_handle_input
+fn .keyboard_get_input
+    imov! t0 .variable_alloc_key_buffer
+    push! t0
+    pop!  t0
+    imov! t1 0
+    add   t0 t1
+    push! t0
+    pop!  t0
+    load  t0 t0
+    push! t0
+    imov! t0 .variable_alloc_key_buffer
+    push! t0
+    pop!  t0
+    imov! t1 1
+    add   t0 t1
+    push! t0
+    pop!  t0
+    load  t0 t0
+    push! t0
+    pop!  t1 t0
+    imov  t2 1  # default value
+    sub   t0 t1
+    jz!   .keyboard_get_input_body_operator_57_opskip
+    imov  t2 0
+.keyboard_get_input_body_operator_57_opskip
+    push! t2
+    pop!  t0
+    imov  t1 1
+    tst   t0
+    jz!   .keyboard_get_input_body_operator_58_nottrue
+    imov  t1 0
+.keyboard_get_input_body_operator_58_nottrue
+    push! t1
+    pop!  t0
+    tst   t0
+    jz!   .keyboard_get_input_body_else_60
+.keyboard_get_input_body_if_59
+    imov! t0 .variable_alloc_key_buffer
+    push! t0
+    pop!  t0
+    imov! t1 2
+    add   t0 t1
+    push! t0
+    imov! t0 .variable_alloc_key_buffer
+    push! t0
+    pop!  t0
+    imov! t1 0
+    add   t0 t1
+    push! t0
+    pop!  t0
+    load  t0 t0
+    push! t0
+    pop!  t1 t0
+    add   t0 t1
+    push! t0
+    pop!  t0
+    load  t0 t0
+    push! t0
+    imov! t0 .variable_alloc_key_buffer
+    push! t0
+    pop!  t0
+    imov! t1 0
+    add   t0 t1
+    push! t0
+    pop!  t0
+    load  t0 t0
+    push! t0
+    imov! t0 1
+    push  t0
+    pop!  t1 t0
+    add   t0 t1
+    push! t0
+    imov! t0 31
+    push  t0
+    pop!  t1 t0
+    and   t0 t1
+    push! t0
+    imov! t0 .variable_alloc_key_buffer
+    push! t0
+    pop!  t0
+    imov! t1 0
+    add   t0 t1
+    push! t0
+    pop!  t1 t0
+    str   t1 t0
+    jmp!  .keyboard_get_input_body_if_exit_61
+.keyboard_get_input_body_else_60
+    imov! t0 0
+    push  t0
+.keyboard_get_input_body_if_exit_61
+.keyboard_get_input_exit
+    pop   t0 t5
+    jmp   t0
+#end .keyboard_get_input
+fn .get_keyboard_ascii
+    imov! t0 .string_alloc_0
+    push! t0
+    imov! t0 65535
+    push  t0
+    pop!  t0
+    load  t0 t0
+    push! t0
+    pop!  t1 t0
+    add   t0 t1
+    push! t0
+    pop!  t0
+    load  t0 t0
+    push! t0
+.get_keyboard_ascii_exit
+    pop   t0 t5
+    jmp   t0
+#end .get_keyboard_ascii
+fn .memset
+    # pop from the data stack
+    # push to return stack
+    pop!  t1
+    push  t5 t1
+    # pop from the data stack
+    # push to return stack
+    pop!  t1
+    push  t5 t1
+    # pop from the data stack
+    # push to return stack
+    pop!  t1
+    push  t5 t1
+    imov! t0 0
+    push  t0
+.memset_body_let_inner_71_while_eval_72
+    pop!  t0
+    push! t0 t0
+    mov   t0 t5
+    imov! t1 2
+    add   t0 t1
+    push  t0
+    pop!  t0
+    load  t0 t0
+    push! t0
+    pop!  t1 t0
+    imov  t2 1  # default value
+    sub   t0 t1
+    jn!   .memset_body_let_inner_71_while_eval_72_operator_75_opskip
+    imov  t2 0
+.memset_body_let_inner_71_while_eval_72_operator_75_opskip
+    push! t2
+    pop!  t0
+    tst   t0
+    jz!   .memset_body_let_inner_71_while_exit_74
+.memset_body_let_inner_71_while_body_73
+    mov   t0 t5
+    imov! t1 1
+    add   t0 t1
+    push  t0
+    pop!  t0
+    load  t0 t0
+    push! t0
+    pop!  t0 t1
+    push! t1 t0 t1
+    mov   t0 t5
+    imov! t1 0
+    add   t0 t1
+    push  t0
+    pop!  t0
+    load  t0 t0
+    push! t0
+    pop!  t1 t0
+    add   t0 t1
+    push! t0
+    pop!  t1 t0
+    str   t1 t0
+    imov! t0 1
+    push  t0
+    pop!  t1 t0
+    add   t0 t1
+    push! t0
+    jmp!  .memset_body_let_inner_71_while_eval_72
+.memset_body_let_inner_71_while_exit_74
+    pop!  t0
+    # pop 3 elements from return stack
+    imov! t0 3
+    add   t5 t0
+.memset_exit
+    pop   t0 t5
+    jmp   t0
+#end .memset
+fn .memdump
+    pop!  t0 t1
+    push! t0 t1
+    pop!  t0 t1
+    push! t0 t1
+    # pop from the data stack
+    # push to return stack
+    pop!  t1
+    push  t5 t1
+    # pop from the data stack
+    # push to return stack
+    pop!  t1
+    push  t5 t1
+    imov! t0 0
+    push  t0
+.memdump_body_let_inner_81_while_eval_82
+    pop!  t0
+    push! t0 t0
+    mov   t0 t5
+    imov! t1 1
+    add   t0 t1
+    push  t0
+    pop!  t0
+    load  t0 t0
+    push! t0
+    pop!  t1 t0
+    imov  t2 1  # default value
+    sub   t0 t1
+    jn!   .memdump_body_let_inner_81_while_eval_82_operator_85_opskip
+    imov  t2 0
+.memdump_body_let_inner_81_while_eval_82_operator_85_opskip
+    push! t2
+    pop!  t0
+    tst   t0
+    jz!   .memdump_body_let_inner_81_while_exit_84
+.memdump_body_let_inner_81_while_body_83
+    mov   t0 t5
+    imov! t1 0
+    add   t0 t1
+    push  t0
+    pop!  t0
+    load  t0 t0
+    push! t0
+    pop!  t0 t1
+    push! t1 t0 t1
+    pop!  t1 t0
+    add   t0 t1
+    push! t0
+    pop!  t0
+    load  t0 t0
+    push! t0
+    imov! t0 .memdump_body_let_inner_81_while_body_83_retaddr_88
+    push  t5 t0
+    jmp!  .print_word
+.memdump_body_let_inner_81_while_body_83_retaddr_88
+    imov! t0 1
+    push  t0
+    pop!  t1 t0
+    add   t0 t1
+    push! t0
+    jmp!  .memdump_body_let_inner_81_while_eval_82
+.memdump_body_let_inner_81_while_exit_84
+    pop!  t0
+    # pop 2 elements from return stack
+    imov! t0 2
+    add   t5 t0
+.memdump_exit
+    pop   t0 t5
+    jmp   t0
+#end .memdump
+fn .rand_init
+    pop!  t0 t1
+    push! t1 t0 t1
+    pop!  t0
+    imov! t1 0
+    add   t0 t1
+    push! t0
+    pop!  t1 t0
+    str   t1 t0
+    pop!  t0
+.rand_init_exit
+    pop   t0 t5
+    jmp   t0
+#end .rand_init
+fn .rand_int
+    pop!  t0
+    push! t0 t0
+    pop!  t0
+    imov! t1 0
+    add   t0 t1
+    push! t0
+    pop!  t0
+    load  t0 t0
+    push! t0
+    pop!  t0
+    push! t0 t0
+    imov! t0 7
+    push  t0
+    pop!  t1 t0
+    shr   t0 t1
+    push! t0
+    pop!  t1 t0
+    xor   t0 t1
+    push! t0
+    pop!  t0
+    push! t0 t0
+    imov! t0 9
+    push  t0
+    pop!  t1 t0
+    shl   t0 t1
+    push! t0
+    pop!  t1 t0
+    xor   t0 t1
+    push! t0
+    pop!  t0
+    push! t0 t0
+    imov! t0 13
+    push  t0
+    pop!  t1 t0
+    shr   t0 t1
+    push! t0
+    pop!  t1 t0
+    xor   t0 t1
+    push! t0
+    pop!  t0 t1
+    push! t0 t1
+    pop!  t0 t1
+    push! t1 t0 t1
+    pop!  t0 t1
+    push! t0 t1
+    pop!  t0
+    imov! t1 0
+    add   t0 t1
+    push! t0
+    pop!  t1 t0
+    str   t1 t0
+.rand_int_exit
+    pop   t0 t5
+    jmp   t0
+#end .rand_int
+fn .isr
+    isr!
+    push! p0 p1 p2 p3 v0 t0 t1 t2 t3 t4
+    imov! t0 .isr_body_retaddr_99
+    push  t5 t0
+    jmp!  .keyboard_handle_input
+.isr_body_retaddr_99
+.isr_exit
+    pop!  t4 t3 t2 t1 t0 v0 p3 p2 p1 p0
+    rti!
+#end .isr
+fn .main
+    imov! t0 .main_body_retaddr_100
+    push  t5 t0
+    jmp!  .keyboard_init
+.main_body_retaddr_100
+.main_body_while_eval_101
+    imov! t0 1
+    push  t0
+    pop!  t0
+    tst   t0
+    jz!   .main_body_while_exit_103
+.main_body_while_body_102
+.main_body_while_body_102_while_eval_104
+    imov! t0 .main_body_while_body_102_while_eval_104_retaddr_107
+    push  t5 t0
+    jmp!  .keyboard_get_input
+.main_body_while_body_102_while_eval_104_retaddr_107
+    pop!  t0
+    push! t0 t0
+    pop!  t0
+    tst   t0
+    jz!   .main_body_while_body_102_while_exit_106
+.main_body_while_body_102_while_body_105
+    pop!  t0
+    push! t0 t0
+    imov! t0 119
+    push  t0
+    pop!  t1 t0
+    imov  t2 1  # default value
+    sub   t0 t1
+    jz!   .main_body_while_body_102_while_body_105_operator_108_opskip
+    imov  t2 0
+.main_body_while_body_102_while_body_105_operator_108_opskip
+    push! t2
+    pop!  t0
+    tst   t0
+    jz!   .main_body_while_body_102_while_body_105_else_110
+.main_body_while_body_102_while_body_105_if_109
+    imov! t0 65436
+    push  t0
+    jmp!  .main_body_while_body_102_while_body_105_if_exit_111
+.main_body_while_body_102_while_body_105_else_110
+    pop!  t0
+    push! t0 t0
+    imov! t0 97
+    push  t0
+    pop!  t1 t0
+    imov  t2 1  # default value
+    sub   t0 t1
+    jz!   .main_body_while_body_102_while_body_105_else_110_operator_112_opskip
+    imov  t2 0
+.main_body_while_body_102_while_body_105_else_110_operator_112_opskip
+    push! t2
+    pop!  t0
+    tst   t0
+    jz!   .main_body_while_body_102_while_body_105_else_110_else_114
+.main_body_while_body_102_while_body_105_else_110_if_113
+    imov! t0 65535
+    push  t0
+    jmp!  .main_body_while_body_102_while_body_105_else_110_if_exit_115
+.main_body_while_body_102_while_body_105_else_110_else_114
+    pop!  t0
+    push! t0 t0
+    imov! t0 115
+    push  t0
+    pop!  t1 t0
+    imov  t2 1  # default value
+    sub   t0 t1
+    jz!   .main_body_while_body_102_while_body_105_else_110_else_114_operator_116_opskip
+    imov  t2 0
+.main_body_while_body_102_while_body_105_else_110_else_114_operator_116_opskip
+    push! t2
+    pop!  t0
+    tst   t0
+    jz!   .main_body_while_body_102_while_body_105_else_110_else_114_else_118
+.main_body_while_body_102_while_body_105_else_110_else_114_if_117
+    imov! t0 100
+    push  t0
+    jmp!  .main_body_while_body_102_while_body_105_else_110_else_114_if_exit_119
+.main_body_while_body_102_while_body_105_else_110_else_114_else_118
+    pop!  t0
+    push! t0 t0
+    imov! t0 100
+    push  t0
+    pop!  t1 t0
+    imov  t2 1  # default value
+    sub   t0 t1
+    jz!   .main_body_while_body_102_while_body_105_else_110_else_114_else_118_operator_120_opskip
+    imov  t2 0
+.main_body_while_body_102_while_body_105_else_110_else_114_else_118_operator_120_opskip
+    push! t2
+    pop!  t0
+    tst   t0
+    jz!   .main_body_while_body_102_while_body_105_else_110_else_114_else_118_else_122
+.main_body_while_body_102_while_body_105_else_110_else_114_else_118_if_121
+    imov! t0 1
+    push  t0
+    jmp!  .main_body_while_body_102_while_body_105_else_110_else_114_else_118_if_exit_123
+.main_body_while_body_102_while_body_105_else_110_else_114_else_118_else_122
+    imov! t0 0
+    push  t0
+.main_body_while_body_102_while_body_105_else_110_else_114_else_118_if_exit_123
+.main_body_while_body_102_while_body_105_else_110_else_114_if_exit_119
+.main_body_while_body_102_while_body_105_else_110_if_exit_115
+.main_body_while_body_102_while_body_105_if_exit_111
+    imov! t0 32
+    push  t0
+    imov! t0 .variable_alloc_head_pos
+    push! t0
+    pop!  t0
+    load  t0 t0
+    push! t0
+    pop!  t1 t0
+    str   t1 t0
+    imov! t0 .variable_alloc_head_pos
+    push! t0
+    pop!  t0
+    load  t0 t0
+    push! t0
+    pop!  t1 t0
+    add   t0 t1
+    push! t0
+    imov! t0 65312
+    push  t0
+    pop!  t0 t1
+    push! t1 t0 t1
+    pop!  t1 t0
+    str   t1 t0
+    imov! t0 .variable_alloc_head_pos
+    push! t0
+    pop!  t1 t0
+    str   t1 t0
+    pop!  t0
+    jmp!  .main_body_while_body_102_while_eval_104
+.main_body_while_body_102_while_exit_106
+    pop!  t0
+    jmp!  .main_body_while_eval_101
+.main_body_while_exit_103
+.main_exit
+    pop   t0 t5
+    jmp   t0
+#end .main

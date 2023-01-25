@@ -13,5 +13,5 @@ pub fn generate_label(base_label: &str) -> String {
 }
 
 pub fn generate_label_with_context(base_label: &str, context: &str) -> String {
-    generate_label(&*format!("{base_label}_{context}"))
+    generate_label(&format!("{base_label}_{context}"))
 }

@@ -260,7 +260,7 @@ pub fn emit_statement(
 .{ret_label}
                             "
                         );
-                        // todo: temporary while we get static analysis going
+                        global_state.function_dependencies.add_dependency(function_state.function_name.clone(), s.to_string());
                         let (in_t, out_t) = global_state.function_signatures.get(s).ok_or((
                             *span,
                             format!("Was not able to find function signature of function {s}"),

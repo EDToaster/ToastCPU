@@ -1,9 +1,10 @@
 #include<std/io>
+#include<std/rand>
 
-inline WIDTH 99
+inline WIDTH 100
 
-global buf1 [101] u16 0 // two border cells that are implicitly zero
-global buf2 [101] u16 0
+global buf1 [102] u16 0 // two border cells that are implicitly zero
+global buf2 [102] u16 0
 
 global curr_buff u16* 0
 global back_buff u16* 0
@@ -17,6 +18,22 @@ fn pswap $a* $a* -> {
     swap store
 }
 
+global rand Random 0
+
+fn randomize_buf u16 u16* -> {
+    rand 0x1D2D rand_init
+
+    let n buf {
+        0 while { dup n load < } {
+            rand rand_int 1 & buf load ?? store
+
+            buf load 1 + buf ?? store
+            1 +
+        }
+        drop
+    }
+}
+
 fn print_dot u16 -> {
     if {
         0x3F20
@@ -27,8 +44,6 @@ fn print_dot u16 -> {
 }
 
 fn print_buf u16* -> {
-    '\n' print_char
-
     1 while { dup WIDTH <= } {
         over over + load print_dot
         1 + 
@@ -36,9 +51,22 @@ fn print_buf u16* -> {
     drop drop
 }
 
+inline RANDOMIZE 1
+inline BOUND_LEFT 1
+inline BOUND_RIGHT 1
+
 fn main -> {
     // write 1 at end of buf1
-    1 buf1 WIDTH + store
+    RANDOMIZE if  {
+        WIDTH 2 + buf1 randomize_buf
+    } else {
+        1 buf1 WIDTH + store
+    }
+
+    BOUND_LEFT buf1 store 
+    BOUND_LEFT buf2 store
+    BOUND_RIGHT buf1 WIDTH 1 + + store 
+    BOUND_RIGHT buf2 WIDTH 1 + + store 
 
     // setup pointers
     buf1 curr_buff store
@@ -66,10 +94,10 @@ fn main -> {
             // dup 0 = over 5 = || over 6 = || over 7 = || ! swap drop
 
             // rule 90
-            // dup 7 = over 5 = || over 2 = || over 0 = || ! swap drop
+            dup 7 = over 5 = || over 2 = || over 0 = || ! swap drop
 
             // rule 110
-            dup 7 = over 4 = || over 0 = || ! swap drop
+            // dup 7 = over 4 = || over 0 = || ! swap drop
 
             // rule 184
             // dup 0 = over 1 = || over 2 = || over 6 = || ! swap drop

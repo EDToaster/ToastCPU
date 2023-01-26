@@ -3,12 +3,14 @@ use crate::emit::global::emit_global;
 use crate::emit::string_defs::emit_string_defs;
 use crate::emit::types::{parse_types, tasm, GlobalState, StructDefinition, Type, TypeSize};
 use crate::tl_y::Module;
+use crate::util::dep_graph::DependencyGraph;
 use std::collections::HashMap;
 
 // todo: allow for multiple modules (and includes)
 pub fn emit_module(m: &Module) -> Result<String, String> {
     let mut global_state = GlobalState {
         function_signatures: HashMap::new(),
+        function_dependencies: DependencyGraph::default(),
         struct_defs: HashMap::new(),
         string_allocs_counter: 0,
         string_allocs: HashMap::new(),
@@ -117,17 +119,29 @@ fn .init_globals
 
     let mut isr_found = false;
 
-    let mut functions: String = String::new();
+    let mut function_map: HashMap<String, String> = HashMap::new();
+    // todo: make this a dependency graph
+    global_state.function_dependencies.roots.insert("isr".to_string());
+    global_state.function_dependencies.roots.insert("main".to_string());
 
     for f in &m.functions {
         match &*f.name.name {
             "isr" => {
                 isr_found = true;
-                functions.push_str(&emit_isr(f, &mut global_state).map_err(|(_, b)| b)?);
+                function_map.insert("isr".to_string(), emit_isr(f, &mut global_state).map_err(|(_, b)| b)?);
             }
             _ => {
-                functions.push_str(&emit_function(f, &mut global_state).map_err(|(_, b)| b)?);
+                function_map.insert(f.name.name.to_string(), emit_function(f, &mut global_state).map_err(|(_, b)| b)?);
             }
+        }
+    }
+
+    let mut functions: String = String::new();
+    let used_functions = global_state.function_dependencies.calculate_used();
+
+    for (f, v) in function_map.iter() {
+        if used_functions.contains(f) {
+            functions.push_str(v);
         }
     }
 

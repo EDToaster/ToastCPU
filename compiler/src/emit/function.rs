@@ -21,6 +21,7 @@ pub fn emit_isr(f: &Function, global_state: &mut GlobalState) -> Result<String, 
         function_out_stack: vec![],
         function_out_label: function_out_label.clone(),
         function_let_bindings: 0,
+        function_name: "isr".to_string(),
     };
 
     let mut stack_view = Stack::empty();
@@ -69,6 +70,7 @@ pub fn emit_function(
         function_out_stack: out_t.clone(),
         function_out_label: func_exit.clone(),
         function_let_bindings: 0,
+        function_name: func_name.clone(),
     };
 
     let mut stack_view: Stack<Type> = Stack::from(in_t);

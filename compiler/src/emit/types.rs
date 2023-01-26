@@ -1,10 +1,11 @@
 use core::fmt;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fmt::Formatter;
 use lazy_static::lazy_static;
 use lrpar::Span;
 use regex::Regex;
 use crate::tl_y::{Identifier, Statement};
+use crate::util::dep_graph::DependencyGraph;
 
 macro_rules! tasm {
     ($prog:ident; $($params:expr),*; $asm:literal) => {
@@ -158,6 +159,7 @@ pub struct GlobalState {
     pub string_allocs: HashMap<Vec<u16>, String>,
     pub struct_defs: HashMap<String, StructDefinition>,
     pub function_signatures: HashMap<String, (Vec<Type>, Vec<Type>)>,
+    pub function_dependencies: DependencyGraph, 
     pub globals: HashMap<String, (String, Type)>, // name -> label
     pub inlines: HashMap<String, Statement>,      // name -> statement
 }
@@ -168,6 +170,7 @@ pub struct FunctionState {
     pub function_out_stack: Vec<Type>,
     pub function_out_label: String,
     pub function_let_bindings: isize,
+    pub function_name: String,
 }
 
 pub fn parse_types(in_t: &[Identifier], out_t: &[Identifier], struct_defs: &HashMap<String, StructDefinition>) -> Result<(Vec<Type>, Vec<Type>), ()> {

@@ -1,5 +1,5 @@
 use core::fmt;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::fmt::Formatter;
 use lazy_static::lazy_static;
 use lrpar::Span;

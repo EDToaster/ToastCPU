@@ -36,6 +36,9 @@ sigs: sigs.mif
 test: test.mif
 	cd ../../../emu && cargo run --release --package emu --bin emu -- ../sample_programs/src/tl/test.mif
 
+rand: rand.mif
+	cd ../../../emu && cargo run --release --package emu --bin emu -- ../sample_programs/src/tl/rand.mif
+
 %.mif: %.tasm
 	python3 ../../../assembler/assembler.py -i $< -o $@
 

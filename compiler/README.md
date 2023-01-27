@@ -1,4 +1,3 @@
-
 # ToastLang
 
 ToastLang (`tl`) is a compiled language that compiles down to `tasm` (see: `assembler`) which can be further compiled 
@@ -64,4 +63,6 @@ r110 cellular automata.
         doesn't require any rom allocation. Inline values are expanded out like macros.
 - [x] Add support for pattern matched type defs
   - `pub fn foo $a $a* $b -> $b* { ... }` Generics!
-- [x] Function tree-shake / dead-code elimination
+- [ ] Dead code elimination
+  - [x] Function tree-shake / dead-code elimination
+  - [ ] Global allocation

@@ -94,10 +94,10 @@ fn main -> {
             // dup 0 = over 5 = || over 6 = || over 7 = || ! swap drop
 
             // rule 90
-            dup 7 = over 5 = || over 2 = || over 0 = || ! swap drop
+            // dup 7 = over 5 = || over 2 = || over 0 = || ! swap drop
 
             // rule 110
-            // dup 7 = over 4 = || over 0 = || ! swap drop
+            dup 7 = over 4 = || over 0 = || ! swap drop
 
             // rule 184
             // dup 0 = over 1 = || over 2 = || over 6 = || ! swap drop

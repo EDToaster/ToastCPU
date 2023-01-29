@@ -1,4 +1,3 @@
-use std::sync::{Arc, Mutex};
 use std::time::{Duration, SystemTime};
 
 use crate::vga::Vga;
@@ -8,11 +7,11 @@ pub struct Diagnostics {
     prev_time: SystemTime,
     running_count: i64,
 
-    vga: Arc<Mutex<Vga>>,
+    vga: Vga,
 }
 
 impl Diagnostics {
-    pub fn new(vga: Arc<Mutex<Vga>>, interval: Duration) -> Diagnostics {
+    pub fn new(vga: Vga, interval: Duration) -> Diagnostics {
         Diagnostics {
             interval,
             prev_time: SystemTime::now(),
@@ -33,19 +32,11 @@ impl Diagnostics {
             self.prev_time = now;
             self.running_count = 0;
 
-            let count = self.vga.lock().unwrap().write_count;
-
-            self.vga
-                .lock()
-                .unwrap()
-                .put_diagnostics(0, format!("{per_second} i/s {count}").as_str());
+            self.vga.put_diagnostics(0, &format!("{per_second} i/s"));
         }
     }
 
     pub fn halt(&mut self, pc: u16) {
-        self.vga
-            .lock()
-            .unwrap()
-            .put_diagnostics(0, format!("Halted at {pc:04x}").as_str());
+        self.vga.put_diagnostics(0, &format!("Halted at {pc:04x}"));
     }
 }

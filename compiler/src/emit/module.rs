@@ -139,6 +139,8 @@ fn .init_globals
     let mut functions: String = String::new();
     let used_functions = global_state.function_dependencies.calculate_used();
 
+    println!("{} functions defined, {} will be emitted after tree shaking", function_map.len(), used_functions.len());
+
     for (f, v) in function_map.iter() {
         if used_functions.contains(f) {
             functions.push_str(v);

@@ -1,22 +1,19 @@
-use std::{
-    rc::Rc,
-    sync::{Arc, Mutex},
-};
+use std::sync::{Arc, Mutex};
 
 use crate::vga::Vga;
 
 pub struct Devices {
-    rom: Rc<Vec<u16>>,
-    vga: Arc<Mutex<Vga>>,
-    ram: Rc<Vec<u16>>,
+    rom: Vec<u16>,
+    vga: Vga,
+    ram: Vec<u16>,
     key: Arc<Mutex<u16>>,
 }
 
 impl Devices {
     pub fn new(
-        rom: Rc<Vec<u16>>,
-        vga: Arc<Mutex<Vga>>,
-        ram: Rc<Vec<u16>>,
+        rom: Vec<u16>,
+        vga: Vga,
+        ram: Vec<u16>,
         key: Arc<Mutex<u16>>,
     ) -> Devices {
         Devices { rom, vga, ram, key }
@@ -39,9 +36,9 @@ impl Devices {
         match addr {
             0..=0x7FFF => {
                 // println!("{:04x} at {:04x}", val, addr);
-                self.vga.lock().unwrap().put_char(addr.into(), val);
+                self.vga.put_char(addr.into(), val);
             }
-            0x8000..=0xBFFF => Rc::get_mut(&mut self.ram).unwrap()[(addr - 0x8000) as usize] = val,
+            0x8000..=0xBFFF => self.ram[(addr - 0x8000) as usize] = val,
             _ => return Err(format!("Memory location {addr:#06x}={val:#06x}")),
         }
         Ok(())

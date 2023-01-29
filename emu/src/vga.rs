@@ -39,10 +39,7 @@ const COLORS: [Color; 8] = [
 pub struct Vga {
     width: usize,
     height: usize,
-    buffer: Vec<u16>,
     stdout: Stdout,
-
-    pub write_count: usize,
 }
 
 impl Vga {
@@ -50,9 +47,7 @@ impl Vga {
         Vga {
             width,
             height,
-            buffer: vec![0; width * height],
             stdout,
-            write_count: 0,
         }
     }
 
@@ -93,13 +88,10 @@ impl Vga {
 
         execute!(
             self.stdout,
-            SetColors(Colors::new(COLORS[fg], COLORS[bg ])),
+            SetColors(Colors::new(COLORS[fg], COLORS[bg])),
             MoveTo(x as u16, y as u16),
             Print((val & 0x00FF) as u8 as char),
         )
         .expect("Something went wrong writing to the virtual terminal!");
-
-        self.buffer[offset] = val;
-        self.write_count += 1;
     }
 }

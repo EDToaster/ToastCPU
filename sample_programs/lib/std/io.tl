@@ -1,9 +1,28 @@
-// 100 chars by 60 lines
-
 #include<std/mem>
 
 global text_progress u16    100
 global text_ptr      u16*   0x0000
+
+global text_style u16 0b0011100000000000
+
+inline BLACK    0b000
+inline BLUE     0b001
+inline GREEN    0b010
+inline CYAN     0b011
+inline RED      0b100
+inline MAGENTA  0b101
+inline YELLOW   0b110
+inline WHITE    0b111
+
+fn fg u16 -> {
+    0b1100011111111111 text_style load &
+    over 11 << | text_style store drop
+}
+
+fn bg u16 -> {
+    0b1111100011111111 text_style load &
+    over 8 << | text_style store drop
+}
 
 fn print_reset -> {
     100 text_progress store
@@ -19,7 +38,7 @@ fn print_char u16 -> {
         text_ptr load swap
 
         // print the char
-        0b0011100000000000 |
+        text_style load |
         over store
 
         1 + text_ptr store

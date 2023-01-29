@@ -8,7 +8,6 @@ use std::fs;
 use std::io::stdout;
 use std::ops::{Index, IndexMut};
 use std::process;
-use std::rc::Rc;
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Duration;
@@ -234,12 +233,16 @@ fn emulate(pc_buffer: &mut AllocRingBuffer<u16>) -> Result<(), String> {
 
     // INIT ROM
     print!("Parsing {bytes} bytes to instructions ... ");
-    let rom: Rc<Vec<u16>> = Rc::new(parse_program(&prog_string));
+    let rom: Vec<u16> = parse_program(&prog_string);
     println!("rom is sized {}", rom.len());
 
-    let ram: Rc<Vec<u16>> = Rc::new(vec![0; RAM_SIZE]);
-    let vga: Arc<Mutex<Vga>> = Arc::new(Mutex::new(Vga::new(VGA_WIDTH, VGA_HEIGHT, stdout())));
-    vga.lock().unwrap().reset();
+    let ram: Vec<u16> = vec![0; RAM_SIZE];
+
+    let mut diag_vga: Vga = Vga::new(VGA_WIDTH, VGA_HEIGHT, stdout());
+    let mut mem_vga: Vga = Vga::new(VGA_WIDTH, VGA_HEIGHT, stdout());
+    diag_vga.reset();
+    mem_vga.reset();
+
     let key: Arc<Mutex<u16>> = Arc::new(Mutex::new(0));
     let irq: Arc<Mutex<bool>> = Arc::new(Mutex::new(false));
 
@@ -259,10 +262,10 @@ fn emulate(pc_buffer: &mut AllocRingBuffer<u16>) -> Result<(), String> {
     let key_handler_thread = thread::spawn(move || key_handler.handle());
 
     let mut diagnostics: Diagnostics =
-        Diagnostics::new(Arc::clone(&vga), Duration::new(0, 100_000_000));
+        Diagnostics::new(diag_vga, Duration::new(0, 100_000_000));
 
     // main thread
-    let mut mem = Devices::new(rom, vga, ram, key);
+    let mut mem = Devices::new(rom, mem_vga, ram, key);
     while !halt {
         if *irq.lock().unwrap() {
             *irq.lock().unwrap() = false;

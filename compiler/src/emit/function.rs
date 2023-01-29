@@ -3,6 +3,7 @@ use crate::emit::types::GlobalState;
 use crate::emit::types::*;
 use crate::tl_y::Function;
 use crate::util::gss::Stack;
+use crate::util::labels::function_label;
 use lrpar::Span;
 
 pub fn emit_isr(f: &Function, global_state: &mut GlobalState) -> Result<String, (Span, String)> {
@@ -60,8 +61,9 @@ pub fn emit_function(
 ) -> Result<String, (Span, String)> {
     // at this point we really only care about one function
     let func_name = &f.name.name;
-    let func_exit = format!("{func_name}_exit",);
-    let mut func = format!("\nfn .{func_name}\n",);
+    let func_label = function_label(func_name);
+    let func_exit = format!("{func_label}_exit",);
+    let mut func = format!("\nfn .{func_label}\n",);
 
     let (in_t, out_t) = global_state.function_signatures.get(func_name).unwrap();
 
@@ -76,7 +78,7 @@ pub fn emit_function(
     let mut stack_view: Stack<Type> = Stack::from(in_t);
 
     let block = emit_block(
-        &format!("{func_name}_body"),
+        &format!("{func_label}_body"),
         &f.body,
         global_state,
         &mut function_state,

@@ -15,3 +15,8 @@ pub fn generate_label(base_label: &str) -> String {
 pub fn generate_label_with_context(base_label: &str, context: &str) -> String {
     generate_label(&format!("{base_label}_{context}"))
 }
+
+pub fn function_label(identifier: &str) -> String {
+    // replace ':' with '_submod_'
+    identifier.replace(':', "_submod_").to_string()
+}

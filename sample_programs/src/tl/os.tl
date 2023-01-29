@@ -1,26 +1,61 @@
-
 #include<std/io>
+#include<std/string>
+#include<std/mem>
 
-struct KeyBuffer {
-    keystroke_read_offset    u16
-    keystroke_buffer[16]     u16
+#include<lib/command_buffer>
+
+// GLOBALS
+global command_buffer CommandBuffer 0
+
+// register keyboard input handler
+fn isr -> {
+    keyboard_handle_input
 }
 
-// todo: implicitly define these new symbols
-// sizeof(KeyBuffer)
-// .keystroke_read_offset KeyBuffer* -> u16*
-// .keystroke_buffer      KeyBuffer* -> u16*
+fn initialize -> {
+    keyboard_init
 
-// todo: rework syntax
-// allocate some buffer for incoming keystrokes
-global keybuffer KeyBuffer 0
+    command_buffer CommandBuffer::reset
+}
 
-fn isr -> {
-    // todo: use interrupt codes
-    //keystroke_offset load 1 + 0x0F &
-    //get_keyboard_ascii over keystroke_buffer + store keystroke_offset store
+fn print_prompt -> {
+    WHITE fg "> " print_string
 }
 
 fn main -> {
-    sizeof(u16) print_word
+    initialize
+
+    BLACK bg WHITE fg "Welcome to ToastOS!\n"   print_string
+             RED   fg "32k ROM "                print_string
+             GREEN fg "16k RAM "                print_string
+             BLUE  fg "16k MEM I/O\n"           print_string
+             WHITE fg
+    
+    print_prompt
+
+    while { 1 } {
+        // handle input
+        while { keyboard_get_input dup } {
+            dup '\n' = if {
+                print_char
+                // execute command
+                "ping" command_buffer .command 5 streq if {
+                    "pong!\n" print_string
+                } else {
+                    "Unknown command: " print_string 
+                    command_buffer .command print_string
+                    '\n' print_char
+                }
+
+                // reset
+                command_buffer CommandBuffer::reset
+                print_prompt
+            } else {
+                // print char and push it to command buffer
+                dup print_char
+                command_buffer swap CommandBuffer::push_char
+            }
+        }
+        drop
+    }
 }

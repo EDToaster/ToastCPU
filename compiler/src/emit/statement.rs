@@ -5,7 +5,7 @@ use crate::emit::types::tasm;
 use crate::emit::types::*;
 use crate::tl_y::*;
 use crate::util::gss::Stack;
-use crate::util::labels::{generate_label, generate_label_with_context};
+use crate::util::labels::{generate_label, generate_label_with_context, function_label};
 use lrpar::Span;
 
 // todo: change counter and subblock_counter to use a unique label provider.
@@ -252,11 +252,13 @@ pub fn emit_statement(
                         // generic function call
                         let ret_label = generate_label_with_context(block_id, "retaddr");
                         tasm!(
-                            block;;
+                            block;
+                            function_label(s)
+                            ;
                             r"
     imov! t0 .{ret_label}
     push  t5 t0
-    jmp!  .{s}
+    jmp!  .{}
 .{ret_label}
                             "
                         );

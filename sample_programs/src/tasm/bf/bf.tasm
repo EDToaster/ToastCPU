@@ -2,8 +2,8 @@
     call! .fn_main
     halt
 
-#include<../../lib/std/print>
-#include<../../lib/std/arr>
+#include<../../../lib/tasm/print>
+#include<../../../lib/tasm/arr>
 #include<./bf_main>
 
 .isr

@@ -1,11 +1,10 @@
 #include<std/io>
 
 fn test_color -> {
-    CYAN fg
-    "Multi" print_string
-    GREEN fg
-    '-' print_char
-    MAGENTA fg
-    "Colored!\n" print_string
-    WHITE fg
+    RED fg 'M' print_char
+    YELLOW fg 'u' print_char
+    GREEN fg 'l' print_char
+    CYAN fg 't' print_char
+    MAGENTA fg 'i' print_char
+    WHITE fg "-Colored!\n" print_string
 }

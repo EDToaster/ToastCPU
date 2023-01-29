@@ -50,8 +50,8 @@ as              "AS"
 sizeof          "SIZEOF"
 return          "RETURN"
 
-\$?[a-zA-Z_][a-zA-Z0-9_]*\**    "IDENT"
-\.[a-zA-Z_][a-zA-Z0-9_]*        "STRUCT_ACCESS"
+\$?[a-zA-Z_][a-zA-Z0-9_:]*\**    "IDENT"
+\.[a-zA-Z_][a-zA-Z0-9_:]*        "STRUCT_ACCESS"
 
 "(?:[^"\\]|\\.)*"               "STRING"
 '(?:[^"\\]|\\.)'                "CHAR"

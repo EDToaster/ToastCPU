@@ -1,3 +1,3 @@
 
-out.mif: ./**/*.tasm ./*.tasm
-	python3 ../../../assembler/assembler.py -i bf.tasm -o out.mif
+out.mif: ./*.tasm
+	python3 ../../../../assembler/assembler.py -i bf.tasm -o out.mif

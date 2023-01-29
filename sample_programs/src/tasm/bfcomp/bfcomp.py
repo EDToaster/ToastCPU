@@ -299,9 +299,9 @@ def main():
     pop! v0 p0
     rti!
 
-#include<../../lib/std/print>
-#include<../../lib/std/keyboard>
-#include<../../lib/std/arr>
+#include<../../../lib/tasm/print>
+#include<../../../lib/tasm/keyboard>
+#include<../../../lib/tasm/arr>
 
 .memory_table   [10240]
 

@@ -18,9 +18,8 @@ pub fn find_first_in_include_path(path: &str, include_paths: &Vec<String>) -> Re
         check_path.push(include_path);
         check_path.push(&file_path);
         checked_paths.push(check_path.as_path().to_string_lossy().parse().unwrap());
-        match fs::read_to_string(check_path) {
-            Ok(text) => return Ok(text),
-            e => {  println!("{e:?}")}
+        if let Ok(text) = fs::read_to_string(check_path) {
+            return Ok(text);
         }
     }
 

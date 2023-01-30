@@ -2,7 +2,7 @@
 #include<std/io>
 
 fn test_arith -> {
-    "Testing Arith\n" print_string
+    "Testing Arith\n" io::print_string
     "7 = 7"     { 7 7 = 1 = }   assert
     "6 = 7"     { 6 7 = 0 = }   assert
     "6 > 7"     { 6 7 > 0 = }   assert

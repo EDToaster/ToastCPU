@@ -2,12 +2,18 @@
 %%
 
 Module -> Result<Module, ()>:
-    { Ok(Module { span: $span, globals: vec![], inlines: vec![], functions: vec![], struct_defs: vec![] }) }
+    { Ok(Module { span: $span, globals: vec![], inlines: vec![], functions: vec![], struct_defs: vec![], modules: vec![], }) }
     | Module Function { let mut m = $1?; m.functions.push($2?); Ok(m) }
     | Module Global { let mut m = $1?; m.globals.push($2?); Ok(m) }
     | Module Inline { let mut m = $1?; m.inlines.push($2?); Ok(m) }
     | Module StructDef { let mut m = $1?; m.struct_defs.push($2?); Ok(m) }
+    | Module NamedModule { let mut m = $1?; m.modules.push($2?); Ok(m) }
     ;
+
+NamedModule -> Result<NamedModule, ()>:
+    'MOD' Identifier 'LB' Module 'RB' { Ok(NamedModule { name: $2?, module: $4? }) }
+    ;
+
 
 Function -> Result<Function, ()>:
     'FN' Identifier Typelist 'RARROW' Typelist Block {
@@ -301,12 +307,19 @@ pub struct StructMember {
 }
 
 #[derive(Debug, Clone)]
+pub struct NamedModule {
+    pub name: Identifier,
+    pub module: Module,
+}
+
+#[derive(Debug, Clone)]
 pub struct Module {
     pub span: Span,
     pub globals: Vec<Global>,
     pub inlines: Vec<Inline>,
     pub functions: Vec<Function>,
     pub struct_defs: Vec<StructDef>,
+    pub modules: Vec<NamedModule>,
 }
 
 // Any functions here are in scope for all the grammar actions above.

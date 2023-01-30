@@ -56,11 +56,11 @@ fn .isr
 }
 
 pub fn emit_function(
-    f: &Function,
+    f: &Function, module_prefix: &str, 
     global_state: &mut GlobalState,
 ) -> Result<String, (Span, String)> {
     // at this point we really only care about one function
-    let func_name = &f.name.name;
+    let func_name = &format!("{module_prefix}{}", &f.name.name);
     let func_label = function_label(func_name);
     let func_exit = format!("{func_label}_exit",);
     let mut func = format!("\nfn .{func_label}\n",);

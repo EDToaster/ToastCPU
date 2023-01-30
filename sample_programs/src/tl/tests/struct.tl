@@ -33,7 +33,7 @@ fn init_nested_struct NestedStruct* -> NestedStruct* {
 global struct_instance NestedStruct 0
 
 fn test_struct -> {
-    "Testing struct\n" print_string
+    "Testing struct\n" io::print_string
 
     "sizeof(Struct)"        { sizeof(Struct) 6 =        } assert
     "sizeof(NestedStruct)"  { sizeof(NestedStruct) 14 = } assert

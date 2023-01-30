@@ -67,5 +67,8 @@ r110 cellular automata.
   - [x] Function tree-shake / dead-code elimination
   - [ ] Global allocation
 - [ ] Module system to prevent nameclash: `mod io { struct a ... fn b ... }` referenced as `io::a` and `io::b`
+  - [x] Basic functionality
+  - [ ] Add `using` keyword to remove the need for prepending `io::`, for example.
 - [ ] Function pointers
   - [ ] Express types like `(u16 -> u16)` or `($a -> u16*)`
+- [ ] Recursive struct definitions if size is known at compile time

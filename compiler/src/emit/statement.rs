@@ -5,7 +5,7 @@ use crate::emit::types::tasm;
 use crate::emit::types::*;
 use crate::tl_y::*;
 use crate::util::gss::Stack;
-use crate::util::labels::{generate_label, generate_label_with_context, function_label};
+use crate::util::labels::{generate_label, generate_label_with_context, function_label, global_label};
 use lrpar::Span;
 
 // todo: change counter and subblock_counter to use a unique label provider.
@@ -217,8 +217,9 @@ pub fn emit_statement(
                             &vec![],
                             &[t.add_ref()],
                         )?;
-                    } else if let Some((label, t)) = global_state.globals.get(s) {
+                    } else if let Some((t, _, _)) = global_state.globals.get(s) {
                         // global variable
+                        let label = global_label(s);
                         tasm!(
                             block;;
                             r"

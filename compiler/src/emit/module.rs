@@ -1,23 +1,19 @@
 use crate::emit::function::{emit_function, emit_isr};
-use crate::emit::global::emit_global;
 use crate::emit::string_defs::emit_string_defs;
 use crate::emit::types::{parse_types, tasm, GlobalState, StructDefinition, Type, TypeSize};
 use crate::tl_y::Module;
 use crate::util::dep_graph::DependencyGraph;
+use crate::util::labels::global_label;
 use std::collections::HashMap;
 
-// todo: allow for multiple modules (and includes)
-pub fn emit_module(m: &Module) -> Result<String, String> {
-    let mut global_state = GlobalState {
-        function_signatures: HashMap::new(),
-        function_dependencies: DependencyGraph::default(),
-        struct_defs: HashMap::new(),
-        string_allocs_counter: 0,
-        string_allocs: HashMap::new(),
-        globals: HashMap::new(),
-        inlines: HashMap::new(),
-    };
+pub fn gather_definitions(m: &Module, module_prefix: &str, global_state: &mut GlobalState) -> Result<(), String> {
+    // gather definitions for submodules first
+    for module in &m.modules {
+        gather_definitions(&module.module, &format!("{module_prefix}{}::", &module.name.name), global_state)?;
+    }
 
+    // then process our own module
+    
     // preprocess struct defs
     for s in &m.struct_defs {
         let name = &s.name.name;
@@ -30,8 +26,9 @@ pub fn emit_module(m: &Module) -> Result<String, String> {
             members.insert(member_name.clone(), (counter, t.clone()));
             counter += t.type_size(&global_state.struct_defs)? * member.size;
         }
+
         global_state.struct_defs.insert(
-            name.clone(),
+            format!("{module_prefix}{name}"),
             StructDefinition {
                 size: counter,
                 members,
@@ -42,12 +39,74 @@ pub fn emit_module(m: &Module) -> Result<String, String> {
     // preprocess function signatures
     for f in &m.functions {
         let name = &f.name.name;
+        let qualified_name = format!("{module_prefix}{name}");
         global_state.function_signatures.insert(
-            name.clone(),
+            qualified_name.clone(),
             parse_types(&f.in_t, &f.out_t, &global_state.struct_defs)
-                .map_err(|_| "Could not parse some types!".to_string())?,
+                .map_err(|_| format!("Could not parse some types in function {qualified_name}!"))?,
         );
     }
+
+    // preprocess global variables
+    for g in &m.globals {
+        let name = &g.name.name;
+        let type_name = &*g.var_type.name;
+        let t = Type::parse(type_name, &global_state.struct_defs)
+            .map_err(|_| format!("Type {type_name} not in scope"))?;
+        
+        global_state.globals.insert(
+            format!("{module_prefix}{name}"),
+            (t, g.size, g.val.val)  
+        );
+    }
+
+    // preprocess inlines
+    for inline in &m.inlines {
+        let name = &inline.name.name;
+        global_state
+            .inlines
+            .insert(
+                format!("{module_prefix}{name}"),
+                inline.statement.clone()
+            );
+    }
+
+    Ok(())
+}
+
+pub fn emit_functions(m: &Module, module_prefix: &str, global_state: &mut GlobalState, function_map: &mut HashMap<String, String>) -> Result<(), String> {
+
+    // emit submodule functions
+    for module in &m.modules {
+        emit_functions(&module.module, &format!("{module_prefix}{}::", &module.name.name), global_state, function_map)?;
+    }
+
+    for f in &m.functions {
+        match &*format!("{module_prefix}{}", &f.name.name) {
+            s @ "isr" => {
+                function_map.insert(s.to_string(), emit_isr(f, global_state).map_err(|(_, b)| b)?);
+            }
+            s @ _ => {
+                function_map.insert(s.to_string(), emit_function(f, module_prefix, global_state).map_err(|(_, b)| b)?);
+            }
+        }
+    }
+
+    Ok(())
+}
+
+pub fn emit_root_module(m: &Module) -> Result<String, String> {
+    let mut global_state = GlobalState {
+        function_signatures: HashMap::new(),
+        function_dependencies: DependencyGraph::default(),
+        struct_defs: HashMap::new(),
+        string_allocs_counter: 0,
+        string_allocs: HashMap::new(),
+        globals: HashMap::new(),
+        inlines: HashMap::new(),
+    };
+
+    gather_definitions(m, "", &mut global_state)?;
 
     // grab global variables
     let mut global_prog: String = String::new();
@@ -57,25 +116,22 @@ pub fn emit_module(m: &Module) -> Result<String, String> {
     "#
     .to_string();
 
-    // preprocess inlines
-    for inline in &m.inlines {
-        global_state
-            .inlines
-            .insert(inline.name.name.clone(), inline.statement.clone());
-    }
+    for (identifier, (t, num, init)) in &global_state.globals {
+        let label = global_label(identifier);
+        let size_words = t.type_size(&global_state.struct_defs)? * num;
 
-    for g in &m.globals {
-        let (emitted, label, val, var_type) = emit_global(g, &global_state)?;
-        global_prog.push_str(emitted.as_str());
-        global_state
-            .globals
-            .insert(g.name.name.clone(), (label.clone(), var_type));
+        tasm!(
+            global_prog;;
+            r"
+.{label} [{size_words}]
+            "
+        );
 
         // todo: better array initialize in global variables
         tasm!(
             global_init_routine;;
             r"
-    imov! t0 {val}
+    imov! t0 {init}
     str!  .{label} t0
             "
         );
@@ -116,25 +172,13 @@ fn .init_globals
 {global_prog}
 "#
     );
-
-    let mut isr_found = false;
-
+    
     let mut function_map: HashMap<String, String> = HashMap::new();
     // todo: make this a dependency graph
     global_state.function_dependencies.roots.insert("isr".to_string());
     global_state.function_dependencies.roots.insert("main".to_string());
 
-    for f in &m.functions {
-        match &*f.name.name {
-            "isr" => {
-                isr_found = true;
-                function_map.insert("isr".to_string(), emit_isr(f, &mut global_state).map_err(|(_, b)| b)?);
-            }
-            _ => {
-                function_map.insert(f.name.name.to_string(), emit_function(f, &mut global_state).map_err(|(_, b)| b)?);
-            }
-        }
-    }
+    emit_functions(m, "", &mut global_state, &mut function_map)?;
 
     let mut functions: String = String::new();
     let used_functions = global_state.function_dependencies.calculate_used();
@@ -148,6 +192,7 @@ fn .init_globals
     }
 
     // provide default no-op isr if none was provided in code.
+    let isr_found = function_map.contains_key("isr");
     if !isr_found {
         tasm!(prog;;
         r"

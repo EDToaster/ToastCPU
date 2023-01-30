@@ -10,7 +10,7 @@ extern crate core;
 
 use argparse::{ArgumentParser, Collect, Store};
 use regex::Regex;
-use crate::emit::module::emit_module;
+use crate::emit::module::emit_root_module;
 use crate::preprocess::preprocess;
 
 lrlex_mod!("tl.l");
@@ -75,7 +75,7 @@ fn main() -> Result<(), String> {
         .map_err(|_| "Some parser thing went wrong!")?;
 
     let newline_nuke = Regex::new(r"(\n|\r\n)\s*(\n|\r\n)").unwrap();
-    let tasm = newline_nuke.replace_all(emit_module(&r)?.as_str(), "\n").to_string();
+    let tasm = newline_nuke.replace_all(emit_root_module(&r)?.as_str(), "\n").to_string();
     fs::write(output, tasm).expect("Unable to write file");
 
     Ok(())

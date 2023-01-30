@@ -17,7 +17,7 @@ fn memdump $a* u16 -> {
     swap as(u16*) swap
     let arr num {
         0 while { dup num load < } {
-            { arr load } over + load print_word
+            { arr load } over + load io::print_word
             1 +
         }
         drop

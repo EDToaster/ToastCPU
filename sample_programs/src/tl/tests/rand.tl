@@ -6,7 +6,7 @@
 global random Random 0
 
 fn test_random -> {
-    "Testing random\n" print_string
+    "Testing random\n" io::print_string
     random 0xDEAD rand_init
 
     // period

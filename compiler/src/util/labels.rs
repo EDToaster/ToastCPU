@@ -16,7 +16,14 @@ pub fn generate_label_with_context(base_label: &str, context: &str) -> String {
     generate_label(&format!("{base_label}_{context}"))
 }
 
-pub fn function_label(identifier: &str) -> String {
-    // replace ':' with '_submod_'
+fn replace_mod(identifier: &str) -> String {
     identifier.replace(':', "_submod_").to_string()
+}
+
+pub fn function_label(identifier: &str) -> String {
+    replace_mod(identifier)
+}
+
+pub fn global_label(identifier: &str) -> String {
+    format!("variable_alloc_{}", replace_mod(identifier))
 }

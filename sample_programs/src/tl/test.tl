@@ -11,6 +11,7 @@
 #include<tests/let>
 #include<tests/logical>
 #include<tests/memset>
+#include<tests/modules>
 #include<tests/mul>
 #include<tests/rand>
 #include<tests/rec>
@@ -19,7 +20,7 @@
 #include<tests/sum>
 
 fn main -> {
-    "Hello from ToastLang!\n" print_string
+    "Hello from ToastLang!\n" io::print_string
 
     test_sum
     test_arith
@@ -35,6 +36,7 @@ fn main -> {
     test_rec
     test_struct
     test_memset
+    test_modules
 
-    "Passed All Test Cases!" print_string
+    "Passed All Test Cases!" io::print_string
 }

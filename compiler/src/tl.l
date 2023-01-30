@@ -40,6 +40,7 @@ inline          "INLINE"
 fn              "FN"
 let             "LET"
 struct          "STRUCT"
+mod             "MOD"
 ->              "RARROW"
 
 unroll          "UNROLL"

@@ -14,6 +14,7 @@ pub fn emit_operator(
     global_state: &GlobalState,
     function_state: &mut FunctionState,
     stack_view: &mut Stack<Type>,
+    using_stack: &Vec<Vec<String>>
 ) -> Result<String, (Span, String)> {
     let mut operation = String::new();
 
@@ -361,7 +362,7 @@ pub fn emit_operator(
             println!("Stack at {span:?}: {stack_view:?}");
         }
         Operator::As(span, t) => {
-            let parsed_t = Type::parse(&t.name, &global_state.struct_defs)
+            let parsed_t = Type::parse(&t.name, &global_state.struct_defs, using_stack)
                 .map_err(|_| (*span, format!("Could not parse type {}.", &t.name)))?;
             check_and_apply_stack_transition(
                 &format!("as({parsed_t:?})"),
@@ -372,7 +373,7 @@ pub fn emit_operator(
             )?;
         }
         Operator::SizeOf(span, t) => {
-            let parsed_t = Type::parse(&t.name, &global_state.struct_defs)
+            let parsed_t = Type::parse(&t.name, &global_state.struct_defs, using_stack)
                 .map_err(|_| (*span, format!("Could not parse type {}.", &t.name)))?;
             let size = parsed_t
                 .type_size(&global_state.struct_defs)

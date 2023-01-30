@@ -1,8 +1,11 @@
 #include<std/assert>
 #include<std/io>
 
+using assert
+using io
+
 fn test_let -> {
-    "Testing let\n" io::print_string
+    "Testing let\n" print_string
     11 0xA 0xB let a b {
         { 11 = } "11" swap assert
         "a1" { a load 0xA = } assert

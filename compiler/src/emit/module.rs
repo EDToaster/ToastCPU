@@ -6,10 +6,19 @@ use crate::util::dep_graph::DependencyGraph;
 use crate::util::labels::global_label;
 use std::collections::HashMap;
 
-pub fn gather_definitions(m: &Module, module_prefix: &str, global_state: &mut GlobalState) -> Result<(), String> {
+pub fn gather_definitions(m: &Module, module_prefix: &str, global_state: &mut GlobalState, using_stack: &mut Vec<Vec<String>>) -> Result<(), String> {
+    // todo:
+    // change this to 
+    // 1. Gather struct defs everywhere
+    // 2. Then gather the rest.
+
+    
     // gather definitions for submodules first
     for module in &m.modules {
-        gather_definitions(&module.module, &format!("{module_prefix}{}::", &module.name.name), global_state)?;
+        let submod_usings: Vec<String> = module.module.usings.iter().map(|e| format!("{}::", e.name.name)).collect();
+        using_stack.push(submod_usings);
+        gather_definitions(&module.module, &format!("{module_prefix}{}::", &module.name.name), global_state, using_stack)?;
+        using_stack.pop();
     }
 
     // then process our own module
@@ -21,7 +30,7 @@ pub fn gather_definitions(m: &Module, module_prefix: &str, global_state: &mut Gl
         let mut counter = 0;
         for member in &s.members {
             let member_name = &member.name.name;
-            let t = Type::parse(&member.var_type.name, &global_state.struct_defs)
+            let t = Type::parse(&member.var_type.name, &global_state.struct_defs, using_stack)
                 .map_err(|_| format!("Could not parse Type `{}`", &member.var_type.name))?;
             members.insert(member_name.clone(), (counter, t.clone()));
             counter += t.type_size(&global_state.struct_defs)? * member.size;
@@ -42,8 +51,8 @@ pub fn gather_definitions(m: &Module, module_prefix: &str, global_state: &mut Gl
         let qualified_name = format!("{module_prefix}{name}");
         global_state.function_signatures.insert(
             qualified_name.clone(),
-            parse_types(&f.in_t, &f.out_t, &global_state.struct_defs)
-                .map_err(|_| format!("Could not parse some types in function {qualified_name}!"))?,
+            parse_types(&f.in_t, &f.out_t, &global_state.struct_defs, using_stack)
+                .map_err(|e| format!("Could not parse some types in function {qualified_name}: {e}"))?,
         );
     }
 
@@ -51,7 +60,7 @@ pub fn gather_definitions(m: &Module, module_prefix: &str, global_state: &mut Gl
     for g in &m.globals {
         let name = &g.name.name;
         let type_name = &*g.var_type.name;
-        let t = Type::parse(type_name, &global_state.struct_defs)
+        let t = Type::parse(type_name, &global_state.struct_defs, using_stack)
             .map_err(|_| format!("Type {type_name} not in scope"))?;
         
         global_state.globals.insert(
@@ -74,20 +83,23 @@ pub fn gather_definitions(m: &Module, module_prefix: &str, global_state: &mut Gl
     Ok(())
 }
 
-pub fn emit_functions(m: &Module, module_prefix: &str, global_state: &mut GlobalState, function_map: &mut HashMap<String, String>) -> Result<(), String> {
+pub fn emit_functions(m: &Module, module_prefix: &str, global_state: &mut GlobalState, function_map: &mut HashMap<String, String>, using_stack: &mut Vec<Vec<String>>) -> Result<(), String> {
 
     // emit submodule functions
     for module in &m.modules {
-        emit_functions(&module.module, &format!("{module_prefix}{}::", &module.name.name), global_state, function_map)?;
+        let submod_usings: Vec<String> = module.module.usings.iter().map(|e| format!("{}::", e.name.name)).collect();
+        using_stack.push(submod_usings);
+        emit_functions(&module.module, &format!("{module_prefix}{}::", &module.name.name), global_state, function_map, using_stack)?;
+        using_stack.pop();
     }
 
     for f in &m.functions {
         match &*format!("{module_prefix}{}", &f.name.name) {
             s @ "isr" => {
-                function_map.insert(s.to_string(), emit_isr(f, global_state).map_err(|(_, b)| b)?);
+                function_map.insert(s.to_string(), emit_isr(f, global_state, using_stack).map_err(|(_, b)| b)?);
             }
             s @ _ => {
-                function_map.insert(s.to_string(), emit_function(f, module_prefix, global_state).map_err(|(_, b)| b)?);
+                function_map.insert(s.to_string(), emit_function(f, module_prefix, global_state, using_stack).map_err(|(_, b)| b)?);
             }
         }
     }
@@ -106,7 +118,10 @@ pub fn emit_root_module(m: &Module) -> Result<String, String> {
         inlines: HashMap::new(),
     };
 
-    gather_definitions(m, "", &mut global_state)?;
+    let mod_usings: Vec<String> = m.usings.iter().map(|e| format!("{}::", e.name.name)).collect();
+    let mut using_stack = vec![vec!["".to_string()], mod_usings];
+
+    gather_definitions(m, "", &mut global_state, &mut using_stack)?;
 
     // grab global variables
     let mut global_prog: String = String::new();
@@ -138,10 +153,10 @@ pub fn emit_root_module(m: &Module) -> Result<String, String> {
     }
 
     global_init_routine.push_str(
-        r"
+r"
     pop!  t0
     jmpr
-                                        ",
+        ",
     );
 
     let mut prog = format!(
@@ -178,7 +193,7 @@ fn .init_globals
     global_state.function_dependencies.roots.insert("isr".to_string());
     global_state.function_dependencies.roots.insert("main".to_string());
 
-    emit_functions(m, "", &mut global_state, &mut function_map)?;
+    emit_functions(m, "", &mut global_state, &mut function_map, &mut using_stack)?;
 
     let mut functions: String = String::new();
     let used_functions = global_state.function_dependencies.calculate_used();

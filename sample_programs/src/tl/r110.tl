@@ -1,6 +1,8 @@
 #include<std/io>
 #include<std/rand>
 
+using io
+
 inline WIDTH 100
 
 global buf1 [102] u16 0 // two border cells that are implicitly zero

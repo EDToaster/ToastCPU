@@ -1,5 +1,7 @@
 #include<std/io>
 
+using io
+
 fn main -> {
     // Use ?? (hole) operator to inspect the 
     // current state of the stack during compilation

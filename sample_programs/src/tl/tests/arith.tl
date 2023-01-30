@@ -1,8 +1,11 @@
 #include<std/assert>
 #include<std/io>
 
+using assert
+using io
+
 fn test_arith -> {
-    "Testing Arith\n" io::print_string
+    "Testing Arith\n" print_string
     "7 = 7"     { 7 7 = 1 = }   assert
     "6 = 7"     { 6 7 = 0 = }   assert
     "6 > 7"     { 6 7 > 0 = }   assert

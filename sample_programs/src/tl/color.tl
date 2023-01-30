@@ -1,5 +1,7 @@
 #include<std/io>
 
+using io
+
 fn main -> {
     0 while { dup 8 < } {
         dup bg

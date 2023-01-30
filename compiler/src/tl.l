@@ -41,6 +41,7 @@ fn              "FN"
 let             "LET"
 struct          "STRUCT"
 mod             "MOD"
+using           "USING"
 ->              "RARROW"
 
 unroll          "UNROLL"

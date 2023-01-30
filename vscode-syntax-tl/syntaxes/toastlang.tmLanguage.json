@@ -55,7 +55,7 @@
 				{
 					"comment": "Matches declarations",
 					"name": "keyword.declaration.toastlang",
-					"match": "(^|(?<=\\s))(global|inline|fn|let|struct|mod)\\s"
+					"match": "(^|(?<=\\s))(global|inline|fn|let|struct|mod|using)\\s"
 				},
 				{
 					"comment": "Matches builtins",

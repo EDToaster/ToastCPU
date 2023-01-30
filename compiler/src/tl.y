@@ -2,12 +2,13 @@
 %%
 
 Module -> Result<Module, ()>:
-    { Ok(Module { span: $span, globals: vec![], inlines: vec![], functions: vec![], struct_defs: vec![], modules: vec![], }) }
+    { Ok(Module { span: $span, globals: vec![], inlines: vec![], functions: vec![], struct_defs: vec![], modules: vec![], usings: vec![], }) }
     | Module Function { let mut m = $1?; m.functions.push($2?); Ok(m) }
     | Module Global { let mut m = $1?; m.globals.push($2?); Ok(m) }
     | Module Inline { let mut m = $1?; m.inlines.push($2?); Ok(m) }
     | Module StructDef { let mut m = $1?; m.struct_defs.push($2?); Ok(m) }
     | Module NamedModule { let mut m = $1?; m.modules.push($2?); Ok(m) }
+    | Module Using { let mut m = $1?; m.usings.push($2?); Ok(m) }
     ;
 
 NamedModule -> Result<NamedModule, ()>:
@@ -36,6 +37,10 @@ Global -> Result<Global, ()>:
 
 Inline -> Result<Inline, ()>:
     'INLINE' Identifier Statement { Ok(Inline { span: $span, name: $2?, statement: $3? }) }
+    ;
+
+Using -> Result<Using, ()>:
+    'USING' Identifier { Ok(Using { span: $span, name: $2? }) }
     ;
 
 StructDef -> Result<StructDef, ()>:
@@ -292,6 +297,12 @@ pub struct Inline {
 }
 
 #[derive(Debug, Clone)]
+pub struct Using {
+    pub span: Span,
+    pub name: Identifier,
+}
+
+#[derive(Debug, Clone)]
 pub struct StructDef {
     pub span: Span,
     pub name: Identifier,
@@ -320,6 +331,7 @@ pub struct Module {
     pub functions: Vec<Function>,
     pub struct_defs: Vec<StructDef>,
     pub modules: Vec<NamedModule>,
+    pub usings: Vec<Using>,
 }
 
 // Any functions here are in scope for all the grammar actions above.

@@ -2,16 +2,18 @@
 #include<std/assert>
 #include<std/rand>
 
+using assert
+using io
 
-global random Random 0
+global random rand::Random 0
 
 fn test_random -> {
-    "Testing random\n" io::print_string
-    random 0xDEAD rand_init
+    "Testing random\n" print_string
+    random 0xDEAD rand::rand_init
 
     // period
     0
-    while { random rand_int 0xDEAD = ! } {
+    while { random rand::rand_int 0xDEAD = ! } {
         1 +
     }
 

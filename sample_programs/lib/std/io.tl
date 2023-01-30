@@ -1,6 +1,8 @@
 #include<std/mem>
 
 mod io {
+    using io
+
     global text_progress u16    100
     global text_ptr      u16*   0x0000
 
@@ -16,68 +18,68 @@ mod io {
     inline WHITE    0b111
 
     fn fg u16 -> {
-        0b1100011111111111 io::text_style load &
-        over 11 << | io::text_style store drop
+        0b1100011111111111 text_style load &
+        over 11 << | text_style store drop
     }
 
     fn bg u16 -> {
-        0b1111100011111111 io::text_style load &
-        over 8 << | io::text_style store drop
+        0b1111100011111111 text_style load &
+        over 8 << | text_style store drop
     }
 
     fn print_reset -> {
-        100 io::text_progress store
-        0x0000 as(u16*) io::text_ptr store
+        100 text_progress store
+        0x0000 as(u16*) text_ptr store
     }
 
     fn print_char u16 -> {
         dup '\n' = if {
             drop
-            io::text_ptr load io::text_progress load + io::text_ptr store
-            100 io::text_progress store
+            text_ptr load text_progress load + text_ptr store
+            100 text_progress store
         } else {
-            io::text_ptr load swap
+            text_ptr load swap
 
             // print the char
-            io::text_style load |
+            text_style load |
             over store
 
-            1 + io::text_ptr store
+            1 + text_ptr store
 
-            io::text_progress load 1 - dup 0 = if {
+            text_progress load 1 - dup 0 = if {
                 drop 100
             }
-            io::text_progress store
+            text_progress store
         }
 
-        io::text_ptr load as(u16) 6000 >= if {
-            0 as(u16*) io::text_ptr store
-            100 io::text_progress store
+        text_ptr load as(u16) 6000 >= if {
+            0 as(u16*) text_ptr store
+            100 text_progress store
         }
     }
 
     // Print the hex char
     fn print_hex u16 -> {
         dup 10 < if {
-            '0' + io::print_char
+            '0' + print_char
         } else {
-            10 - 'A' + io::print_char
+            10 - 'A' + print_char
         }
     }
 
     // Print the nibble
     //     val
     fn print_nibble u16 -> {
-        dup 4 >> 0xF & io::print_hex
-        dup 0xF & io::print_hex
+        dup 4 >> 0xF & print_hex
+        dup 0xF & print_hex
         drop
     }
 
     // Print the word
     //    val
     fn print_word u16 -> {
-        dup 8 >> 0xFF & io::print_nibble
-        dup 0xFF & io::print_nibble
+        dup 8 >> 0xFF & print_nibble
+        dup 0xFF & print_nibble
         drop
     }
 
@@ -86,7 +88,7 @@ mod io {
         dup
         while { load dup } {
             // str char
-            io::print_char 1 + dup
+            print_char 1 + dup
         }
         drop drop
     }
@@ -102,30 +104,30 @@ mod io {
         buffer [32]  u16
     }
 
-    global key_buffer io::KeyBuffer 0
+    global key_buffer KeyBuffer 0
 
     fn keyboard_init -> {
-        io::key_buffer as(u16*) 0 sizeof(io::KeyBuffer) memset
+        key_buffer as(u16*) 0 sizeof(KeyBuffer) memset
     }
 
     fn keyboard_handle_input -> {
         // write the current position
-        io::get_keyboard_ascii
-        io::key_buffer .buffer io::key_buffer .write_offset load +
+        get_keyboard_ascii
+        key_buffer .buffer key_buffer .write_offset load +
         store
 
         // update position
-        io::key_buffer .write_offset load 1 + 0x1F & io::key_buffer .write_offset store
+        key_buffer .write_offset load 1 + 0x1F & key_buffer .write_offset store
     }
 
     fn keyboard_get_input -> u16 {
         // while r != w
-        io::key_buffer .read_offset load io::key_buffer .write_offset load = ! if {
+        key_buffer .read_offset load key_buffer .write_offset load = ! if {
             // read current char
-            io::key_buffer .buffer io::key_buffer .read_offset load + load
+            key_buffer .buffer key_buffer .read_offset load + load
 
             // advance read_offset
-            io::key_buffer .read_offset load 1 + 0x1F & io::key_buffer .read_offset store
+            key_buffer .read_offset load 1 + 0x1F & key_buffer .read_offset store
         } else {
             0
         }

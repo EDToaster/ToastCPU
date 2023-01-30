@@ -110,20 +110,43 @@ impl Type {
         }
     }
 
-    pub fn parse(s: &str, struct_defs: &HashMap<String, StructDefinition>) -> Result<Type, ()> {
+    // todo: instead of resolving everytime we encounter a type, maintain a copy of the struct_defs map which are mappings from shortname -> resolved name.
+    // this way, lookups are O(1)-ish, instead of O(n*m)
+    fn find_struct_def(s: &str, struct_defs: &HashMap<String, StructDefinition>, using_stack: &Vec<Vec<String>>) -> Option<String> {
+        // if we have two structs 
+        // 1. foo::A
+        // 2. A
+        // and `using foo`
+        // prioritize foo::A
+
+        // search usings
+        for usings in using_stack.iter().rev() {
+            for using in usings.iter() {
+                let resolved_name = format!("{using}{s}");
+                if struct_defs.contains_key(&resolved_name) {
+                    return Some(resolved_name);
+                }
+            }
+        }
+
+        // we don't have any, since by default, we have a using called ""
+        None
+    }
+
+    pub fn parse(s: &str, struct_defs: &HashMap<String, StructDefinition>, using_stack: &Vec<Vec<String>>) -> Result<Type, String> {
         match s {
             "u16" => Ok(Type::U16),
             s => {
                 if let Some(caps) = TYPE_POINTER_REGEX.captures(s) {
-                    let base_type = Type::parse(&caps["base_type"], struct_defs)?;
+                    let base_type = Type::parse(&caps["base_type"], struct_defs, using_stack)?;
                     let pointer_layers = &caps["pointers"].len();
                     Ok(Type::Pointer(*pointer_layers as isize, Box::new(base_type)))
                 } else if let Some(caps) = TYPE_GENERICS_REGEX.captures(s) {
                     Ok(Type::Generic(caps["alias"].to_string()))
-                } else if struct_defs.get(s).is_some() {
-                    Ok(Type::Struct(s.to_string()))
+                } else if let Some(struct_name) = Type::find_struct_def(s, struct_defs, using_stack) {
+                    Ok(Type::Struct(struct_name))
                 } else {
-                    Err(())
+                    Err(format!("Type `{s}` was not parseable"))
                 }
             }
         }
@@ -173,9 +196,9 @@ pub struct FunctionState {
     pub function_name: String,
 }
 
-pub fn parse_types(in_t: &[Identifier], out_t: &[Identifier], struct_defs: &HashMap<String, StructDefinition>) -> Result<(Vec<Type>, Vec<Type>), ()> {
-    let in_parsed: Vec<Type> = in_t.iter().map(|t| Type::parse(&t.name, struct_defs)).collect::<Result<Vec<Type>, ()>>()?;
-    let out_parsed: Vec<Type> = out_t.iter().map(|t| Type::parse(&t.name, struct_defs)).collect::<Result<Vec<Type>, ()>>()?;
+pub fn parse_types(in_t: &[Identifier], out_t: &[Identifier], struct_defs: &HashMap<String, StructDefinition>, using_stack: &Vec<Vec<String>>) -> Result<(Vec<Type>, Vec<Type>), String> {
+    let in_parsed: Vec<Type> = in_t.iter().map(|t| Type::parse(&t.name, struct_defs, using_stack)).collect::<Result<Vec<Type>, String>>()?;
+    let out_parsed: Vec<Type> = out_t.iter().map(|t| Type::parse(&t.name, struct_defs, using_stack)).collect::<Result<Vec<Type>, String>>()?;
     Ok((in_parsed, out_parsed))
 }
 

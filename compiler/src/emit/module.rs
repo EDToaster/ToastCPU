@@ -1,6 +1,6 @@
 use crate::emit::function::{emit_function, emit_isr};
 use crate::emit::string_defs::emit_string_defs;
-use crate::emit::types::{parse_types, tasm, GlobalState, StructDefinition, Type, TypeSize};
+use crate::emit::types::{tasm, GlobalState, StructDefinition, Type, TypeSize};
 use crate::tl_y::Module;
 use crate::util::dep_graph::DependencyGraph;
 use crate::util::labels::global_label;
@@ -30,8 +30,8 @@ pub fn gather_definitions(m: &Module, module_prefix: &str, global_state: &mut Gl
         let mut counter = 0;
         for member in &s.members {
             let member_name = &member.name.name;
-            let t = Type::parse(&member.var_type.name, &global_state.struct_defs, using_stack)
-                .map_err(|_| format!("Could not parse Type `{}`", &member.var_type.name))?;
+            let t = Type::parse(&member.var_type, &global_state.struct_defs, using_stack)
+                .map_err(|_| format!("Could not parse Type `{:?}`", &member.var_type))?;
             members.insert(member_name.clone(), (counter, t.clone()));
             counter += t.type_size(&global_state.struct_defs)? * member.size;
         }
@@ -51,7 +51,7 @@ pub fn gather_definitions(m: &Module, module_prefix: &str, global_state: &mut Gl
         let qualified_name = format!("{module_prefix}{name}");
         global_state.function_signatures.insert(
             qualified_name.clone(),
-            parse_types(&f.in_t, &f.out_t, &global_state.struct_defs, using_stack)
+            Type::parse_func_def(&f.type_def, &global_state.struct_defs, using_stack)
                 .map_err(|e| format!("Could not parse some types in function {qualified_name}: {e}"))?,
         );
     }
@@ -59,9 +59,9 @@ pub fn gather_definitions(m: &Module, module_prefix: &str, global_state: &mut Gl
     // preprocess global variables
     for g in &m.globals {
         let name = &g.name.name;
-        let type_name = &*g.var_type.name;
-        let t = Type::parse(type_name, &global_state.struct_defs, using_stack)
-            .map_err(|_| format!("Type {type_name} not in scope"))?;
+        let lex_type = &g.var_type;
+        let t = Type::parse(lex_type, &global_state.struct_defs, using_stack)
+            .map_err(|_| format!("Type {lex_type:?} not in scope"))?;
         
         global_state.globals.insert(
             format!("{module_prefix}{name}"),
@@ -98,7 +98,7 @@ pub fn emit_functions(m: &Module, module_prefix: &str, global_state: &mut Global
             s @ "isr" => {
                 function_map.insert(s.to_string(), emit_isr(f, global_state, using_stack).map_err(|(_, b)| b)?);
             }
-            s @ _ => {
+            s => {
                 function_map.insert(s.to_string(), emit_function(f, module_prefix, global_state, using_stack).map_err(|(_, b)| b)?);
             }
         }

@@ -1,10 +1,8 @@
 use core::fmt;
 use std::collections::HashMap;
 use std::fmt::Formatter;
-use lazy_static::lazy_static;
 use lrpar::Span;
-use regex::Regex;
-use crate::tl_y::{Identifier, Statement};
+use crate::tl_y::{LexType, Statement, Identifier, FuncType};
 use crate::util::dep_graph::DependencyGraph;
 
 macro_rules! tasm {
@@ -29,20 +27,30 @@ pub enum Type {
     Pointer(isize, Box<Type>),
     Struct(String),
     Generic(String),
+    Function(FunctionType),
 }
 
-lazy_static! {
-    static ref TYPE_POINTER_REGEX: Regex = Regex::new(r"(?P<base_type>\$?[^*]+)(?P<pointers>\*+)").unwrap();
-    static ref TYPE_GENERICS_REGEX: Regex = Regex::new(r"(?P<alias>\$[^*]+)").unwrap();
+
+#[derive(Clone, Eq, PartialEq)]
+pub struct FunctionType {
+    pub in_t: Vec<Type>,
+    pub out_t: Vec<Type>,
+}
+
+impl fmt::Debug for FunctionType {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "({:?} -> {:?})", self.in_t, self.out_t)
+    }
 }
 
 impl fmt::Debug for Type {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
             Type::U16 => { write!(f, "u16") }
-            Type::Pointer(i, t) => { write!(f, "{:?}{}", t, "*".repeat(*i as usize)) }
-            Type::Struct(s) => { write!(f, "{s}") }
-            Type::Generic(s) => { write!(f, "{s}")}
+            Type::Pointer(i, t) =>  write!(f, "{:?}{}", t, "*".repeat(*i as usize)),
+            Type::Struct(s) =>  write!(f, "{s}"),
+            Type::Generic(s) =>  write!(f, "${s}"),
+            Type::Function(func) =>write!(f, "{func:?}"),
         }
     }
 }
@@ -60,7 +68,7 @@ impl<T, U> ErrWithSpan<T, U> for Result<T, U> {
 impl TypeSize for Type {
     fn type_size(&self, structs: &HashMap<String, StructDefinition>) -> Result<isize, String> {
         match self {
-            Type::Generic(..) | Type::U16 | Type::Pointer(..) => Ok(1),
+            Type::Generic(..) | Type::U16 | Type::Pointer(..) | Type::Function(..) => Ok(1),
             Type::Struct(s) => structs
                 .get(s)
                 .ok_or(format!("Struct `{s}` not in scope"))
@@ -112,7 +120,7 @@ impl Type {
 
     // todo: instead of resolving everytime we encounter a type, maintain a copy of the struct_defs map which are mappings from shortname -> resolved name.
     // this way, lookups are O(1)-ish, instead of O(n*m)
-    fn find_struct_def(s: &str, struct_defs: &HashMap<String, StructDefinition>, using_stack: &Vec<Vec<String>>) -> Option<String> {
+    fn find_struct_def(s: &str, struct_defs: &HashMap<String, StructDefinition>, using_stack: &[Vec<String>]) -> Option<String> {
         // if we have two structs 
         // 1. foo::A
         // 2. A
@@ -133,22 +141,54 @@ impl Type {
         None
     }
 
-    pub fn parse(s: &str, struct_defs: &HashMap<String, StructDefinition>, using_stack: &Vec<Vec<String>>) -> Result<Type, String> {
-        match s {
-            "u16" => Ok(Type::U16),
-            s => {
-                if let Some(caps) = TYPE_POINTER_REGEX.captures(s) {
-                    let base_type = Type::parse(&caps["base_type"], struct_defs, using_stack)?;
-                    let pointer_layers = &caps["pointers"].len();
-                    Ok(Type::Pointer(*pointer_layers as isize, Box::new(base_type)))
-                } else if let Some(caps) = TYPE_GENERICS_REGEX.captures(s) {
-                    Ok(Type::Generic(caps["alias"].to_string()))
-                } else if let Some(struct_name) = Type::find_struct_def(s, struct_defs, using_stack) {
-                    Ok(Type::Struct(struct_name))
-                } else {
-                    Err(format!("Type `{s}` was not parseable"))
+    pub fn parse_types(in_t: &[LexType], out_t: &[LexType], struct_defs: &HashMap<String, StructDefinition>, using_stack: &Vec<Vec<String>>) -> Result<(Vec<Type>, Vec<Type>), String> {
+        let in_parsed: Vec<Type> = in_t.iter().map(|t| Type::parse(t, struct_defs, using_stack)).collect::<Result<Vec<Type>, String>>()?;
+        let out_parsed: Vec<Type> = out_t.iter().map(|t| Type::parse(t, struct_defs, using_stack)).collect::<Result<Vec<Type>, String>>()?;
+        Ok((in_parsed, out_parsed))
+    }
+
+    pub fn parse_func_def(t: &FuncType, struct_defs: &HashMap<String, StructDefinition>, using_stack: &Vec<Vec<String>>) -> Result<FunctionType, String> {
+        let (in_t, out_t) = Type::parse_types(&t.i, &t.o, struct_defs, using_stack)?;
+        Ok(FunctionType { in_t, out_t })
+    }
+
+    pub fn parse(t: &LexType, struct_defs: &HashMap<String, StructDefinition>, using_stack: &Vec<Vec<String>>) -> Result<Type, String> {
+        match t {
+            LexType::Base(Identifier { name, .. }) => {
+                match name.as_str() {
+                    "u16" => Ok(Type::U16),
+                    s => {
+                        if let Some(struct_name) = Type::find_struct_def(s, struct_defs, using_stack) {
+                                    Ok(Type::Struct(struct_name))
+                        } else {
+                            Err(format!("Type `{s}` was not parseable"))
+                        }
+                    }
                 }
-            }
+            },
+            LexType::Ptr(underlying) => {
+                Ok(Type::parse(underlying, struct_defs, using_stack)?.add_ref())
+            },
+            LexType::Gen(base) => {
+                Ok(Type::Generic(base.name.clone()))
+            },
+            LexType::Func(f) => Ok(Type::Function(Type::parse_func_def(f, struct_defs, using_stack)?))
+            
+
+            // "u16" => Ok(Type::U16),
+            // s => {
+            //     if let Some(caps) = TYPE_POINTER_REGEX.captures(s) {
+            //         let base_type = Type::parse(&caps["base_type"], struct_defs, using_stack)?;
+            //         let pointer_layers = &caps["pointers"].len();
+            //         Ok(Type::Pointer(*pointer_layers as isize, Box::new(base_type)))
+            //     } else if let Some(caps) = TYPE_GENERICS_REGEX.captures(s) {
+            //         Ok(Type::Generic(caps["alias"].to_string()))
+            //     } else if let Some(struct_name) = Type::find_struct_def(s, struct_defs, using_stack) {
+            //         Ok(Type::Struct(struct_name))
+            //     } else {
+            //         Err(format!("Type `{s}` was not parseable"))
+            //     }
+            // }
         }
     }
 
@@ -181,7 +221,7 @@ pub struct GlobalState {
     pub string_allocs_counter: isize,
     pub string_allocs: HashMap<Vec<u16>, String>,
     pub struct_defs: HashMap<String, StructDefinition>,
-    pub function_signatures: HashMap<String, (Vec<Type>, Vec<Type>)>,
+    pub function_signatures: HashMap<String, FunctionType>,
     pub function_dependencies: DependencyGraph, 
     pub globals: HashMap<String, (Type, isize, isize)>, // name -> (label, type, num, init)
     pub inlines: HashMap<String, Statement>,      // name -> statement
@@ -196,11 +236,6 @@ pub struct FunctionState {
     pub function_name: String,
 }
 
-pub fn parse_types(in_t: &[Identifier], out_t: &[Identifier], struct_defs: &HashMap<String, StructDefinition>, using_stack: &Vec<Vec<String>>) -> Result<(Vec<Type>, Vec<Type>), String> {
-    let in_parsed: Vec<Type> = in_t.iter().map(|t| Type::parse(&t.name, struct_defs, using_stack)).collect::<Result<Vec<Type>, String>>()?;
-    let out_parsed: Vec<Type> = out_t.iter().map(|t| Type::parse(&t.name, struct_defs, using_stack)).collect::<Result<Vec<Type>, String>>()?;
-    Ok((in_parsed, out_parsed))
-}
 
 pub(crate) use tasm;
 pub(crate) use ptr;

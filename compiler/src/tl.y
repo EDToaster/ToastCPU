@@ -3,12 +3,12 @@
 
 Module -> Result<Module, ()>:
     { Ok(Module { span: $span, globals: vec![], inlines: vec![], functions: vec![], struct_defs: vec![], modules: vec![], usings: vec![], }) }
-    | Module Function { let mut m = $1?; m.functions.push($2?); Ok(m) }
-    | Module Global { let mut m = $1?; m.globals.push($2?); Ok(m) }
-    | Module Inline { let mut m = $1?; m.inlines.push($2?); Ok(m) }
-    | Module StructDef { let mut m = $1?; m.struct_defs.push($2?); Ok(m) }
-    | Module NamedModule { let mut m = $1?; m.modules.push($2?); Ok(m) }
-    | Module Using { let mut m = $1?; m.usings.push($2?); Ok(m) }
+    | Module Function       { let mut m = $1?; m.functions.push($2?);   Ok(m)   }
+    | Module Global         { let mut m = $1?; m.globals.push($2?);     Ok(m)   }
+    | Module Inline         { let mut m = $1?; m.inlines.push($2?);     Ok(m)   }
+    | Module StructDef      { let mut m = $1?; m.struct_defs.push($2?); Ok(m)   }
+    | Module NamedModule    { let mut m = $1?; m.modules.push($2?);     Ok(m)   }
+    | Module Using          { let mut m = $1?; m.usings.push($2?);      Ok(m)   }
     ;
 
 NamedModule -> Result<NamedModule, ()>:
@@ -17,22 +17,21 @@ NamedModule -> Result<NamedModule, ()>:
 
 
 Function -> Result<Function, ()>:
-    'FN' Identifier Typelist 'RARROW' Typelist Block {
+    'FN' Identifier FuncType Block {
         Ok(
             Function {
                 span: $span,
                 name: $2?,
-                in_t: $3?,
-                out_t: $5?,
-                body: $6?,
+                type_def: $3?,
+                body: $4?,
             }
         )
     }
     ;
 
 Global -> Result<Global, ()>:
-    'GLOBAL' Identifier Identifier IntLiteral { Ok(Global { span: $span, name: $2?, var_type: $3?, val: $4?, size: 1 }) }
-    | 'GLOBAL' Identifier 'LS' IntLiteral 'RS' Identifier IntLiteral { Ok(Global { span: $span, name: $2?, size: $4?.val, var_type: $6?, val: $7? }) }
+    'GLOBAL' Identifier Type IntLiteral                          { Ok(Global { span: $span, name: $2?, var_type: $3?, val: $4?, size: 1 })       }
+    | 'GLOBAL' Identifier 'LS' IntLiteral 'RS' Type IntLiteral   { Ok(Global { span: $span, name: $2?, size: $4?.val, var_type: $6?, val: $7? }) }
     ;
 
 Inline -> Result<Inline, ()>:
@@ -53,13 +52,13 @@ StructMembers -> Result<Vec<StructMember>, ()>:
     ;
 
 StructMember -> Result<StructMember, ()>:
-    Identifier Identifier { Ok(StructMember { span: $span, name: $1?, var_type: $2?, size: 1 }) }
-    | Identifier 'LS' IntLiteral 'RS' Identifier { Ok(StructMember { span: $span, name: $1?, size: $3?.val, var_type: $5? }) }
+    Identifier Type { Ok(StructMember { span: $span, name: $1?, var_type: $2?, size: 1 }) }
+    | Identifier 'LS' IntLiteral 'RS' Type { Ok(StructMember { span: $span, name: $1?, size: $3?.val, var_type: $5? }) }
     ;
 
-Typelist -> Result<Vec<Identifier>, ()>:
+Typelist -> Result<Vec<LexType>, ()>:
     { Ok(vec![]) }
-    | Typelist Identifier { let mut v = $1?; v.push($2?); Ok(v) }
+    | Typelist Type { let mut v = $1?; v.push($2?); Ok(v) }
     ;
 
 Block -> Result<Block, ()>:
@@ -89,44 +88,73 @@ Statements -> Result<Vec<Statement>, ()>:
     ;
 
 Statement -> Result<Statement, ()>:
-    IntLiteral { Ok(Statement::IntLiteral($1?)) }
-    | IntArray { Ok(Statement::IntArray($1?)) }
-    | Identifier { Ok(Statement::Identifier($1?)) }
-    | Operator { Ok(Statement::Operator($1?)) }
-    | Block { Ok(Statement::Block($1?)) }
-    | Unroll { Ok(Statement::Unroll($1?)) }
-    | If { Ok(Statement::If($1?)) }
-    | While { Ok(Statement::While($1?)) }
-    | Let { Ok(Statement::Let($1?)) }
+    IntLiteral      { Ok(Statement::IntLiteral($1?))    }
+    | IntArray      { Ok(Statement::IntArray($1?))      }
+    | Identifier    { Ok(Statement::Identifier($1?))    }
+    | Operator      { Ok(Statement::Operator($1?))      }
+    | Block         { Ok(Statement::Block($1?))         }
+    | Unroll        { Ok(Statement::Unroll($1?))        }
+    | If            { Ok(Statement::If($1?))            }
+    | While         { Ok(Statement::While($1?))         }
+    | Let           { Ok(Statement::Let($1?))           }
     ;
 
 Operator -> Result<Operator, ()>:
-    'ADD' { Ok(Operator::Add($span)) }
-    | 'SUB' { Ok(Operator::Sub($span)) }
-    | 'BOR' { Ok(Operator::BOr($span)) }
-    | 'BAND' { Ok(Operator::BAnd($span)) }
-    | 'BNOT' { Ok(Operator::BNot($span)) }
-    | 'SSHR' { Ok(Operator::Sshr($span)) }
-    | 'SHR' { Ok(Operator::Shr($span)) }
-    | 'SHL' { Ok(Operator::Shl($span)) }
-    | 'XOR' { Ok(Operator::Xor($span)) }
-    | 'LOR' { Ok(Operator::LOr($span)) }
-    | 'LAND' { Ok(Operator::LAnd($span)) }
-    | 'LNOT' { Ok(Operator::LNot($span)) }
-    | 'EQ' { Ok(Operator::Eq($span)) }
-    | 'LT' { Ok(Operator::Lt($span)) }
-    | 'LTE' { Ok(Operator::Lte($span)) }
-    | 'GT' { Ok(Operator::Gt($span)) }
-    | 'GTE' { Ok(Operator::Gte($span)) }
-    | 'RETURN' { Ok(Operator::Return($span)) }
-    | 'HOLE' { Ok(Operator::Hole($span)) }
-    | 'AS' 'LP' Identifier 'RP' { Ok(Operator::As($span, $3?)) }
-    | 'SIZEOF' 'LP' Identifier 'RP' { Ok(Operator::SizeOf($span, $3?)) }
+    'ADD'       { Ok(Operator::Add($span))      }
+    | 'SUB'     { Ok(Operator::Sub($span))      }
+    | 'BOR'     { Ok(Operator::BOr($span))      }
+    | 'BAND'    { Ok(Operator::BAnd($span))     }
+    | 'BNOT'    { Ok(Operator::BNot($span))     }
+    | 'SSHR'    { Ok(Operator::Sshr($span))     }
+    | 'SHR'     { Ok(Operator::Shr($span))      }
+    | 'SHL'     { Ok(Operator::Shl($span))      }
+    | 'XOR'     { Ok(Operator::Xor($span))      }
+    | 'LOR'     { Ok(Operator::LOr($span))      }
+    | 'LAND'    { Ok(Operator::LAnd($span))     }
+    | 'LNOT'    { Ok(Operator::LNot($span))     }
+    | 'EQ'      { Ok(Operator::Eq($span))       }
+    | 'LT'      { Ok(Operator::Lt($span))       }
+    | 'LTE'     { Ok(Operator::Lte($span))      }
+    | 'GT'      { Ok(Operator::Gt($span))       }
+    | 'GTE'     { Ok(Operator::Gte($span))      }
+    | 'RETURN'  { Ok(Operator::Return($span))   }
+    | 'HOLE'    { Ok(Operator::Hole($span))     }
+    | 'LP' 'RP' { Ok(Operator::Call($span)) }
+    | 'PTR_OP' 'LP' Identifier 'RP' { Ok(Operator::Ptr($span, $3?)) }
+    | 'AS' 'LP' Type 'RP' { Ok(Operator::As($span, $3?))          }
+    | 'SIZEOF' 'LP' Type 'RP' { Ok(Operator::SizeOf($span, $3?))  }
     | 'STRUCT_ACCESS' {
             let v = $1.map_err(|_| ())?;
             Ok(Operator::StructAccess(v.span(), $lexer.span_str(v.span())[1..].to_string()))
         }
     | 'LS' IntLiteral 'RS' { Ok(Operator::ConstArrayAccess($span, $2?)) }
+    ;
+
+Type -> Result<LexType, ()>:
+    BaseType    { $1 }
+    | GenType   { $1 }
+    | PtrType   { $1 }
+    | 'LP' FuncType 'RP' { Ok(LexType::Func($2?)) }
+    ;
+
+BaseType -> Result<LexType, ()>:
+    Identifier { Ok(LexType::Base($1?)) }
+    ;
+
+GenType -> Result<LexType, ()>:
+    'GENERIC' Identifier { Ok(LexType::Gen($2?)) }
+    ;
+
+PtrType -> Result<LexType, ()>:
+    Type 'PTR' { Ok(LexType::Ptr(Box::new($1?))) }
+    ;
+
+FuncType -> Result<FuncType, ()>:
+    Typelist 'RARROW' Typelist { Ok(FuncType { i: $1?, o: $3? }) }
+    ;
+
+LexType -> Result<LexType, ()>:
+    Identifier  { Ok(LexType::Base($1?)) }
     ;
 
 Identifiers -> Result<Vec<Identifier>, ()>:
@@ -198,8 +226,10 @@ pub enum Operator {
 
     Return(Span),
 
-    As(Span, Identifier),
-    SizeOf(Span, Identifier),
+    Ptr(Span, Identifier),
+    Call(Span),
+    As(Span, LexType),
+    SizeOf(Span, LexType),
     StructAccess(Span, String),
     ConstArrayAccess(Span, IntLiteral),
 
@@ -275,8 +305,7 @@ pub struct Block {
 pub struct Function {
     pub span: Span,
     pub name: Identifier,
-    pub in_t: Vec<Identifier>,
-    pub out_t: Vec<Identifier>,
+    pub type_def: FuncType,
     pub body: Block,
 }
 
@@ -285,7 +314,7 @@ pub struct Global {
     pub span: Span,
     pub name: Identifier,
     pub size: isize,
-    pub var_type: Identifier,
+    pub var_type: LexType,
     pub val: IntLiteral,
 }
 
@@ -313,7 +342,7 @@ pub struct StructDef {
 pub struct StructMember {
     pub span: Span,
     pub name: Identifier,
-    pub var_type: Identifier,
+    pub var_type: LexType,
     pub size: isize,
 }
 
@@ -332,6 +361,21 @@ pub struct Module {
     pub struct_defs: Vec<StructDef>,
     pub modules: Vec<NamedModule>,
     pub usings: Vec<Using>,
+}
+
+#[derive(Debug, Clone)]
+pub enum LexType {
+    Base(Identifier),
+    // needs to be base type, cannot be generic type
+    Ptr(Box<LexType>),
+    Gen(Identifier),
+    Func(FuncType),
+}
+
+#[derive(Debug, Clone)]
+pub struct FuncType {
+    pub i: Vec<LexType>,
+    pub o: Vec<LexType>,
 }
 
 // Any functions here are in scope for all the grammar actions above.

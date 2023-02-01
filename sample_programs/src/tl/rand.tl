@@ -1,6 +1,9 @@
 #include<std/io>
 #include<std/rand>
 
+using io
+using rand
+
 global rand Random 0
 
 fn p u16 -> u16 {

@@ -1,7 +1,7 @@
 #include<std/io>
 
 fn isr -> {
-    get_keyboard_ascii print_char
+    io::get_keyboard_ascii io::print_char
 }
 
 fn main -> {

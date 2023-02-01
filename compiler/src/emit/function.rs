@@ -10,7 +10,7 @@ pub fn emit_isr(f: &Function, global_state: &mut GlobalState, using_stack: &Vec<
     let func_name = &f.name.name;
     let function_out_label = format!("{func_name}_exit");
 
-    if !f.in_t.is_empty() || !f.out_t.is_empty() {
+    if !f.type_def.i.is_empty() || !f.type_def.o.is_empty() {
         return Err((
             f.span,
             "Interrupt service routine (isr) cannot take in or emit stack items.".to_string(),
@@ -67,7 +67,7 @@ pub fn emit_function(
     let func_exit = format!("{func_label}_exit",);
     let mut func = format!("\nfn .{func_label}\n",);
 
-    let (in_t, out_t) = global_state.function_signatures.get(func_name).unwrap();
+    let FunctionType { in_t, out_t } = global_state.function_signatures.get(func_name).unwrap();
 
     let mut function_state = FunctionState {
         current_bindings: vec![],
@@ -89,7 +89,7 @@ pub fn emit_function(
     )
     .map_err(|(span, err)| (span, format!("{func_name}: {err}")))?;
 
-    let (_, out_t) = global_state.function_signatures.get(func_name).unwrap();
+    let FunctionType { out_t, .. } = global_state.function_signatures.get(func_name).unwrap();
 
     if !stack_view.eq_vec(out_t) {
         return Err((

@@ -83,6 +83,10 @@ mod io {
         drop
     }
 
+    fn print_ptr $a* -> {
+        as(u16) print_word
+    }
+
     //     strptr
     fn print_string u16* -> {
         dup

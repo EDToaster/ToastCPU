@@ -4,6 +4,8 @@ use lrpar::Span;
 use crate::emit::types::Type;
 use crate::util::gss::Stack;
 
+use super::types::FunctionType;
+
 fn resolve_generic_type(out_t: &Type, span: &Span, generics: &HashMap<String, Type>) -> Result<Type, (Span, String)> {
     match out_t {
         Type::Pointer(i, t) => {
@@ -19,7 +21,13 @@ fn resolve_generic_type(out_t: &Type, span: &Span, generics: &HashMap<String, Ty
                 .ok_or((*span, format!("Output generic {label:?} has no corresponding input type.")))?
                 .clone())
         }
-        _ => { Ok(out_t.clone()) }
+        Type::Function(FunctionType {in_t, out_t }) => {
+            Ok(Type::Function(FunctionType { 
+                in_t: in_t.iter().map(|t| resolve_generic_type(t, span, generics)).collect::<Result<_, _>>()?, 
+                out_t: out_t.iter().map(|t| resolve_generic_type(t, span, generics)).collect::<Result<_, _>>()?, 
+            }))
+        }
+        Type::U16 | Type::Struct(_) => { Ok(out_t.clone()) }
     }
 }
 
@@ -40,7 +48,31 @@ fn type_matches(stack_t: &Type, span: &Span, sig_t: &Type, generics: &mut HashMa
                 }
             }
         }
-        _ => { Ok(stack_t == sig_t) }
+        Type::Function(FunctionType { in_t, out_t }) => {
+            // check stack_t is also a function
+            if let Type::Function(FunctionType { in_t: stack_in_t, out_t: stack_out_t }) = stack_t {
+                if stack_in_t.len() != in_t.len() || stack_out_t.len() != stack_out_t.len() {
+                    return Ok(false)
+                } 
+
+                for (i, j) in stack_in_t.iter().zip(in_t.iter()) {
+                    if !type_matches(i, span, j, generics)? {
+                        return Ok(false)
+                    }
+                }
+
+                for (i, j) in stack_out_t.iter().zip(out_t.iter()) {
+                    if !type_matches(i, span, j, generics)? {
+                        return Ok(false)
+                    }
+                }
+                
+                Ok(true)
+            } else {
+                Ok(false)
+            }
+        }
+        Type::U16 | Type::Pointer(_, _) | Type::Struct(_) => { Ok(stack_t == sig_t) }
     }
 }
 

@@ -4,37 +4,67 @@
 
 // register keyboard input handler
 fn isr -> {
-    keyboard_handle_input
+    io::keyboard_handle_input
 }
 
-global head_pos u16* 0
-
 fn main -> {
-    keyboard_init
-    while { 1 } {
-        // handle all inputs this frame
-        while { keyboard_get_input dup } {
-            dup 'w' = if {
-                0xFF9C
-            } else { dup 'a' = if {
-                0xFFFF
-            } else { dup 's' = if {
-                100
-            } else { dup 'd' = if {
-                1
-            } else {
-                // dont move
-                0
-            }}}}
+    snake::main
+}
 
-            // draw 0
-            0x0020 head_pos load store
-            head_pos load +
-            // newpos
-            0xFF20 over store head_pos store
+mod snake {
+    using snake
+
+    using io
+    using rand
+
+    mod dir {
+        inline RIGHT    0
+        inline DOWN     1
+        inline LEFT     2
+        inline UP       3
+        inline NONE     4
+    }
+
+    global head      u16* 0
+    global direction u16  4
+
+    global random Random 0
+
+    fn main -> {
+        random 0xDEAD rand_init
+        keyboard_init
+        while { 1 } {
+            // handle all inputs this frame
+            while { keyboard_get_input dup } {
+                dup 'w' = if {
+                    dir::UP direction store
+                } else { dup 'a' = if {
+                    dir::LEFT direction store
+                } else { dup 's' = if {
+                    dir::DOWN direction store
+                } else { dup 'd' = if {
+                    dir::RIGHT direction store
+                }}}}
+                drop
+            }
+
+            // move head
+            direction load 
+            dup dir::UP = if {
+                0xFF9C
+            } else { dup dir::RIGHT = if {
+                0x0001
+            } else { dup dir::DOWN = if {
+                0x0064
+            } else { dup dir::LEFT = if {
+                0xFFFF
+            } else { 0 }}}}
+            swap drop head load + dup head store
+
+            random rand_int 0x7 & 8 << 0x20 | swap store
+
+            // drop the 0 at the end
             drop
         }
-        // drop the 0 at the end
-        drop
     }
 }

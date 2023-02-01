@@ -88,8 +88,8 @@ impl Vga {
 
         execute!(
             self.stdout,
-            SetColors(Colors::new(COLORS[fg], COLORS[bg])),
             MoveTo(x as u16, y as u16),
+            SetColors(Colors::new(COLORS[fg], COLORS[bg])),
             Print((val & 0x00FF) as u8 as char),
         )
         .expect("Something went wrong writing to the virtual terminal!");

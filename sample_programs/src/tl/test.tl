@@ -5,6 +5,7 @@
 
 #include<tests/arith>
 #include<tests/color>
+#include<tests/func_ptr>
 #include<tests/global>
 #include<tests/inline>
 #include<tests/let>
@@ -38,6 +39,7 @@ fn main -> {
     test_struct
     test_memset
     test_modules
+    test_func_ptr
 
     "Passed All Test Cases!" print_string
 }

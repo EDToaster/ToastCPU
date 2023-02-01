@@ -13,7 +13,7 @@ use lrpar::Span;
 // todo: instead of resolving everytime we encounter a global, maintain a copy of the struct_defs map which are mappings from shortname -> resolved name.
 // this way, lookups are O(1)-ish, instead of O(n*m)
 // todo: see how we resolve types
-fn find_global(s: &str, globals: &HashMap<String, (Type, isize, isize)>, using_stack: &Vec<Vec<String>>) -> Option<(String, Type)> {
+pub fn find_global(s: &str, globals: &HashMap<String, (Type, isize, isize)>, using_stack: &[Vec<String>]) -> Option<(String, Type)> {
     for usings in using_stack.iter().rev() {
         for using in usings.iter() {
             let resolved_name = format!("{using}{s}");
@@ -26,7 +26,7 @@ fn find_global(s: &str, globals: &HashMap<String, (Type, isize, isize)>, using_s
 }
 
 // todo: coalesce this, type, global, and inline resolvers
-fn find_function(s: &str, function_signatures: &HashMap<String, (Vec<Type>, Vec<Type>)>, using_stack: &Vec<Vec<String>>) -> Option<(String, (Vec<Type>, Vec<Type>))> {
+pub fn find_function(s: &str, function_signatures: &HashMap<String, FunctionType>, using_stack: &[Vec<String>]) -> Option<(String, FunctionType)> {
     for usings in using_stack.iter().rev() {
         for using in usings.iter() {
             let resolved_name = format!("{using}{s}");
@@ -38,7 +38,7 @@ fn find_function(s: &str, function_signatures: &HashMap<String, (Vec<Type>, Vec<
     None
 }
 
-fn find_inline(s: &str, inlines: &HashMap<String, Statement>, using_stack: &Vec<Vec<String>>) -> Option<Statement> {
+pub fn find_inline(s: &str, inlines: &HashMap<String, Statement>, using_stack: &[Vec<String>]) -> Option<Statement> {
     for usings in using_stack.iter().rev() {
         for using in usings.iter() {
             let resolved_name = format!("{using}{s}");
@@ -297,7 +297,7 @@ pub fn emit_statement(
                         // generic function call
                         let ret_label = generate_label_with_context(block_id, "retaddr");                        
                         
-                        let (name, (in_t, out_t)) = find_function(s, &global_state.function_signatures, using_stack).ok_or((
+                        let (name, func) = find_function(s, &global_state.function_signatures, using_stack).ok_or((
                             *span,
                             format!("Was not able to find function signature of function {s}"),
                         ))?;
@@ -313,9 +313,9 @@ pub fn emit_statement(
 .{ret_label}
                             "
                         );
-                        global_state.function_dependencies.add_dependency(function_state.function_name.clone(), name.to_string());
+                        global_state.function_dependencies.add_dependency(function_state.function_name.clone(), name);
 
-                        check_and_apply_stack_transition(s, span, stack_view, &in_t, &out_t)?;
+                        check_and_apply_stack_transition(s, span, stack_view, &func.in_t, &func.out_t)?;
                     }
                 }
             }

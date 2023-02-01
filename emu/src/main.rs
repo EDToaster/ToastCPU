@@ -327,14 +327,10 @@ fn emulate(pc_buffer: &mut AllocRingBuffer<u16>) -> Result<(), String> {
             }
             PUSH => {
                 registers[r1] -= 1;
-                mem.write(registers[r1], registers[r2]).map_err(|e| {
-                    format!("Issue when executing push at pc={:#06x}: {e}", registers.pc)
-                })?;
+                mem.write(registers[r1], registers[r2]).map_err(|e| format!("Issue when executing push at pc={:#06x}: {e}", registers.pc))?;
             }
             POP => {
-                registers[r1] = mem.read(registers[r2]).map_err(|e| {
-                    format!("Issue when executing pop at pc={:#06x}: {e}", registers.pc)
-                })?;
+                registers[r1] = mem.read(registers[r2]).map_err(|e| format!("Issue when executing pop at pc={:#06x}: {e}", registers.pc))?;
                 registers[r2] += 1;
             }
             HALT => {
@@ -382,19 +378,11 @@ fn emulate(pc_buffer: &mut AllocRingBuffer<u16>) -> Result<(), String> {
 
                 if do_jump {
                     if r {
-                        registers.pc = mem.read(registers.sp).map_err(|e| {
-                            format!("Issue when executing jump at pc={:#06x}: {e}", registers.pc)
-                        })?;
+                        registers.pc = mem.read(registers.sp).map_err(|e| format!("Issue when executing jump at pc={:#06x}: {e}", registers.pc))?;
                         registers.sp += 1;
                     } else if l {
                         registers.sp -= 1;
-                        mem.write(registers.sp, registers.pc + 1).map_err(|e| {
-                            format!(
-                                "Issue when executing jump and link at pc={:#06x}: {e}",
-                                registers.pc
-                            )
-                        })?;
-
+                        mem.write(registers.sp, registers.pc + 1).map_err(|e| format!("Issue when executing jump and link at pc={:#06x}: {e}", registers.pc))?;
                         registers.pc = registers[r1];
                     } else {
                         registers.pc = registers[r1];

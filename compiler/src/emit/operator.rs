@@ -1,3 +1,4 @@
+use crate::emit::statement::find_function;
 use crate::emit::type_check::{
     check_and_apply_multiple_stack_transitions, check_and_apply_stack_transition,
 };
@@ -6,12 +7,15 @@ use crate::emit::types::{
 };
 use crate::tl_y::Operator;
 use crate::util::gss::Stack;
+use crate::util::labels::{function_label, generate_label_with_context};
 use lrpar::Span;
+
+use super::types::FunctionType;
 
 pub fn emit_operator(
     block_id: &str,
     r: &Operator,
-    global_state: &GlobalState,
+    global_state: &mut GlobalState,
     function_state: &mut FunctionState,
     stack_view: &mut Stack<Type>,
     using_stack: &Vec<Vec<String>>
@@ -361,9 +365,57 @@ pub fn emit_operator(
         Operator::Hole(span) => {
             println!("Stack at {span:?}: {stack_view:?}");
         }
+        Operator::Call(span) => {
+            // check top of the stack is a function pointer
+            let top = &check_and_apply_stack_transition(
+                "()", 
+                span, 
+                stack_view, &vec![ptr!(gen!("$a"))], &[])?[0];
+
+            let ret_label = generate_label_with_context(block_id, "retaddr");     
+            tasm!(
+                operation;;
+                r"
+    imov! t0 .{ret_label}
+    push  t5 t0
+    pop   t0 
+    jmp   t0
+.{ret_label}
+                "
+            );
+            
+            if let Type::Pointer(1, fun) = top {
+                if let Type::Function(FunctionType { in_t, out_t }) = &**fun {
+                    check_and_apply_stack_transition("()", span, stack_view, in_t, out_t)?;
+                } else {
+                    return Err((*span, format!("Using the `()` operator requires function pointer to be on the top of the stack. Top of the stack is {top:?}")))
+                }
+            } else {
+                return Err((*span, format!("Using the `()` operator requires function pointer to be on the top of the stack. Top of the stack is {top:?}")))
+            }
+        }
+        Operator::Ptr(span, t) => {
+            // check that this is a correct function                  
+            let (name, func) = find_function(&t.name, &global_state.function_signatures, using_stack).ok_or((
+                *span,
+                format!("Was not able to find function signature of function {t:?}"),
+            ))?;
+
+            tasm!(
+                operation;
+                function_label(&name)
+                ;
+                r"
+imov! t0 .{}
+push  t0
+                "
+            );
+            global_state.function_dependencies.add_dependency(function_state.function_name.clone(), name.clone());
+            check_and_apply_stack_transition(&format!("ptr({})", &name), span, stack_view, &vec![], &[Type::Function(func).add_ref()])?;
+        }
         Operator::As(span, t) => {
-            let parsed_t = Type::parse(&t.name, &global_state.struct_defs, using_stack)
-                .map_err(|_| (*span, format!("Could not parse type {}.", &t.name)))?;
+            let parsed_t = Type::parse(t, &global_state.struct_defs, using_stack)
+                .map_err(|_| (*span, format!("Could not parse type {t:?}.")))?;
             check_and_apply_stack_transition(
                 &format!("as({parsed_t:?})"),
                 span,
@@ -373,8 +425,8 @@ pub fn emit_operator(
             )?;
         }
         Operator::SizeOf(span, t) => {
-            let parsed_t = Type::parse(&t.name, &global_state.struct_defs, using_stack)
-                .map_err(|_| (*span, format!("Could not parse type {}.", &t.name)))?;
+            let parsed_t = Type::parse(t, &global_state.struct_defs, using_stack)
+                .map_err(|_| (*span, format!("Could not parse type {t:?}.")))?;
             let size = parsed_t
                 .type_size(&global_state.struct_defs)
                 .err_with_span(span)?;
@@ -474,7 +526,7 @@ pub fn emit_operator(
     jmp!  .{label}
                 "
             );
-        }
+        },
     }
     Ok(operation)
 }

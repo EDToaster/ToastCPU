@@ -35,6 +35,9 @@
 \{              "LB"
 \}              "RB"
 
+\$               "GENERIC"
+\*               "PTR"
+
 global          "GLOBAL"
 inline          "INLINE"
 fn              "FN"
@@ -48,11 +51,12 @@ unroll          "UNROLL"
 if              "IF"
 else            "ELSE"
 while           "WHILE"
+ptr             "PTR_OP"
 as              "AS"
 sizeof          "SIZEOF"
 return          "RETURN"
 
-\$?[a-zA-Z_][a-zA-Z0-9_:]*\**    "IDENT"
+[a-zA-Z_][a-zA-Z0-9_:]*          "IDENT"
 \.[a-zA-Z_][a-zA-Z0-9_:]*        "STRUCT_ACCESS"
 
 "(?:[^"\\]|\\.)*"               "STRING"

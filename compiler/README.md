@@ -17,7 +17,6 @@ It also supports global static memory allocations with name bindings, unlike `Fo
 The following list of features are subject to change as development continues.
 
 ### Hello World
-
 ```toastlang
 fn main -> {
     "Hello from a piece of toast!\n" ps
@@ -68,9 +67,12 @@ r110 cellular automata.
   - [ ] Global allocation
 - [ ] Module system to prevent nameclash: `mod io { struct a ... fn b ... }` referenced as `io::a` and `io::b`
   - [x] Basic functionality
-  - [ ] Add `using` keyword to remove the need for prepending `io::`, for example.
+  - [x] Add `using` keyword to remove the need for prepending `io::`, for example.
 - [ ] Function pointers
-  - [ ] Express types like `(u16 -> u16)` or `($a -> u16*)`
+  - [x] Express types like `(u16 -> u16)` or `($a -> u16*)`
+  - [ ] Fix generic function type annotation: see Appendix 1 
+  - [x] Better parsing of types instead of overloading identifiers
+  - [ ] Better parsing of module member types instead of overloading identifier
 - [ ] Recursive struct definitions if size is known at compile time
 
 ## Known issues
@@ -105,3 +107,23 @@ However, `struct` members containing types within submodules are harder to fix. 
 One possible solution to fix this issue is to gather all struct name declarations first (in all places), *then* we will try to populate the sizes of each of the struct declarations, at the same time trying to populate the sizes of each type found in its members. At this time, we can calculate offsets of each of the members of the struct.
 
 If the query for the size of its member (and their members) involves querying the size of itself, then the size of itself is undecidable and we *have to* throw `Recursive struct definitions without indirection are not allowed`
+
+## Appendix
+
+### 1
+
+This doesn't work
+
+```
+fn generic_hackery $a (u16 -> $a)* -> {
+  1 () drop drop
+}
+```
+
+It results in `Output generic "a" has no corresponding input type.`
+
+Why? 
+
+Because when we call the generic function using the `()` operator, we try to resolve the type `$a` within `generic_hackery`. This is not ideal as we only need to make sure that the two `$a` are the same. This can (and is) done when `generic_hackery` is called from other functions. 
+
+I don't know how to fix this and I don't really know if it matters...

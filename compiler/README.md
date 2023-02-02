@@ -68,6 +68,8 @@ r110 cellular automata.
 - [ ] Module system to prevent nameclash: `mod io { struct a ... fn b ... }` referenced as `io::a` and `io::b`
   - [x] Basic functionality
   - [x] Add `using` keyword to remove the need for prepending `io::`, for example.
+  - [ ] See `Rough edges around modules`
+  - [ ] Instead of searching through all `using`s, create a datastructure to map shortnames -> items and pass that around
 - [ ] Function pointers
   - [x] Express types like `(u16 -> u16)` or `($a -> u16*)`
   - [ ] Fix generic function type annotation: see Appendix 1 
@@ -110,7 +112,7 @@ If the query for the size of its member (and their members) involves querying th
 
 ## Appendix
 
-### 1
+### Problem 1
 
 This doesn't work
 

@@ -14,7 +14,7 @@ fn sum u16 -> u16 {
 }
 
 fn test_sum -> {
-    "Testing Sum\n" print_string
+    "Testing Sum... " print_string
     "sum(7) == 21"      { 7 sum 28 - 0 = }      assert
     "sum(22) == 253"    { 22 sum 253 - 0 = }    assert
 }

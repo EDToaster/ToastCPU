@@ -6,13 +6,13 @@ using assert
 using io
 
 fn test_strlen -> {
-    "Testing strlen\n" print_string
+    "Testing strlen... " print_string
     "strlen(\"abcd\")" { "abcd" strlen 4 = } assert
     "strlen(\"\")" { "" strlen 0 = } assert
 }
 
 fn test_streq -> {
-    "Testing streq\n" print_string
+    "Testing streq... " print_string
     "streq(\"\", \"\", 0)" { "" "" 0 streq } assert
     "streq(\"a\", \"\", 0)" { "a" "" 0 streq } assert
     "streq(\"a\", \"a\", 1)" { "a" "a" 1 streq } assert

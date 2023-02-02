@@ -1,11 +1,3 @@
-ifeq ($(OS),Windows_NT)
-  # Windows
-  RM := del
-else
-  # Not Windows
-  RM := rm
-endif
-
 .SECONDARY:
 .PHONY:
 
@@ -19,4 +11,4 @@ endif
 	cargo run --manifest-path ../../../compiler/Cargo.toml -- -i $< -o $@ -I../../lib/ -I./
 
 clean:
-	$(RM) *.mif *.tasm
+	rm *.mif *.tasm

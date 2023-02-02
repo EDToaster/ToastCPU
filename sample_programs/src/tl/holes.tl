@@ -30,4 +30,7 @@ fn main -> {
     // v
        ??
     drop
+
+    // block compilation
+    0
 }

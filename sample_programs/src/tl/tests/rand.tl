@@ -8,7 +8,7 @@ using io
 global random rand::Random 0
 
 fn test_random -> {
-    "Testing random\n" print_string
+    "Testing random... " print_string
     random 0xDEAD rand::rand_init
 
     // period

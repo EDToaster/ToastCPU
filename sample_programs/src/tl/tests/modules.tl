@@ -51,7 +51,7 @@ using using_module::nested
 using io
 
 fn test_modules -> {
-    "Testing Modules\n" print_string
+    "Testing Modules... " print_string
     
     "Inline val"                { module::INLINE_VAL 0xDEAD = }     assert
     "Inline block"              { module::INLINE_BLOCK 3 = }        assert

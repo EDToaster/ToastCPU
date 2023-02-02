@@ -35,16 +35,26 @@ mod func_ptr {
     }
     
     // this doesn't work for now.
-    // fn generic_hackery $a (u16 -> $a)* -> u16 {
-    //     1 swap () + 
+    // fn generic_hackery $a (u16 -> $a)* -> $a $a {
+    //     1 swap ()
     // }
     
+    fn mismatched_generics $a (u16 -> $a)* -> {
+        drop drop
+    }
+
+    fn foo u16 -> u16* {
+        as(u16*)
+    }
 
     fn test -> {
-        "Testing function pointers\n" print_string
+        "Testing function pointers... " print_string
         "do_twice(2, &add_1)" { 2 ptr(add_1) do_twice 4 = } assert
         "do_many(5, &mul_2)" { 5 ptr(mul_2) do_many 160 = } assert
         "do_many(2, &mul_2)" { 2 ptr(mul_2) do_many 128 = } assert
+        
+        // should not compile
+        // 1 ptr(foo) mismatched_generics
     }
 }
 

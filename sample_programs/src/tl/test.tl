@@ -19,27 +19,74 @@
 #include<tests/struct>
 #include<tests/sum>
 
+
+mod test_suite {
+    using test_suite
+
+    // room for 32 tests
+    struct TestSuite {
+        ptrs [32] (->)*
+        size u16
+    }
+
+    global TESTS TestSuite 0
+
+    fn push_test (->)* -> {
+        TESTS .ptrs TESTS .size load + store
+        TESTS .size dup load 1 + swap store
+    }
+
+    fn run_tests -> {
+        0 while { dup TESTS .size load < } {
+            TESTS .ptrs over + load run_test
+            1 +
+        }
+        drop
+    }
+
+    fn run_test (->)* -> {
+        ()
+        get_style GREEN fg 35 left_align "Passed\n" print_string set_style
+    }
+}
+
 using io
+using test_suite
 
 fn main -> {
-    "Hello from ToastLang!\n" print_string
+    BLACK bg WHITE fg
+    clear
 
-    test_color
-    test_sum
-    test_arith
-    test_logical
-    test_strlen
-    test_let
-    test_streq
-    test_mul
-    test_global
-    test_random
-    test_inline
-    test_rec
-    test_struct
-    test_memset
-    test_modules
-    test_func_ptr
+    ptr(test_color)     push_test
+    ptr(test_sum)       push_test
+    ptr(test_arith)     push_test
+    ptr(test_logical)   push_test
+    ptr(test_strlen)    push_test
+    ptr(test_let)       push_test
+    ptr(test_streq)     push_test
+    ptr(test_mul)       push_test
+    ptr(test_global)    push_test
+    ptr(test_random)    push_test
+    ptr(test_inline)    push_test
+    ptr(test_rec)       push_test
+    ptr(test_struct)    push_test
+    ptr(test_memset)    push_test
+    ptr(test_modules)   push_test
+    ptr(test_func_ptr)  push_test
 
-    "Passed All Test Cases!" print_string
+    // run all test cases
+    run_tests
+    
+    '\n' print_char
+    GREEN fg "Passed All Test Cases!" print_string
+
+    "\n\n\n" print_string
+
+    WHITE bg BLACK fg
+    8 left_align "               __        \n" print_string
+    8 left_align "              / _)       \n" print_string
+    8 left_align "     _.----._/ /         \n" print_string
+    8 left_align "   _|         /          \n" print_string
+    8 left_align " _|  (  | (  |           \n" print_string
+    8 left_align "/__.-'|_|--|_| edtoaster \n" print_string
 }

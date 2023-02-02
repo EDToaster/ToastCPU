@@ -17,6 +17,15 @@ mod io {
     inline YELLOW   0b110
     inline WHITE    0b111
 
+    fn clear -> {
+        print_reset
+        0 while { dup 6000 < } {
+            ' ' print_char
+            1 + 
+        } drop
+        print_reset
+    }
+
     fn fg u16 -> {
         0b1100011111111111 text_style load &
         over 11 << | text_style store drop
@@ -27,11 +36,41 @@ mod io {
         over 8 << | text_style store drop
     }
 
+    fn get_style -> u16 {
+        text_style load
+    }
+
+    fn set_style u16 -> {
+        text_style store
+    }
+
     fn print_reset -> {
         100 text_progress store
         0x0000 as(u16*) text_ptr store
     }
 
+    // left align to column
+    // left_align(0) brings next print to the start of the line
+    fn left_align u16 -> {
+        // new_text_progress = 100 - x
+        100 swap -
+
+        // offset = text_progress - new_text_progress
+        dup text_progress load swap -
+
+        // new_tp offset
+
+        // store new_tp to text_progress
+        over text_progress store
+
+        // add offset to text_ptr
+        text_ptr load + text_ptr store
+
+        // drop new_tp
+        drop
+    }
+
+    // todo: optimize
     fn print_char u16 -> {
         dup '\n' = if {
             drop
@@ -53,18 +92,13 @@ mod io {
         }
 
         text_ptr load as(u16) 6000 >= if {
-            0 as(u16*) text_ptr store
-            100 text_progress store
+            print_reset
         }
     }
 
     // Print the hex char
     fn print_hex u16 -> {
-        dup 10 < if {
-            '0' + print_char
-        } else {
-            10 - 'A' + print_char
-        }
+        "0123456789ABCDEF" + load print_char
     }
 
     // Print the nibble

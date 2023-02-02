@@ -13,7 +13,7 @@ fn fib u16 -> u16 {
 }
 
 fn test_rec -> {
-    "Testing Recursion\n" print_string
+    "Testing Recursion... " print_string
     "fib(7)"  { 7 fib 13 =    } assert
     "fib(18)" { 18 fib 2584 = } assert
 }

@@ -1,9 +1,10 @@
 use core::fmt;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fmt::Formatter;
 use lrpar::Span;
-use crate::tl_y::{LexType, Statement, Identifier, FuncType};
+use crate::tl_y::{LexType, Statement, Identifier, FuncType, StructDef};
 use crate::util::dep_graph::DependencyGraph;
+use crate::util::gss::Stack;
 
 macro_rules! tasm {
     ($prog:ident; $($params:expr),*; $asm:literal) => {
@@ -13,12 +14,12 @@ macro_rules! tasm {
 
 #[derive(Debug)]
 pub struct StructDefinition {
-    pub members: HashMap<String, (isize, Type)>,
-    pub size: isize,
+    pub members: HashMap<String, (usize, Type)>,
+    pub size: usize,
 }
 
 pub trait TypeSize {
-    fn type_size(&self, structs: &HashMap<String, StructDefinition>) -> Result<isize, String>;
+    fn type_size(&self, structs: &HashMap<String, StructDefinition>) -> Result<usize, String>;
 }
 
 #[derive(Clone, Eq, PartialEq)]
@@ -66,7 +67,7 @@ impl<T, U> ErrWithSpan<T, U> for Result<T, U> {
 }
 
 impl TypeSize for Type {
-    fn type_size(&self, structs: &HashMap<String, StructDefinition>) -> Result<isize, String> {
+    fn type_size(&self, structs: &HashMap<String, StructDefinition>) -> Result<usize, String> {
         match self {
             Type::Generic(..) | Type::U16 | Type::Pointer(..) | Type::Function(..) => Ok(1),
             Type::Struct(s) => structs
@@ -78,7 +79,7 @@ impl TypeSize for Type {
 }
 
 impl TypeSize for Vec<Type> {
-    fn type_size(&self, structs: &HashMap<String, StructDefinition>) -> Result<isize, String> {
+    fn type_size(&self, structs: &HashMap<String, StructDefinition>) -> Result<usize, String> {
         self.iter().map(|t| t.type_size(structs)).sum()
     }
 }
@@ -120,7 +121,7 @@ impl Type {
 
     // todo: instead of resolving everytime we encounter a type, maintain a copy of the struct_defs map which are mappings from shortname -> resolved name.
     // this way, lookups are O(1)-ish, instead of O(n*m)
-    fn find_struct_def(s: &str, struct_defs: &HashMap<String, StructDefinition>, using_stack: &[Vec<String>]) -> Option<String> {
+    fn find_struct_def<T>(s: &str, struct_defs: &HashMap<String, T>, using_stack: &Stack<String>) -> Option<String> {
         // if we have two structs 
         // 1. foo::A
         // 2. A
@@ -128,12 +129,10 @@ impl Type {
         // prioritize foo::A
 
         // search usings
-        for usings in using_stack.iter().rev() {
-            for using in usings.iter() {
-                let resolved_name = format!("{using}{s}");
-                if struct_defs.contains_key(&resolved_name) {
-                    return Some(resolved_name);
-                }
+        for using in using_stack.iter() {
+            let resolved_name = format!("{using}{s}");
+            if struct_defs.contains_key(&resolved_name) {
+                return Some(resolved_name);
             }
         }
 
@@ -141,18 +140,70 @@ impl Type {
         None
     }
 
-    pub fn parse_types(in_t: &[LexType], out_t: &[LexType], struct_defs: &HashMap<String, StructDefinition>, using_stack: &Vec<Vec<String>>) -> Result<(Vec<Type>, Vec<Type>), String> {
+    pub fn resolve_struct_size(s: &str, struct_defs: &mut HashMap<String, StructDefinition>, structs: &HashMap<String, (Stack<String>, StructDef)>, seen: &mut HashSet<String>) -> Result<usize, String> {
+        if seen.contains(s) {
+            // this means that we have queried for this type before but have not found its size yet!
+            return Err(format!("Struct `{s}` contains a recursive definition without indirection"));
+        }
+        seen.insert(s.to_string());
+        
+        let (usings, subdef) = structs.get(s).ok_or(format!("Error looking up struct `{s}`, that type is not in scope here."))?;
+    
+        let mut members: HashMap<String, (usize, Type)> = HashMap::new();
+        let mut offset = 0usize;
+        for member in &subdef.members {
+            let member_name = member.name.name.clone();
+            match &member.var_type {
+                t @ LexType::Base(Identifier { name: type_name, .. } ) => {
+                    match type_name.as_str() {
+                        "u16" => {
+                            members.insert(member_name, (offset, Type::U16));
+                            offset += member.size as usize;
+                        },
+                        member_type => {
+                            // get the name of the struct 
+                            let member_resolved_type = Type::find_struct_def(member_type, structs, usings)
+                                .ok_or(format!("Error looking up member type `{member_type}` for struct `{s}`, that type is not in scope here."))?;
+                            let size = if let Some(member_type) = struct_defs.get(&member_resolved_type) {
+                                member_type.size
+                            } else {
+                                Type::resolve_struct_size(&member_resolved_type, struct_defs, structs, seen)?
+                            };
+
+                            let member_type = Type::parse(t, struct_defs, usings)?;
+                            members.insert(member_name, (offset, member_type));
+                            offset += size * member.size as usize;
+                        }
+                    }
+                },
+                t @ crate::tl_y::LexType::Ptr(_) => {
+                    let member_type = Type::parse(t, structs, usings)?;
+                    members.insert(member_name, (offset, member_type));
+                    offset += member.size as usize;
+                },
+                crate::tl_y::LexType::Func(_) => return Err(format!("Struct `{}` directly defines a function as a type. You should use a function pointer here.", &member.name.name)),
+                crate::tl_y::LexType::Gen(_) => return Err(format!("Struct `{}` directly defines a generic as a type. You must use a concrete type here.", &member.name.name)),
+            };
+        }
+    
+        struct_defs.insert(s.to_string(), StructDefinition { members, size: offset });
+    
+        Ok(offset)
+    }
+
+
+    pub fn parse_types<T>(in_t: &[LexType], out_t: &[LexType], struct_defs: &HashMap<String, T>, using_stack: &Stack<String>) -> Result<(Vec<Type>, Vec<Type>), String> {
         let in_parsed: Vec<Type> = in_t.iter().map(|t| Type::parse(t, struct_defs, using_stack)).collect::<Result<Vec<Type>, String>>()?;
         let out_parsed: Vec<Type> = out_t.iter().map(|t| Type::parse(t, struct_defs, using_stack)).collect::<Result<Vec<Type>, String>>()?;
         Ok((in_parsed, out_parsed))
     }
 
-    pub fn parse_func_def(t: &FuncType, struct_defs: &HashMap<String, StructDefinition>, using_stack: &Vec<Vec<String>>) -> Result<FunctionType, String> {
+    pub fn parse_func_def<T>(t: &FuncType, struct_defs: &HashMap<String, T>, using_stack: &Stack<String>) -> Result<FunctionType, String> {
         let (in_t, out_t) = Type::parse_types(&t.i, &t.o, struct_defs, using_stack)?;
         Ok(FunctionType { in_t, out_t })
     }
 
-    pub fn parse(t: &LexType, struct_defs: &HashMap<String, StructDefinition>, using_stack: &Vec<Vec<String>>) -> Result<Type, String> {
+    pub fn parse<T>(t: &LexType, struct_defs: &HashMap<String, T>, using_stack: &Stack<String>) -> Result<Type, String> {
         match t {
             LexType::Base(Identifier { name, .. }) => {
                 match name.as_str() {

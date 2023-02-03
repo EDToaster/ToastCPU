@@ -14,6 +14,7 @@
 #include<tests/modules>
 #include<tests/mul>
 #include<tests/rand>
+#include<tests/rec_types>
 #include<tests/rec>
 #include<tests/string>
 #include<tests/struct>
@@ -73,6 +74,7 @@ fn main -> {
     ptr(test_memset)    push_test
     ptr(test_modules)   push_test
     ptr(test_func_ptr)  push_test
+    ptr(test_rec_types) push_test
 
     // run all test cases
     run_tests

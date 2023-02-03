@@ -11,4 +11,4 @@
 	cargo run --manifest-path ../../../compiler/Cargo.toml -- -i $< -o $@ -I../../lib/ -I./
 
 clean:
-	rm *.mif *.tasm
+	rm *.mif *.tasm ||:

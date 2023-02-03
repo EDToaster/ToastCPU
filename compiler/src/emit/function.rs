@@ -6,7 +6,7 @@ use crate::util::gss::Stack;
 use crate::util::labels::function_label;
 use lrpar::Span;
 
-pub fn emit_isr(f: &Function, global_state: &mut GlobalState, using_stack: &Vec<Vec<String>>) -> Result<String, (Span, String)> {
+pub fn emit_isr(f: &Function, global_state: &mut GlobalState, using_stack: &Stack<String>) -> Result<String, (Span, String)> {
     let func_name = &f.name.name;
     let function_out_label = format!("{func_name}_exit");
 
@@ -59,7 +59,7 @@ fn .isr
 pub fn emit_function(
     f: &Function, module_prefix: &str, 
     global_state: &mut GlobalState,
-    using_stack: &Vec<Vec<String>>
+    using_stack: &Stack<String>
 ) -> Result<String, (Span, String)> {
     // at this point we really only care about one function
     let func_name = &format!("{module_prefix}{}", &f.name.name);

@@ -18,7 +18,7 @@ pub fn emit_operator(
     global_state: &mut GlobalState,
     function_state: &mut FunctionState,
     stack_view: &mut Stack<Type>,
-    using_stack: &Vec<Vec<String>>
+    using_stack: &Stack<String>
 ) -> Result<String, (Span, String)> {
     let mut operation = String::new();
 
@@ -481,7 +481,7 @@ push  t0
             }
         }
         Operator::ConstArrayAccess(span, offset_literal) => {
-            let offset = offset_literal.val;
+            let offset = offset_literal.val as usize;
             let dropped_t = &check_and_apply_stack_transition(
                 &format!("[{offset}]"),
                 span,

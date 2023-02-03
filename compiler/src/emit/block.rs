@@ -4,7 +4,7 @@ use crate::emit::types::*;
 use crate::tl_y::*;
 use crate::util::gss::Stack;
 
-pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState, function_state: &mut FunctionState, stack_view: &mut Stack<Type>, using_stack: &Vec<Vec<String>>) -> Result<String, (Span, String)> {
+pub fn emit_block(block_id: &str, b: &Block, global_state: &mut GlobalState, function_state: &mut FunctionState, stack_view: &mut Stack<Type>, using_stack: &Stack<String>) -> Result<String, (Span, String)> {
     let mut block = "".to_string();
 
     for i in &b.body {

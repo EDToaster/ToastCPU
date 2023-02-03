@@ -13,38 +13,32 @@ use lrpar::Span;
 // todo: instead of resolving everytime we encounter a global, maintain a copy of the struct_defs map which are mappings from shortname -> resolved name.
 // this way, lookups are O(1)-ish, instead of O(n*m)
 // todo: see how we resolve types
-pub fn find_global(s: &str, globals: &HashMap<String, (Type, isize, isize)>, using_stack: &[Vec<String>]) -> Option<(String, Type)> {
-    for usings in using_stack.iter().rev() {
-        for using in usings.iter() {
-            let resolved_name = format!("{using}{s}");
-            if let Some((t, _, _)) = globals.get(&resolved_name) {
-                return Some((resolved_name, t.clone()));
-            }
+pub fn find_global(s: &str, globals: &HashMap<String, (Type, isize, isize)>, using_stack: &Stack<String>) -> Option<(String, Type)> {
+    for using in using_stack.iter() {
+        let resolved_name = format!("{using}{s}");
+        if let Some((t, _, _)) = globals.get(&resolved_name) {
+            return Some((resolved_name, t.clone()));
         }
     }
     None
 }
 
 // todo: coalesce this, type, global, and inline resolvers
-pub fn find_function(s: &str, function_signatures: &HashMap<String, FunctionType>, using_stack: &[Vec<String>]) -> Option<(String, FunctionType)> {
-    for usings in using_stack.iter().rev() {
-        for using in usings.iter() {
-            let resolved_name = format!("{using}{s}");
-            if let Some(types) = function_signatures.get(&resolved_name) {
-                return Some((resolved_name, types.clone()));
-            }
+pub fn find_function(s: &str, function_signatures: &HashMap<String, FunctionType>, using_stack: &Stack<String>) -> Option<(String, FunctionType)> {
+    for using in using_stack.iter() {
+        let resolved_name = format!("{using}{s}");
+        if let Some(types) = function_signatures.get(&resolved_name) {
+            return Some((resolved_name, types.clone()));
         }
     }
     None
 }
 
-pub fn find_inline(s: &str, inlines: &HashMap<String, Statement>, using_stack: &[Vec<String>]) -> Option<Statement> {
-    for usings in using_stack.iter().rev() {
-        for using in usings.iter() {
-            let resolved_name = format!("{using}{s}");
-            if let Some(statement) = inlines.get(&resolved_name) {
-                return Some(statement.clone());
-            }
+pub fn find_inline(s: &str, inlines: &HashMap<String, Statement>, using_stack: &Stack<String>) -> Option<Statement> {
+    for using in using_stack.iter() {
+        let resolved_name = format!("{using}{s}");
+        if let Some(statement) = inlines.get(&resolved_name) {
+            return Some(statement.clone());
         }
     }
     None
@@ -56,8 +50,8 @@ pub fn emit_statement(
     s: &Statement,
     global_state: &mut GlobalState,
     function_state: &mut FunctionState,
-    stack_view: &mut Stack<Type>,
-    using_stack: &Vec<Vec<String>>
+    stack_view: &mut Stack<Type>, 
+    using_stack: &Stack<String>
 ) -> Result<String, (Span, String)> {
     let mut block = String::new();
 

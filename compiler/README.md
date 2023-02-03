@@ -68,7 +68,8 @@ r110 cellular automata.
 - [ ] Module system to prevent nameclash: `mod io { struct a ... fn b ... }` referenced as `io::a` and `io::b`
   - [x] Basic functionality
   - [x] Add `using` keyword to remove the need for prepending `io::`, for example.
-  - [ ] See `Rough edges around modules`
+  - [x] See `Rough edges around modules`
+    - [ ] Clean up the code though...
   - [ ] Instead of searching through all `using`s, create a datastructure to map shortnames -> items and pass that around
 - [ ] Function pointers
   - [x] Express types like `(u16 -> u16)` or `($a -> u16*)`

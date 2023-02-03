@@ -37,15 +37,15 @@ mod test_suite {
         TESTS .size dup load 1 + swap store
     }
 
-    fn run_tests -> {
+    fn run_tests -> u16 {
         0 while { dup TESTS .size load < } {
-            TESTS .ptrs over + load run_test
+            TESTS .ptrs over + load over run_test
             1 +
         }
-        drop
     }
 
-    fn run_test (->)* -> {
+    fn run_test (->)* u16 -> {
+        print_word ": " print_string
         ()
         get_style GREEN fg 35 left_align "Passed\n" print_string set_style
     }
@@ -80,7 +80,7 @@ fn main -> {
     run_tests
     
     '\n' print_char
-    GREEN fg "Passed All Test Cases!" print_string
+    GREEN fg "Passed " print_string print_decimal " Test Cases!" print_string
 
     "\n\n\n" print_string
 

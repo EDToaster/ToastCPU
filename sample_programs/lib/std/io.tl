@@ -145,7 +145,7 @@ mod io {
     global key_buffer KeyBuffer 0
 
     fn keyboard_init -> {
-        key_buffer as(u16*) 0 sizeof(KeyBuffer) memset
+        key_buffer as(u16*) 0 sizeof(KeyBuffer) mem::memset
     }
 
     fn keyboard_handle_input -> {

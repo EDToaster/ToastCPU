@@ -1,6 +1,7 @@
 #include<std/io>
 
 mod assert {
+    using assert
     using io
 
     //        testname cond

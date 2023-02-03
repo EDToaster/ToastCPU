@@ -7,6 +7,7 @@ struct _Outer {
 
 mod rec_types {
     using rec_types
+    using assert
 
     struct Inner {
         a _Outer

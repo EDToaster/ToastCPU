@@ -5,6 +5,7 @@
 mod func_ptr {
     using func_ptr
     using io
+    using assert
 
     fn add_1 u16 -> u16 {
         1 +

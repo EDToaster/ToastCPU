@@ -67,7 +67,7 @@ fn main -> {
     ptr(test_streq)     push_test
     ptr(test_mul)       push_test
     ptr(test_global)    push_test
-    ptr(test_random)    push_test
+    ptr(test_rand)      push_test
     ptr(test_inline)    push_test
     ptr(test_rec)       push_test
     ptr(test_struct)    push_test

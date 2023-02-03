@@ -1,20 +1,27 @@
 #include<std/assert>
 #include<std/io>
 
-using assert
-using io
+mod sum {
+    using sum
+    using assert
+    using io
 
-// Sums 1..n inclusive
-fn sum u16 -> u16 {
-    0 swap
-    while {dup} {
-        swap over + swap 1 -
+    // Sums 1..n inclusive
+    fn sum u16 -> u16 {
+        0 swap
+        while {dup} {
+            swap over + swap 1 -
+        }
+        drop
     }
-    drop
+
+    fn test -> {
+        "Testing Sum... " print_string
+        "sum(7) == 21"      { 7 sum 28 - 0 = }      assert
+        "sum(22) == 253"    { 22 sum 253 - 0 = }    assert
+    }
 }
 
 fn test_sum -> {
-    "Testing Sum... " print_string
-    "sum(7) == 21"      { 7 sum 28 - 0 = }      assert
-    "sum(22) == 253"    { 22 sum 253 - 0 = }    assert
+    sum::test
 }

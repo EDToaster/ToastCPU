@@ -6,6 +6,7 @@
 
 mod os {
     using os
+    using str
 
     using io
     using command_buffer

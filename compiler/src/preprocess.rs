@@ -4,6 +4,8 @@ use std::path::PathBuf;
 use lazy_static::lazy_static;
 use regex::{Captures, Regex};
 
+use crate::is_verbose;
+
 lazy_static!(
     static ref INCLUDE_REGEX: Regex = Regex::new(r"#include<(?P<path>[a-zA-Z0-9_/-]+)>").unwrap();
 );
@@ -34,12 +36,19 @@ pub fn preprocess(input: &str, include_paths: &Vec<String>, included_files: &mut
         let range = text.range(); // range in the original text
         let path = m["path"].trim();
         if included_files.contains(path) {
-            println!("Path {path} already included, skipping");
+            // todo: update our bookmarks
+            prog.replace_range(range, "");
+            if is_verbose() {
+                println!("Path {path} already included, skipping");
+            }
             continue;
         }
-        println!("Including path {path}");
+        if is_verbose() {
+            println!("Including path {path}");
+        }
         included_files.insert(path.to_string());
         let text = preprocess(&find_first_in_include_path(path, include_paths)?, include_paths, included_files)?;
+        // todo: update our bookmarks
         prog.replace_range(range, text.as_str());
     }
 

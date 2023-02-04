@@ -1,6 +1,7 @@
 use crate::emit::function::{emit_function, emit_isr};
 use crate::emit::string_defs::emit_string_defs;
 use crate::emit::types::{tasm, GlobalState, Type, TypeSize};
+use crate::is_verbose;
 use crate::tl_y::{Module, StructDef};
 use crate::util::dep_graph::DependencyGraph;
 use crate::util::gss::Stack;
@@ -213,12 +214,21 @@ fn .init_globals
     global_state.function_dependencies.roots.insert("isr".to_string());
     global_state.function_dependencies.roots.insert("main".to_string());
 
-    emit_functions(m, "", &mut global_state, &mut function_map, &mut using_stack)?;
+    emit_functions(m, "", &mut global_state, &mut function_map, &using_stack)?;
 
     let mut functions: String = String::new();
     let used_functions = global_state.function_dependencies.calculate_used();
 
-    println!("{} functions defined, {} will be emitted after tree shaking", function_map.len(), used_functions.len());
+    if is_verbose() {
+        println!("{} functions defined, {} will be emitted after tree shaking", function_map.len(), used_functions.len());
+        println!("These functions will not be emitted:");
+
+        for func in function_map.keys() {
+            if !used_functions.contains(func) {
+                println!("- {func}");
+            } 
+        }
+    }
 
     for (f, v) in function_map.iter() {
         if used_functions.contains(f) {

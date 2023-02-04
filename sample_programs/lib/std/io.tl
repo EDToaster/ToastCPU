@@ -1,4 +1,5 @@
 #include<std/mem>
+#include<std/math>
 
 mod io {
     using io
@@ -121,23 +122,23 @@ mod io {
         as(u16) print_word
     }
 
-    fn _divmod u16 u16 -> u16 u16 {
-        let num denom {
-            0
-            while { num load denom load > } {
-                num load denom load - num store
-                1 +
-            }
-            num load
+    inline _divmod_print {
+        // div:u16 -> 
+        math::divmod swap dup do_print load || dup do_print store if {
+            '0' + print_char
+        } else {
+            drop
         }
     }
 
     fn print_decimal u16 -> {
-        10000 _divmod swap '0' + print_char
-        1000 _divmod swap '0' + print_char
-        100 _divmod swap '0' + print_char
-        10 _divmod swap '0' + print_char
-        '0' + print_char
+        0 let do_print {
+            10000   _divmod_print
+            1000    _divmod_print
+            100     _divmod_print
+            10      _divmod_print
+            '0' +   print_char
+        }
     }
 
     //     strptr

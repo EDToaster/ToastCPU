@@ -8,7 +8,7 @@
 	python3 ../../../assembler/assembler.py -i $< -o $@
 
 %.tasm: %.tl ./tests/*.tl
-	cargo run --manifest-path ../../../compiler/Cargo.toml -- -i $< -o $@ -I../../lib/ -I./
+	cargo run --manifest-path ../../../compiler/Cargo.toml -- -i $< -o $@ -I../../lib/ -I./ -v
 
 clean:
 	rm *.mif *.tasm ||:

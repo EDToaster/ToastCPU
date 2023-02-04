@@ -45,8 +45,8 @@ mod test_suite {
     }
 
     fn run_test (->)* u16 -> {
-        print_word ": " print_string
-        ()
+        print_decimal ": " print_string
+        4 left_align ()
         get_style GREEN fg 35 left_align "Passed\n" print_string set_style
     }
 }

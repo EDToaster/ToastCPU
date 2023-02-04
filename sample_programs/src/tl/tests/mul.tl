@@ -1,23 +1,12 @@
 #include<std/assert>
 #include<std/io>
+#include<std/math>
 
 mod mul {
     using mul
     using assert
     using io
-
-    // multiply by repeated add
-    fn mul u16 u16 -> u16 {
-        0 let a b acc {
-            while { b load } {
-                // acc += a
-                acc load { a load } + acc store
-                // b -= 1
-                b load 1 - b store
-            }
-            acc load
-        }
-    }
+    using math
 
     fn test -> {
         "Testing mul... " print_string

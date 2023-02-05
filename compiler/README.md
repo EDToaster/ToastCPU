@@ -2,7 +2,8 @@
 
 ToastLang (`tl`) is a compiled language that compiles down to `tasm` (see: `assembler`) which can be further compiled 
 down to the `Toast architecture instruction set`. The resulting binary (`.mif` file) can be
-run through the emulated ToastCPU or fpga implementation.
+run through the emulated ToastCPU or fpga implementation. Toastlang should not be used to compile to any architecture other 
+than `ToastCPU` since a lot of limitations were designed with `ToastCPU` in mind.
 
 `tl` is a stack-based concatenative language, similar to `Forth`, `Porth`, and `Joy`. However,
 unlike a pure stack-based language, it supports static allocation on the heap, and uses an
@@ -17,21 +18,41 @@ It also supports global static memory allocations with name bindings, unlike `Fo
 The following list of features are subject to change as development continues.
 
 ### Hello World
-```toastlang
+```rust
 fn main -> {
-    "Hello from a piece of toast!\n" ps
+    "Hello from a piece of toast!\n" io::print_string
 }
 ```
 
 ### Basic Arithmetic
-```toastlang
+```rust
 fn main -> {
-  1 2 + p
+  1 2 + io::print_word
 }
 ```
 
 This piece of code pushes `1` and `2` on to the stack. Then, the `+` operator pops two values from the stack and pushes 
-the sum on to the stack. The `p` function prints out the resulting number in hex notation.
+the sum on to the stack. The `io::print_word` function prints out the resulting number in hex notation.
+
+### Defining Functions
+
+Functions are defined using the `fn` keyword -- like you've been doing with the `main` function! Functions that alter the stack
+are required to declare these effects using the `->` definition. As seen below, the `add` function requires two `u16` types at the 
+top of the stack, which is transformed into a single `u16` at the top of the stack. 
+
+```rust
+fn add u16 u16 -> u16 {
+  +
+}
+
+fn main -> {
+  1 2 add
+}
+```
+
+### Defining Structs
+
+### Defining Methods on Structs
 
 ### Turing Completeness
 

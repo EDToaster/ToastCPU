@@ -307,9 +307,9 @@ pub fn emit_statement(
 .{ret_label}
                             "
                         );
-                        global_state.function_dependencies.add_dependency(function_state.function_name.clone(), name);
+                        global_state.function_dependencies.add_dependency(function_state.function_name.clone(), name.clone());
 
-                        check_and_apply_stack_transition(s, span, stack_view, &func.in_t, &func.out_t)?;
+                        check_and_apply_stack_transition(&format!("{} in {}", &name, &function_state.function_name), span, stack_view, &func.in_t, &func.out_t)?;
                     }
                 }
             }

@@ -4,6 +4,11 @@ mod mem {
     using mem
     using io
 
+    //         dest num
+    fn memzero $a* u16 -> {
+        swap as(u16*) swap 0 swap memset
+    }
+
     // Sets num elements at dest to val
     // todo: make this a lot cleaner without let bindings
     //        dest val num
@@ -27,5 +32,15 @@ mod mem {
             }
             drop
         }
+    }
+
+    fn booldump $a* u16 -> {
+        swap as(u16*) swap
+        while { dup 0 > } {
+            swap dup load if { '1' } else { '0' } print_char
+            1 + swap
+            1 -
+        }
+        drop drop
     }
 }

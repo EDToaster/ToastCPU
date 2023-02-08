@@ -1,7 +1,8 @@
 /**
  * Terminal implementation
  */
-use std::io::Stdout;
+use std::{io::Stdout, sync::atomic::Ordering};
+use std::sync::atomic::AtomicU16;
 
 use crossterm::{
     cursor::{Hide, MoveTo},
@@ -36,18 +37,20 @@ const COLORS: [Color; 8] = [
     },
 ];
 
-pub struct Vga {
+pub struct Vga<'a> {
     width: usize,
     height: usize,
     stdout: Stdout,
+    vram: &'a Vec<AtomicU16>,
 }
 
-impl Vga {
-    pub fn new(width: usize, height: usize, stdout: Stdout) -> Vga {
+impl <'a> Vga<'a> {
+    pub fn new(width: usize, height: usize, stdout: Stdout, vram: &Vec<AtomicU16>) -> Vga {
         Vga {
             width,
             height,
             stdout,
+            vram,
         }
     }
 
@@ -70,13 +73,13 @@ impl Vga {
     }
 
     pub fn put_diagnostics(&mut self, x: u16, s: &str) {
-        execute!(
-            self.stdout,
-            SetColors(Colors::new(Color::White, Color::Blue)),
-            MoveTo(x, 0),
-            Print(format!("{: <width$}", s, width = self.width)),
-        )
-        .expect("Something went wrong writing to the virtual terminal!");
+        // execute!(
+        //     self.stdout,
+        //     SetColors(Colors::new(Color::White, Color::Blue)),
+        //     MoveTo(x, 0),
+        //     Print(format!("{: <width$}", s, width = self.width)),
+        // )
+        // .expect("Something went wrong writing to the virtual terminal!");
     }
 
     pub fn put_char(&mut self, offset: usize, val: u16) {
@@ -93,5 +96,13 @@ impl Vga {
             Print((val & 0x00FF) as u8 as char),
         )
         .expect("Something went wrong writing to the virtual terminal!");
+    }
+
+    pub fn start_loop(&mut self) {
+        loop {
+            for i in 0..self.vram.len() {
+                self.put_char(i, self.vram[i].load(Ordering::Relaxed));
+            }
+        }
     }
 }

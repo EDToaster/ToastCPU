@@ -2,15 +2,15 @@ use std::time::{Duration, SystemTime};
 
 use crate::vga::Vga;
 
-pub struct Diagnostics {
+pub struct Diagnostics<'a> {
     interval: Duration,
     prev_time: SystemTime,
     running_count: i64,
 
-    vga: Vga,
+    vga: Vga<'a>,
 }
 
-impl Diagnostics {
+impl<'a> Diagnostics<'a> {
     pub fn new(vga: Vga, interval: Duration) -> Diagnostics {
         Diagnostics {
             interval,

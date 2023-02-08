@@ -1,22 +1,20 @@
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, atomic::{AtomicU16, Ordering}};
 
-use crate::vga::Vga;
-
-pub struct Devices {
+pub struct Devices<'a> {
     rom: Vec<u16>,
-    vga: Vga,
+    vram: &'a Vec<AtomicU16>,
     ram: Vec<u16>,
     key: Arc<Mutex<u16>>,
 }
 
-impl Devices {
+impl <'a> Devices<'a> {
     pub fn new(
         rom: Vec<u16>,
-        vga: Vga,
+        vram: &Vec<AtomicU16>,
         ram: Vec<u16>,
         key: Arc<Mutex<u16>>,
     ) -> Devices {
-        Devices { rom, vga, ram, key }
+        Devices { rom, vram, ram, key }
     }
 
     pub fn read(&self, addr: u16) -> Result<u16, String> {
@@ -36,7 +34,7 @@ impl Devices {
         match addr {
             0..=0x7FFF => {
                 // println!("{:04x} at {:04x}", val, addr);
-                self.vga.put_char(addr.into(), val);
+                self.vram[addr as usize].swap(val, Ordering::Relaxed);
             }
             0x8000..=0xBFFF => self.ram[(addr - 0x8000) as usize] = val,
             _ => return Err(format!("Memory location {addr:#06x}={val:#06x}")),

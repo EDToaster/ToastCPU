@@ -1,6 +1,6 @@
-use std::collections::HashSet;
 use lrlex::lrlex_mod;
-use lrpar::{LexParseError, lrpar_mod, NonStreamingLexer};
+use lrpar::{lrpar_mod, LexParseError, NonStreamingLexer};
+use std::collections::HashSet;
 
 use std::error::Error;
 use std::fmt::{Display, Formatter};
@@ -8,19 +8,20 @@ use std::fs;
 extern crate argparse;
 extern crate core;
 
-use argparse::{ArgumentParser, Collect, Store, StoreTrue};
-use regex::Regex;
 use crate::emit::module::emit_root_module;
 use crate::preprocess::preprocess;
+use argparse::{ArgumentParser, Collect, Store, StoreTrue};
+use regex::Regex;
 
 use once_cell::sync::OnceCell;
 
 lrlex_mod!("tl.l");
 lrpar_mod!("tl.y");
 
-mod util;
 mod emit;
+mod parser_util;
 mod preprocess;
+mod util;
 
 static VERBOSE: OnceCell<bool> = OnceCell::new();
 
@@ -58,13 +59,21 @@ fn get_args() -> Result<Options, ArgParseError> {
             .add_option(&["-i", "--input-file"], Store, "Input .tl file");
         ap.refer(&mut output)
             .add_option(&["-o", "--output-file"], Store, "Output file location");
-        ap.refer(&mut include_paths)
-            .add_option(&["-I", "--include"], Collect, "Include file paths");
+        ap.refer(&mut include_paths).add_option(
+            &["-I", "--include"],
+            Collect,
+            "Include file paths",
+        );
         ap.refer(&mut verbose)
             .add_option(&["-v", "--verbose"], StoreTrue, "Verbose mode");
         ap.parse_args()
     }
-    .map(|_| Options { input, output, include_paths, verbose })
+    .map(|_| Options {
+        input,
+        output,
+        include_paths,
+        verbose,
+    })
     .map_err(ArgParseError)
 }
 
@@ -79,7 +88,9 @@ fn main() -> Result<(), String> {
     let mut program_text = fs::read_to_string(options.input).map_err(|e| e.to_string())?;
     program_text = preprocess(&program_text, &options.include_paths, &mut HashSet::new())?;
 
-    println!("{program_text}");
+    if is_verbose() {
+        println!("{program_text}");
+    }
 
     let lexer_def = tl_l::lexerdef();
 
@@ -96,11 +107,14 @@ fn main() -> Result<(), String> {
         }
     }
 
-    let r = res.ok_or("Some parser thing went wrong!")?
+    let r = res
+        .ok_or("Some parser thing went wrong!")?
         .map_err(|_| "Some parser thing went wrong!")?;
 
     let newline_nuke = Regex::new(r"(\n|\r\n)\s*(\n|\r\n)").unwrap();
-    let tasm = newline_nuke.replace_all(emit_root_module(&r)?.as_str(), "\n").to_string();
+    let tasm = newline_nuke
+        .replace_all(emit_root_module(&r)?.as_str(), "\n")
+        .to_string();
     fs::write(options.output, tasm).expect("Unable to write file");
 
     Ok(())

@@ -20,7 +20,6 @@
 #include<tests/struct>
 #include<tests/sum>
 
-
 mod test_suite {
     using test_suite
 

@@ -16,8 +16,8 @@ pub fn emit_string_defs(global_state: &GlobalState) -> String {
 
     for (k, v) in global_state.string_allocs.iter() {
         tasm!(
-                                                            string_defs;;
-                                                            r"
+            string_defs;;
+            r"
 .{v}
 "
                                                         );

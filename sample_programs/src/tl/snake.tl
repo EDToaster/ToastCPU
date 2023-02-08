@@ -28,6 +28,8 @@ mod snake {
     global head      u16* 0
     global direction u16  4
 
+    global style     u16  0x3F
+
     global random Random 0
 
     fn main -> {
@@ -61,7 +63,11 @@ mod snake {
             } else { 0 }}}}
             swap drop head load + dup head store
 
-            random rand_int 0x7 & 8 << 0x20 | swap store
+            style load 8 << 0x20 | swap store
+
+            // style load 1 + 0x3F & style store
+
+            0 while { dup 30000 < } { 1 + } drop
 
             // drop the 0 at the end
             drop

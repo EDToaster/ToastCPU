@@ -1,9 +1,8 @@
-use std::sync::{Arc, Mutex};
 use lazy_static::lazy_static;
+use std::sync::{Arc, Mutex};
 
 lazy_static! {
-    static ref COUNTER: Arc<Mutex<usize>> =
-        Arc::new(Mutex::new(0));
+    static ref COUNTER: Arc<Mutex<usize>> = Arc::new(Mutex::new(0));
 }
 
 pub fn generate_label(base_label: &str) -> String {

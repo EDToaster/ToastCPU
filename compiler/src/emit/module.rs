@@ -1,57 +1,87 @@
 use crate::emit::function::{emit_function, emit_isr};
 use crate::emit::string_defs::emit_string_defs;
-use crate::emit::types::{tasm, GlobalState, Type, TypeSize};
+use crate::emit::types::*;
 use crate::is_verbose;
-use crate::tl_y::{Module, StructDef};
+use crate::parser_util::types::*;
 use crate::util::dep_graph::DependencyGraph;
 use crate::util::gss::Stack;
 use crate::util::labels::global_label;
 use std::collections::{HashMap, HashSet};
 
-fn gather_struct_declarations(m: &Module, module_prefix: &str, usings: &Stack<String>, structs: &mut HashMap<String, (Stack<String>, StructDef)>) -> Result<(), String> {
+fn gather_struct_declarations(
+    m: &Module,
+    module_prefix: &str,
+    usings: &Stack<String>,
+    structs: &mut HashMap<String, (Stack<String>, StructDef)>,
+) -> Result<(), String> {
     let mut usings = usings.clone();
 
     for using in &m.usings {
         usings.push(format!("{}::", using.name.name));
     }
-    
+
     for s in &m.struct_defs {
         let name = format!("{module_prefix}{}", s.name.name);
+        if structs.contains_key(&name) {
+            return Err(format!("Struct `{name}` is already defined."));
+        }
         structs.insert(name, (usings.clone(), s.clone()));
-    }    
+    }
 
     // submodules
     for module in &m.modules {
         gather_struct_declarations(
-            &module.module, 
+            &module.module,
             &format!("{module_prefix}{}::", &module.name.name),
             &usings,
-            structs)?;
+            structs,
+        )?;
     }
 
     Ok(())
 }
 
-pub fn gather_definitions(m: &Module, module_prefix: &str, global_state: &mut GlobalState, using_stack: &mut Stack<String>) -> Result<(), String> {
-
+pub fn gather_definitions(
+    m: &Module,
+    module_prefix: &str,
+    global_state: &mut GlobalState,
+    using_stack: &mut Stack<String>,
+) -> Result<(), String> {
     // gather definitions for submodules first
     for module in &m.modules {
-        let submod_usings: Vec<String> = module.module.usings.iter().map(|e| format!("{}::", e.name.name)).collect();
+        let submod_usings: Vec<String> = module
+            .module
+            .usings
+            .iter()
+            .map(|e| format!("{}::", e.name.name))
+            .collect();
         let mut using_stack = using_stack.clone();
         for submod_using in submod_usings {
             using_stack.push(submod_using);
         }
-        gather_definitions(&module.module, &format!("{module_prefix}{}::", &module.name.name), global_state, &mut using_stack)?;
+        gather_definitions(
+            &module.module,
+            &format!("{module_prefix}{}::", &module.name.name),
+            global_state,
+            &mut using_stack,
+        )?;
     }
 
     // preprocess function signatures
     for f in &m.functions {
         let name = &f.name.name;
         let qualified_name = format!("{module_prefix}{name}");
+        if global_state
+            .function_signatures
+            .contains_key(&qualified_name)
+        {
+            return Err(format!("Function {qualified_name} is already defined."));
+        }
         global_state.function_signatures.insert(
             qualified_name.clone(),
-            Type::parse_func_def(&f.type_def, &global_state.struct_defs, using_stack)
-                .map_err(|e| format!("Could not parse some types in function {qualified_name}: {e}"))?,
+            Type::parse_func_def(&f.type_def, &global_state.struct_defs, using_stack).map_err(
+                |e| format!("Could not parse some types in function {qualified_name}: {e}"),
+            )?,
         );
     }
 
@@ -61,11 +91,10 @@ pub fn gather_definitions(m: &Module, module_prefix: &str, global_state: &mut Gl
         let lex_type = &g.var_type;
         let t = Type::parse(lex_type, &global_state.struct_defs, using_stack)
             .map_err(|_| format!("Type {lex_type:?} not in scope"))?;
-        
-        global_state.globals.insert(
-            format!("{module_prefix}{name}"),
-            (t, g.size, g.val.val)  
-        );
+
+        global_state
+            .globals
+            .insert(format!("{module_prefix}{name}"), (t, g.size, g.val.val));
     }
 
     // preprocess inlines
@@ -73,34 +102,54 @@ pub fn gather_definitions(m: &Module, module_prefix: &str, global_state: &mut Gl
         let name = &inline.name.name;
         global_state
             .inlines
-            .insert(
-                format!("{module_prefix}{name}"),
-                inline.statement.clone()
-            );
+            .insert(format!("{module_prefix}{name}"), inline.statement.clone());
     }
 
     Ok(())
 }
 
-pub fn emit_functions(m: &Module, module_prefix: &str, global_state: &mut GlobalState, function_map: &mut HashMap<String, String>, using_stack: &Stack<String>) -> Result<(), String> {
-
+pub fn emit_functions(
+    m: &Module,
+    module_prefix: &str,
+    global_state: &mut GlobalState,
+    function_map: &mut HashMap<String, String>,
+    using_stack: &Stack<String>,
+) -> Result<(), String> {
     // emit submodule functions
     for module in &m.modules {
-        let submod_usings: Vec<String> = module.module.usings.iter().map(|e| format!("{}::", e.name.name)).collect();
+        let submod_usings: Vec<String> = module
+            .module
+            .usings
+            .iter()
+            .map(|e| format!("{}::", e.name.name))
+            .collect();
         let mut using_stack = using_stack.clone();
         for submod_using in submod_usings {
             using_stack.push(submod_using);
         }
-        emit_functions(&module.module, &format!("{module_prefix}{}::", &module.name.name), global_state, function_map, &using_stack)?;
+        emit_functions(
+            &module.module,
+            &format!("{module_prefix}{}::", &module.name.name),
+            global_state,
+            function_map,
+            &using_stack,
+        )?;
     }
 
     for f in &m.functions {
         match &*format!("{module_prefix}{}", &f.name.name) {
             s @ "isr" => {
-                function_map.insert(s.to_string(), emit_isr(f, global_state, using_stack).map_err(|(_, b)| b)?);
+                function_map.insert(
+                    s.to_string(),
+                    emit_isr(f, global_state, using_stack).map_err(|(_, b)| b)?,
+                );
             }
             s => {
-                function_map.insert(s.to_string(), emit_function(f, module_prefix, global_state, using_stack).map_err(|(_, b)| b)?);
+                function_map.insert(
+                    s.to_string(),
+                    emit_function(f, module_prefix, global_state, using_stack)
+                        .map_err(|(_, b)| b)?,
+                );
             }
         }
     }
@@ -119,25 +168,35 @@ pub fn emit_root_module(m: &Module) -> Result<String, String> {
         inlines: HashMap::new(),
     };
 
-    let mod_usings: Vec<String> = m.usings.iter().map(|e| format!("{}::", e.name.name)).collect();
+    let mod_usings: Vec<String> = m
+        .usings
+        .iter()
+        .map(|e| format!("{}::", e.name.name))
+        .collect();
     let mut using_stack = Stack::empty();
     using_stack.push("".to_owned());
     for using in mod_usings {
         using_stack.push(using);
     }
 
-
     // gather struct declarations
     let mut struct_names: HashMap<_, _> = HashMap::new();
     let usings = Stack::from(&vec!["".to_string()]);
-    gather_struct_declarations(m, "", &usings,&mut struct_names)?;
+    gather_struct_declarations(m, "", &usings, &mut struct_names)?;
 
-    // resolve members 
+    // resolve members
     let mut seen: HashSet<String> = HashSet::new();
 
     for name in struct_names.keys() {
-        if seen.contains(name) { continue; }
-        Type::resolve_struct_size(name, &mut global_state.struct_defs, &struct_names, &mut seen)?;
+        if seen.contains(name) {
+            continue;
+        }
+        Type::resolve_struct_size(
+            name,
+            &mut global_state.struct_defs,
+            &struct_names,
+            &mut seen,
+        )?;
     }
 
     // all structs should have sizes populated
@@ -174,7 +233,7 @@ pub fn emit_root_module(m: &Module) -> Result<String, String> {
     }
 
     global_init_routine.push_str(
-r"
+        r"
     pop!  t0
     jmpr
         ",
@@ -208,11 +267,17 @@ fn .init_globals
 {global_prog}
 "#
     );
-    
+
     let mut function_map: HashMap<String, String> = HashMap::new();
     // todo: make this a dependency graph
-    global_state.function_dependencies.roots.insert("isr".to_string());
-    global_state.function_dependencies.roots.insert("main".to_string());
+    global_state
+        .function_dependencies
+        .roots
+        .insert("isr".to_string());
+    global_state
+        .function_dependencies
+        .roots
+        .insert("main".to_string());
 
     emit_functions(m, "", &mut global_state, &mut function_map, &using_stack)?;
 
@@ -220,13 +285,17 @@ fn .init_globals
     let used_functions = global_state.function_dependencies.calculate_used();
 
     if is_verbose() {
-        println!("{} functions defined, {} will be emitted after tree shaking", function_map.len(), used_functions.len());
+        println!(
+            "{} functions defined, {} will be emitted after tree shaking",
+            function_map.len(),
+            used_functions.len()
+        );
         println!("These functions will not be emitted:");
 
         for func in function_map.keys() {
             if !used_functions.contains(func) {
                 println!("- {func}");
-            } 
+            }
         }
     }
 

@@ -5,15 +5,19 @@ use crate::emit::operator::emit_operator;
 use crate::emit::type_check::check_and_apply_stack_transition;
 use crate::emit::types::tasm;
 use crate::emit::types::*;
-use crate::tl_y::*;
+use crate::parser_util::types::*;
 use crate::util::gss::Stack;
-use crate::util::labels::{generate_label, generate_label_with_context, function_label, global_label};
+use crate::util::labels::*;
 use lrpar::Span;
 
 // todo: instead of resolving everytime we encounter a global, maintain a copy of the struct_defs map which are mappings from shortname -> resolved name.
 // this way, lookups are O(1)-ish, instead of O(n*m)
 // todo: see how we resolve types
-pub fn find_global(s: &str, globals: &HashMap<String, (Type, isize, isize)>, using_stack: &Stack<String>) -> Option<(String, Type)> {
+pub fn find_global(
+    s: &str,
+    globals: &HashMap<String, (Type, isize, isize)>,
+    using_stack: &Stack<String>,
+) -> Option<(String, Type)> {
     for using in using_stack.iter() {
         let resolved_name = format!("{using}{s}");
         if let Some((t, _, _)) = globals.get(&resolved_name) {
@@ -24,7 +28,11 @@ pub fn find_global(s: &str, globals: &HashMap<String, (Type, isize, isize)>, usi
 }
 
 // todo: coalesce this, type, global, and inline resolvers
-pub fn find_function(s: &str, function_signatures: &HashMap<String, FunctionType>, using_stack: &Stack<String>) -> Option<(String, FunctionType)> {
+pub fn find_function(
+    s: &str,
+    function_signatures: &HashMap<String, FunctionType>,
+    using_stack: &Stack<String>,
+) -> Option<(String, FunctionType)> {
     for using in using_stack.iter() {
         let resolved_name = format!("{using}{s}");
         if let Some(types) = function_signatures.get(&resolved_name) {
@@ -34,7 +42,11 @@ pub fn find_function(s: &str, function_signatures: &HashMap<String, FunctionType
     None
 }
 
-pub fn find_inline(s: &str, inlines: &HashMap<String, Statement>, using_stack: &Stack<String>) -> Option<Statement> {
+pub fn find_inline(
+    s: &str,
+    inlines: &HashMap<String, Statement>,
+    using_stack: &Stack<String>,
+) -> Option<Statement> {
     for using in using_stack.iter() {
         let resolved_name = format!("{using}{s}");
         if let Some(statement) = inlines.get(&resolved_name) {
@@ -50,8 +62,8 @@ pub fn emit_statement(
     s: &Statement,
     global_state: &mut GlobalState,
     function_state: &mut FunctionState,
-    stack_view: &mut Stack<Type>, 
-    using_stack: &Stack<String>
+    stack_view: &mut Stack<Type>,
+    using_stack: &Stack<String>,
 ) -> Result<String, (Span, String)> {
     let mut block = String::new();
 
@@ -130,9 +142,7 @@ pub fn emit_statement(
                         span,
                         stack_view,
                         &vec![gen!("$a"), gen!("$b")],
-                        &[gen!("$a"),
-                            gen!("$b"),
-                            gen!("$a")],
+                        &[gen!("$a"), gen!("$b"), gen!("$a")],
                     )?;
                 }
                 "swap" => {
@@ -159,9 +169,12 @@ pub fn emit_statement(
     push! t1 t0 t2
                         "
                     );
-                    check_and_apply_stack_transition("rot", span, stack_view, 
+                    check_and_apply_stack_transition(
+                        "rot",
+                        span,
+                        stack_view,
                         &vec![gen!("$a"), gen!("$b"), gen!("$c")],
-                        &[gen!("$b"), gen!("$c"), gen!("$a")]
+                        &[gen!("$b"), gen!("$c"), gen!("$a")],
                     )?;
                 }
                 "halt" => {
@@ -216,10 +229,7 @@ pub fn emit_statement(
                         "store",
                         span,
                         stack_view,
-                        &vec![
-                            gen!("$a"),
-                            Type::Pointer(1, Box::new(gen!("$a"))),
-                        ],
+                        &vec![gen!("$a"), Type::Pointer(1, Box::new(gen!("$a")))],
                         &[],
                     )?;
                 }
@@ -254,7 +264,9 @@ pub fn emit_statement(
                             &vec![],
                             &[t.add_ref()],
                         )?;
-                    } else if let Some((resolved_name, t)) = find_global(s, &global_state.globals, using_stack) {
+                    } else if let Some((resolved_name, t)) =
+                        find_global(s, &global_state.globals, using_stack)
+                    {
                         // global variable
                         let label = global_label(&resolved_name);
                         tasm!(
@@ -271,7 +283,9 @@ pub fn emit_statement(
                             &vec![],
                             &[t.add_ref()],
                         )?;
-                    } else if let Some(statement) = find_inline(s, &global_state.inlines, using_stack) {
+                    } else if let Some(statement) =
+                        find_inline(s, &global_state.inlines, using_stack)
+                    {
                         // is an inline value
                         let expansion = emit_statement(
                             block_id,
@@ -279,7 +293,7 @@ pub fn emit_statement(
                             global_state,
                             function_state,
                             stack_view,
-                            using_stack
+                            using_stack,
                         )?;
                         tasm!(
                             block;;
@@ -289,12 +303,16 @@ pub fn emit_statement(
                         );
                     } else {
                         // generic function call
-                        let ret_label = generate_label_with_context(block_id, "retaddr");                        
-                        
-                        let (name, func) = find_function(s, &global_state.function_signatures, using_stack).ok_or((
-                            *span,
-                            format!("Was not able to find function signature of function {s}"),
-                        ))?;
+                        let ret_label = generate_label_with_context(block_id, "retaddr");
+
+                        let (name, func) =
+                            find_function(s, &global_state.function_signatures, using_stack)
+                                .ok_or((
+                                    *span,
+                                    format!(
+                                        "Was not able to find function signature of function {s}"
+                                    ),
+                                ))?;
 
                         tasm!(
                             block;
@@ -307,9 +325,17 @@ pub fn emit_statement(
 .{ret_label}
                             "
                         );
-                        global_state.function_dependencies.add_dependency(function_state.function_name.clone(), name.clone());
+                        global_state
+                            .function_dependencies
+                            .add_dependency(function_state.function_name.clone(), name.clone());
 
-                        check_and_apply_stack_transition(&format!("{} in {}", &name, &function_state.function_name), span, stack_view, &func.in_t, &func.out_t)?;
+                        check_and_apply_stack_transition(
+                            &format!("{} in {}", &name, &function_state.function_name),
+                            span,
+                            stack_view,
+                            &func.in_t,
+                            &func.out_t,
+                        )?;
                     }
                 }
             }
@@ -337,7 +363,7 @@ pub fn emit_statement(
                 global_state,
                 function_state,
                 stack_view,
-                using_stack
+                using_stack,
             )?;
             tasm!(
                 block;;
@@ -358,7 +384,7 @@ pub fn emit_statement(
                     global_state,
                     function_state,
                     stack_view,
-                    using_stack
+                    using_stack,
                 )?;
                 tasm!(
                     block;;
@@ -389,12 +415,25 @@ pub fn emit_statement(
 
             let mut else_stack = stack_view.clone();
             // stack_view is end == if_stack
-            let if_subblock =
-                emit_block(&if_id, if_block, global_state, function_state, stack_view, using_stack)?;
+            let if_subblock = emit_block(
+                &if_id,
+                if_block,
+                global_state,
+                function_state,
+                stack_view,
+                using_stack,
+            )?;
 
             let else_subblock = match else_block {
                 None => "".to_string(),
-                Some(e) => emit_block(&else_id, e, global_state, function_state, &mut else_stack, using_stack)?,
+                Some(e) => emit_block(
+                    &else_id,
+                    e,
+                    global_state,
+                    function_state,
+                    &mut else_stack,
+                    using_stack,
+                )?,
             };
 
             if stack_view != &else_stack {
@@ -431,7 +470,7 @@ pub fn emit_statement(
                 global_state,
                 function_state,
                 stack_view,
-                using_stack
+                using_stack,
             )?;
 
             match stack_view.pop() {
@@ -453,7 +492,7 @@ pub fn emit_statement(
                 global_state,
                 function_state,
                 &mut after_body,
-                using_stack
+                using_stack,
             )?;
 
             // after body == before eval
@@ -519,8 +558,14 @@ pub fn emit_statement(
 
             // emit inner block
             let let_block_id = &*generate_label_with_context(block_id, "let_inner");
-            let let_block =
-                emit_block(let_block_id, body, global_state, function_state, stack_view, using_stack)?;
+            let let_block = emit_block(
+                let_block_id,
+                body,
+                global_state,
+                function_state,
+                stack_view,
+                using_stack,
+            )?;
             tasm!(
                 block;;
                 r"

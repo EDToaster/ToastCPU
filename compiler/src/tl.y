@@ -1,8 +1,7 @@
 %start Module
 %%
 
-Module -> Result<Module, ()>:
-    { Ok(Module { span: $span, globals: vec![], inlines: vec![], functions: vec![], struct_defs: vec![], modules: vec![], usings: vec![], }) }
+Module -> Result<Module, ()>: { Ok(Module { span: $span, globals: vec![], inlines: vec![], functions: vec![], struct_defs: vec![], modules: vec![], usings: vec![], }) }
     | Module Function       { let mut m = $1?; m.functions.push($2?);   Ok(m)   }
     | Module Global         { let mut m = $1?; m.globals.push($2?);     Ok(m)   }
     | Module Inline         { let mut m = $1?; m.inlines.push($2?);     Ok(m)   }
@@ -46,8 +45,7 @@ StructDef -> Result<StructDef, ()>:
     'STRUCT' Identifier 'LB' StructMembers 'RB' { Ok(StructDef { span: $span, name: $2?, members: $4? }) }
     ;
 
-StructMembers -> Result<Vec<StructMember>, ()>:
-    { Ok(vec![]) }
+StructMembers -> Result<Vec<StructMember>, ()>: { Ok(vec![]) }
     | StructMembers StructMember { let mut v = $1?; v.push($2?); Ok(v) }
     ;
 
@@ -56,8 +54,7 @@ StructMember -> Result<StructMember, ()>:
     | Identifier 'LS' IntLiteral 'RS' Type { Ok(StructMember { span: $span, name: $1?, size: $3?.val, var_type: $5? }) }
     ;
 
-Typelist -> Result<Vec<LexType>, ()>:
-    { Ok(vec![]) }
+Typelist -> Result<Vec<LexType>, ()>: { Ok(vec![]) }
     | Typelist Type { let mut v = $1?; v.push($2?); Ok(v) }
     ;
 
@@ -82,8 +79,7 @@ Let -> Result<Let, ()>:
     'LET' Identifiers Block { Ok(Let { span: $span, bindings: $2?, body: $3? }) }
     ;
 
-Statements -> Result<Vec<Statement>, ()>:
-    { Ok(vec![]) }
+Statements -> Result<Vec<Statement>, ()>: { Ok(vec![]) }
     | Statements Statement { let mut v = $1?; v.push($2?); Ok(v) }
     ;
 
@@ -200,279 +196,5 @@ Unmatched -> ():
     ;
 %%
 
-use lrpar::Span;
-
-#[derive(Debug, Clone)]
-pub enum Operator {
-    Add(Span),
-    Sub(Span),
-    BOr(Span),
-    BAnd(Span),
-    BNot(Span),
-    Sshr(Span),
-    Shr(Span),
-    Shl(Span),
-    Xor(Span),
-
-    LOr(Span),
-    LAnd(Span),
-    LNot(Span),
-
-    Eq(Span),
-    Lt(Span),
-    Lte(Span),
-    Gt(Span),
-    Gte(Span),
-
-    Return(Span),
-
-    Ptr(Span, Identifier),
-    Call(Span),
-    As(Span, LexType),
-    SizeOf(Span, LexType),
-    StructAccess(Span, String),
-    ConstArrayAccess(Span, IntLiteral),
-
-    Hole(Span),
-}
-
-#[derive(Debug, Clone)]
-pub struct IntLiteral {
-    pub span: Span,
-    pub val: isize,
-}
-
-#[derive(Debug, Clone)]
-pub struct IntArray {
-    pub span: Span,
-    pub val: Vec<u16>,
-}
-
-#[derive(Debug, Clone)]
-pub struct Identifier {
-    pub span: Span,
-    pub name: String,
-}
-
-#[derive(Debug, Clone)]
-pub enum Statement {
-    IntLiteral(IntLiteral),
-    IntArray(IntArray),
-    Identifier(Identifier),
-    Operator(Operator),
-    Block(Block),
-    Unroll(Unroll),
-    If(If),
-    While(While),
-    Let(Let),
-}
-
-#[derive(Debug, Clone)]
-pub struct Unroll {
-    pub span: Span,
-    pub times: IntLiteral,
-    pub body: Block,
-}
-
-#[derive(Debug, Clone)]
-pub struct If {
-    pub span: Span,
-    pub if_block: Block,
-    pub else_block: Option<Block>,
-}
-
-#[derive(Debug, Clone)]
-pub struct While {
-    pub span: Span,
-    pub eval: Block,
-    pub body: Block,
-}
-
-#[derive(Debug, Clone)]
-pub struct Let {
-    pub span: Span,
-    pub bindings: Vec<Identifier>,
-    pub body: Block,
-}
-
-#[derive(Debug, Clone)]
-pub struct Block {
-    pub span: Span,
-    pub body: Vec<Statement>,
-}
-
-#[derive(Debug, Clone)]
-pub struct Function {
-    pub span: Span,
-    pub name: Identifier,
-    pub type_def: FuncType,
-    pub body: Block,
-}
-
-#[derive(Debug, Clone)]
-pub struct Global {
-    pub span: Span,
-    pub name: Identifier,
-    pub size: isize,
-    pub var_type: LexType,
-    pub val: IntLiteral,
-}
-
-#[derive(Debug, Clone)]
-pub struct Inline {
-    pub span: Span,
-    pub name: Identifier,
-    pub statement: Statement,
-}
-
-#[derive(Debug, Clone)]
-pub struct Using {
-    pub span: Span,
-    pub name: Identifier,
-}
-
-#[derive(Debug, Clone)]
-pub struct StructDef {
-    pub span: Span,
-    pub name: Identifier,
-    pub members: Vec<StructMember>,
-}
-
-#[derive(Debug, Clone)]
-pub struct StructMember {
-    pub span: Span,
-    pub name: Identifier,
-    pub var_type: LexType,
-    pub size: isize,
-}
-
-#[derive(Debug, Clone)]
-pub struct NamedModule {
-    pub name: Identifier,
-    pub module: Module,
-}
-
-#[derive(Debug, Clone)]
-pub struct Module {
-    pub span: Span,
-    pub globals: Vec<Global>,
-    pub inlines: Vec<Inline>,
-    pub functions: Vec<Function>,
-    pub struct_defs: Vec<StructDef>,
-    pub modules: Vec<NamedModule>,
-    pub usings: Vec<Using>,
-}
-
-#[derive(Debug, Clone)]
-pub enum LexType {
-    Base(Identifier),
-    // needs to be base type, cannot be generic type
-    Ptr(Box<LexType>),
-    Gen(Identifier),
-    Func(FuncType),
-}
-
-#[derive(Debug, Clone)]
-pub struct FuncType {
-    pub i: Vec<LexType>,
-    pub o: Vec<LexType>,
-}
-
-// Any functions here are in scope for all the grammar actions above.
-pub fn dec_int(s: &str) -> Result<isize, ()> {
-    s.parse::<isize>().map_err(|_| ())
-}
-
-pub fn bin_int(s: &str) -> Result<isize, ()> {
-    isize::from_str_radix(&s[2..], 2).map_err(|_| ())
-}
-
-pub fn hex_int(s: &str) -> Result<isize, ()> {
-    isize::from_str_radix(&s[2..], 16).map_err(|_| ())
-}
-
-pub fn char_int(s: &str) -> Result<isize, ()> {
-    let inner = s.trim_matches('\'');
-
-    // \' single quote
-    // \" double quote
-    // \\ backslash
-    // \n new line
-    // \r carriage return
-    // \t tab
-    // \b backspace
-    // \f form feed
-    // \v vertical tab (Internet Explorer 9 and older treats '\v as 'v instead of a vertical tab ('\x0B). If cross-browser compatibility is a concern, use \x0B instead of \v.)
-    // \0 null character (U+0000 NULL) (only if the next character is not a decimal digit; else it is an octal escape sequence)
-    // \xFF character represented by the hexadecimal byte "FF"
-
-    match inner {
-        "\\'" => {
-            Ok('\'' as isize)
-        }
-        "\\\"" => {
-            Ok('"' as isize)
-        }
-        "\\\\" => {
-            Ok('\\' as isize)
-        }
-        "\\n" => {
-            Ok('\n' as isize)
-        }
-        "\\r" => {
-            Ok('\r' as isize)
-        }
-        "\\t" => {
-            Ok('\t' as isize)
-        }
-        "\\0" => {
-            Ok('\0' as isize)
-        }
-        c => {
-            c.chars()
-                .next()
-                .ok_or(())
-                .map(|e| e as isize)
-        }
-    }
-}
-
-pub fn char_int_single(c: char, escaped: bool) -> Result<u16, ()> {
-    match (c, escaped) {
-        ('n', true) => {
-            Ok('\n' as u16)
-        }
-        ('r', true) => {
-            Ok('\r' as u16)
-        }
-        ('t', true) => {
-            Ok('\t' as u16)
-        }
-        ('0', true) => {
-            Ok('\0' as u16)
-        }
-        (_, _) => {
-            Ok(c as u16)
-        }
-    }
-}
-
-pub fn string_int_arr(s: &str) -> Result<Vec<u16>, ()> {
-    let mut string = vec![];
-    let mut escaped = false;
-
-    for c in s[1..s.len()-1].chars().into_iter() {
-        if escaped {
-            string.push(char_int_single(c, true)?);
-            escaped = false;
-        } else if c == '\\' {
-            escaped = true;
-        } else {
-            string.push(char_int_single(c, false)?);
-        }
-    };
-
-    string.push(0);
-
-    Ok(string)
-}
+use crate::parser_util::types::*;
+use crate::parser_util::convert::*;

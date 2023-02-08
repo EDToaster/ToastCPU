@@ -279,6 +279,7 @@ class Instruction:
             return self.convert_opcode()
         if isinstance(self.words[0], Number):
             return self.words[0].to_binary(16)
+        return ""
 
     def expand_and_convert_mask(self) -> List[Instruction]:
         args = self.words[1:]
@@ -421,6 +422,7 @@ class Instruction:
             return [
                 self
             ]
+        return []
 
 
 @dataclass
@@ -496,13 +498,14 @@ class Program:
         if token == "rti":
             raise Exception("The rti instruction isn't meant to be used when using the assembler. Use the isr! and "
                             "rti! macros instead to automatically push and pop the AR register.")
-
         if token in opcodes:
             return Opcode(token)
+        return None
 
     def parse_macro(self, token) -> Optional[Opcode]:
         if token in macros:
             return Opcode(token)
+        return None
 
     def parse_register(self, token) -> Optional[Register]:
         x = re.search("^\\[?r([0-9]|1[0-5])]?$", token)

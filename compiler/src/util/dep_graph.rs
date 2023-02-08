@@ -3,16 +3,16 @@ use std::collections::{HashMap, HashSet};
 #[derive(Default, Debug)]
 pub struct DependencyGraph {
     pub roots: HashSet<String>,
-    pub edges: HashMap<String, HashSet<String>>
+    pub edges: HashMap<String, HashSet<String>>,
 }
 
 impl DependencyGraph {
-
     pub fn add_dependency(&mut self, f: String, dependency: String) {
-        self.edges.entry(f).or_insert_with(HashSet::new).insert(dependency);
+        self.edges
+            .entry(f)
+            .or_insert_with(HashSet::new)
+            .insert(dependency);
     }
-
-
 
     pub fn calculate_used(&self) -> HashSet<String> {
         let mut set: HashSet<String> = HashSet::new();
@@ -36,5 +36,3 @@ impl DependencyGraph {
         }
     }
 }
-
-

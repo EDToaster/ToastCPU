@@ -1,11 +1,7 @@
 use crate::emit::statement::find_function;
-use crate::emit::type_check::{
-    check_and_apply_multiple_stack_transitions, check_and_apply_stack_transition,
-};
-use crate::emit::types::{
-    gen, ptr, tasm, u16, ErrWithSpan, FunctionState, GlobalState, Type, TypeSize,
-};
-use crate::tl_y::Operator;
+use crate::emit::type_check::*;
+use crate::emit::types::*;
+use crate::parser_util::types::*;
 use crate::util::gss::Stack;
 use crate::util::labels::{function_label, generate_label_with_context};
 use lrpar::Span;
@@ -18,7 +14,7 @@ pub fn emit_operator(
     global_state: &mut GlobalState,
     function_state: &mut FunctionState,
     stack_view: &mut Stack<Type>,
-    using_stack: &Stack<String>
+    using_stack: &Stack<String>,
 ) -> Result<String, (Span, String)> {
     let mut operation = String::new();
 
@@ -368,11 +364,14 @@ pub fn emit_operator(
         Operator::Call(span) => {
             // check top of the stack is a function pointer
             let top = &check_and_apply_stack_transition(
-                "()", 
-                span, 
-                stack_view, &vec![ptr!(gen!("$a"))], &[])?[0];
+                "()",
+                span,
+                stack_view,
+                &vec![ptr!(gen!("$a"))],
+                &[],
+            )?[0];
 
-            let ret_label = generate_label_with_context(block_id, "retaddr");     
+            let ret_label = generate_label_with_context(block_id, "retaddr");
             tasm!(
                 operation;;
                 r"
@@ -383,23 +382,24 @@ pub fn emit_operator(
 .{ret_label}
                 "
             );
-            
+
             if let Type::Pointer(1, fun) = top {
                 if let Type::Function(FunctionType { in_t, out_t }) = &**fun {
                     check_and_apply_stack_transition("()", span, stack_view, in_t, out_t)?;
                 } else {
-                    return Err((*span, format!("Using the `()` operator requires function pointer to be on the top of the stack. Top of the stack is {top:?}")))
+                    return Err((*span, format!("Using the `()` operator requires function pointer to be on the top of the stack. Top of the stack is {top:?}")));
                 }
             } else {
-                return Err((*span, format!("Using the `()` operator requires function pointer to be on the top of the stack. Top of the stack is {top:?}")))
+                return Err((*span, format!("Using the `()` operator requires function pointer to be on the top of the stack. Top of the stack is {top:?}")));
             }
         }
         Operator::Ptr(span, t) => {
-            // check that this is a correct function                  
-            let (name, func) = find_function(&t.name, &global_state.function_signatures, using_stack).ok_or((
-                *span,
-                format!("Was not able to find function signature of function {t:?}"),
-            ))?;
+            // check that this is a correct function
+            let (name, func) =
+                find_function(&t.name, &global_state.function_signatures, using_stack).ok_or((
+                    *span,
+                    format!("Was not able to find function signature of function {t:?}"),
+                ))?;
 
             tasm!(
                 operation;
@@ -410,8 +410,16 @@ imov! t0 .{}
 push  t0
                 "
             );
-            global_state.function_dependencies.add_dependency(function_state.function_name.clone(), name.clone());
-            check_and_apply_stack_transition(&format!("ptr({})", &name), span, stack_view, &vec![], &[Type::Function(func).add_ref()])?;
+            global_state
+                .function_dependencies
+                .add_dependency(function_state.function_name.clone(), name.clone());
+            check_and_apply_stack_transition(
+                &format!("ptr({})", &name),
+                span,
+                stack_view,
+                &vec![],
+                &[Type::Function(func).add_ref()],
+            )?;
         }
         Operator::As(span, t) => {
             let parsed_t = Type::parse(t, &global_state.struct_defs, using_stack)
@@ -526,7 +534,7 @@ push  t0
     jmp!  .{label}
                 "
             );
-        },
+        }
     }
     Ok(operation)
 }

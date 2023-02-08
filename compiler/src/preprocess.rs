@@ -1,16 +1,19 @@
+use lazy_static::lazy_static;
+use regex::{Captures, Regex};
 use std::collections::HashSet;
 use std::fs;
 use std::path::PathBuf;
-use lazy_static::lazy_static;
-use regex::{Captures, Regex};
 
 use crate::is_verbose;
 
-lazy_static!(
+lazy_static! {
     static ref INCLUDE_REGEX: Regex = Regex::new(r"#include<(?P<path>[a-zA-Z0-9_/-]+)>").unwrap();
-);
+}
 
-pub fn find_first_in_include_path(path: &str, include_paths: &Vec<String>) -> Result<String, String> {
+pub fn find_first_in_include_path(
+    path: &str,
+    include_paths: &Vec<String>,
+) -> Result<String, String> {
     let file_path = format!("{path}.tl");
 
     let mut checked_paths: Vec<String> = vec![];
@@ -25,13 +28,24 @@ pub fn find_first_in_include_path(path: &str, include_paths: &Vec<String>) -> Re
         }
     }
 
-    Err(format!("Could not find include {path} in these places: {checked_paths:?}"))
+    Err(format!(
+        "Could not find include {path} in these places: {checked_paths:?}"
+    ))
 }
 
-pub fn preprocess(input: &str, include_paths: &Vec<String>, included_files: &mut HashSet<String>) -> Result<String, String> {
+pub fn preprocess(
+    input: &str,
+    include_paths: &Vec<String>,
+    included_files: &mut HashSet<String>,
+) -> Result<String, String> {
     let mut prog = input.to_string();
 
-    for m in INCLUDE_REGEX.captures_iter(&prog.clone()).collect::<Vec<Captures>>().iter().rev() {
+    for m in INCLUDE_REGEX
+        .captures_iter(&prog.clone())
+        .collect::<Vec<Captures>>()
+        .iter()
+        .rev()
+    {
         let text = m.get(0).unwrap();
         let range = text.range(); // range in the original text
         let path = m["path"].trim();
@@ -47,7 +61,11 @@ pub fn preprocess(input: &str, include_paths: &Vec<String>, included_files: &mut
             println!("Including path {path}");
         }
         included_files.insert(path.to_string());
-        let text = preprocess(&find_first_in_include_path(path, include_paths)?, include_paths, included_files)?;
+        let text = preprocess(
+            &find_first_in_include_path(path, include_paths)?,
+            include_paths,
+            included_files,
+        )?;
         // todo: update our bookmarks
         prog.replace_range(range, text.as_str());
     }

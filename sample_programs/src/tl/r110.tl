@@ -1,5 +1,6 @@
 #include<std/io>
 #include<std/rand>
+#include<std/types>
 
 mod r110 {
     using r110
@@ -8,11 +9,11 @@ mod r110 {
 
     inline WIDTH 100
 
-    global buf1 [102] u16 0 // two border cells that are implicitly zero
-    global buf2 [102] u16 0
+    global buf1 [102] bool 0 // two border cells that are implicitly zero
+    global buf2 [102] bool 0
 
-    global curr_buff u16* 0
-    global back_buff u16* 0
+    global curr_buff bool* 0
+    global back_buff bool* 0
 
     // swap the values in the two pointers 
     fn pswap $a* $a* -> {
@@ -25,12 +26,13 @@ mod r110 {
 
     global rand Random 0
 
-    fn randomize_buf u16 u16* -> {
+    //              seed arr
+    fn randomize_buf u16 bool* -> {
         rand 0x1D2D rand_init
 
         let n buf {
             0 while { dup n load < } {
-                rand rand_int 1 & buf load ?? store
+                rand rand_int bool::from_u16 buf load ?? store
 
                 buf load 1 + buf ?? store
                 1 +
@@ -39,7 +41,7 @@ mod r110 {
         }
     }
 
-    fn print_dot u16 -> {
+    fn print_dot bool -> {
         if {
             0x3F20
         } else {
@@ -48,7 +50,7 @@ mod r110 {
         print_char
     }
 
-    fn print_buf u16* -> {
+    fn print_buf bool* -> {
         1 while { dup WIDTH <= } {
             over over + load print_dot
             1 + 
@@ -56,9 +58,9 @@ mod r110 {
         drop drop
     }
 
-    inline RANDOMIZE    1
-    inline BOUND_LEFT   1
-    inline BOUND_RIGHT  1
+    inline RANDOMIZE    true
+    inline BOUND_LEFT   true
+    inline BOUND_RIGHT  true
 
     fn r110_main -> {
         
@@ -66,7 +68,7 @@ mod r110 {
         RANDOMIZE if  {
             WIDTH 2 + buf1 randomize_buf
         } else {
-            1 buf1 WIDTH + store
+            true buf1 WIDTH + store
         }
 
         BOUND_LEFT buf1 store 
@@ -88,11 +90,11 @@ mod r110 {
                 // index for current cell
                 
                 // ((*curr_buff)[i-1] << 1) i
-                curr_buff load over + 1 - load 1 << swap
+                curr_buff load over + 1 - load as(u16) 1 << swap
                 // ((*curr_buff)[i] + ((*curr_buff)[i-1] << 1) << 1) i
-                curr_buff load over + load rot + 1 << swap
+                curr_buff load over + load as(u16) rot + 1 << swap
                 // i sum
-                curr_buff load over + 1 + load rot + ??
+                curr_buff load over + 1 + load as(u16) rot + ??
 
                 // back_buff[i] = !(sum == 7 || sum == 4 || sum == 0)
 

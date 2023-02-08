@@ -37,7 +37,7 @@ mod snake {
         keyboard_init
         while { 1 } {
             // handle all inputs this frame
-            while { keyboard_get_input dup } {
+            while { keyboard_get_input } {
                 dup 'w' = if {
                     dir::UP direction store
                 } else { dup 'a' = if {

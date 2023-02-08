@@ -110,6 +110,23 @@ pub fn emit_statement(
                 &[Type::Pointer(1, Box::new(Type::U16))],
             )?;
         }
+        Statement::BoolLiteral(b) => {
+            // push val onto stack
+            tasm!(
+                block; b.val;
+                r"
+    imov! t0 {}
+    push  t0
+                "
+            );
+            check_and_apply_stack_transition(
+                &format!("{b:?}"),
+                &b.span,
+                stack_view,
+                &vec![],
+                &[Type::Bool],
+            )?;
+        }
         Statement::Identifier(Identifier { name, span }) => {
             // handle built in funcs
             match name.as_str() {
@@ -407,7 +424,7 @@ pub fn emit_statement(
                 None => {
                     Err((*span, "If statement needs an element at the top of the stack to serve as a conditional. Current stack is empty.".to_string()))
                 }
-                Some(Type::Pointer(..)) | Some(Type::U16) => { Ok(()) }
+                Some(Type::Pointer(..)) | Some(Type::U16) | Some(Type::Bool) => { Ok(()) }
                 e => {
                     Err((*span, format!("Element `{e:?}` at the top of the stack cannot be used as the conditional for the if statement.")))
                 }
@@ -477,7 +494,7 @@ pub fn emit_statement(
                 None => {
                     Err((*span, "While statement needs an element at the top of the stack to serve as a conditional. Current stack is empty.".to_string()))
                 }
-                Some(Type::Pointer(..)) | Some(Type::U16) => { Ok(()) }
+                Some(Type::Pointer(..)) | Some(Type::U16) | Some(Type::Bool) => { Ok(()) }
                 e => {
                     Err((*span, format!("Element `{e:?}` at the top of the stack cannot be used as the conditional for the while statement.")))
                 }

@@ -9,20 +9,20 @@ mod arith {
 
     fn test -> {
         "Testing Arith... " print_string
-        "7 = 7"     { 7 7 = 1 = }   assert
-        "6 = 7"     { 6 7 = 0 = }   assert
-        "6 > 7"     { 6 7 > 0 = }   assert
-        "7 > 7"     { 7 7 > 0 = }   assert
-        "8 > 7"     { 8 7 > 1 = }   assert
-        "6 >= 7"    { 6 7 >= 0 = }  assert
-        "7 >= 7"    { 7 7 >= 1 = }  assert
-        "8 >= 7"    { 8 7 >= 1 = }  assert
-        "6 < 7"     { 6 7 < 1 = }   assert
-        "7 < 7"     { 7 7 < 0 = }   assert
-        "8 < 7"     { 8 7 < 0 = }   assert
-        "6 <= 7"    { 6 7 <= 1 = }  assert
-        "7 <= 7"    { 7 7 <= 1 = }  assert
-        "8 <= 7"    { 8 7 <= 0 = }  assert
+        "7 = 7"     { 7 7 = }   assert
+        "6 = 7"     { 6 7 = }   assert_false
+        "6 > 7"     { 6 7 > }   assert_false
+        "7 > 7"     { 7 7 > }   assert_false
+        "8 > 7"     { 8 7 > }   assert
+        "6 >= 7"    { 6 7 >= }  assert_false
+        "7 >= 7"    { 7 7 >= }  assert
+        "8 >= 7"    { 8 7 >= }  assert
+        "6 < 7"     { 6 7 < }   assert
+        "7 < 7"     { 7 7 < }   assert_false
+        "8 < 7"     { 8 7 < }   assert_false
+        "6 <= 7"    { 6 7 <= }  assert
+        "7 <= 7"    { 7 7 <= }  assert
+        "8 <= 7"    { 8 7 <= }  assert_false
     }
 }
 

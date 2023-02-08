@@ -33,7 +33,7 @@ fn resolve_generic_type(
                 .map(|t| resolve_generic_type(t, span, generics))
                 .collect::<Result<_, _>>()?,
         })),
-        Type::U16 | Type::Struct(_) => Ok(out_t.clone()),
+        Type::U16 | Type::Bool | Type::Struct(_) => Ok(out_t.clone()),
     }
 }
 
@@ -85,7 +85,7 @@ fn type_matches(
                 Ok(false)
             }
         }
-        Type::U16 | Type::Pointer(_, _) | Type::Struct(_) => Ok(stack_t == sig_t),
+        Type::U16 | Type::Bool | Type::Pointer(_, _) | Type::Struct(_) => Ok(stack_t == sig_t),
     }
 }
 

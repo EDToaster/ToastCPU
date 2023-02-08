@@ -1,5 +1,8 @@
 %%
 
+true            "TRUE_BOOL"
+false           "FALSE_BOOL"
+
 [0-9]+          "DEC_INT"
 0x[0-9a-fA-F]+  "HEX_INT"
 0b[01]+         "BIN_INT"

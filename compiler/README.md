@@ -89,7 +89,7 @@ r110 cellular automata.
 - [ ] Module system to prevent nameclash: `mod io { struct a ... fn b ... }` referenced as `io::a` and `io::b`
   - [x] Basic functionality
   - [x] Add `using` keyword to remove the need for prepending `io::`, for example.
-  - [x] See `Rough edges around modules`
+  - [x] See ~`Rough edges around modules`~
     - [ ] Clean up the code though...
   - [ ] Instead of searching through all `using`s, create a datastructure to map shortnames -> items and pass that around
 - [ ] Function pointers
@@ -98,39 +98,11 @@ r110 cellular automata.
   - [x] Better parsing of types instead of overloading identifiers
   - [ ] Better parsing of module member types instead of overloading identifier
 - [ ] Recursive struct definitions if size is known at compile time
-
-## Known issues
-
-### Rough edges around modules
-
-Currently, modules are a name-mangling mess. In addition to recursive struct definitions, we need a better way to access types inside of modules, while outside the module.
-
-For example, this snippet will compile with an error like `Type Foo not in scope` for the `global`, `struct`, and `fn` definitions.
-
-```rust
-mod module {
-    struct Foo { }
-}
-
-// implicit root module
-global f Foo 0
-
-struct Bar { 
-    a Foo
-}
-
-fn func Foo* -> Foo* { ... }
-```
-
-There is no reason why `Foo` cannot be accessed outside of the submodule `module`. 
-
-The `global` and `fn` issues are easy to fix - just process all `struct` definitions before processing any of the `global` or `fn` definitions.
-
-However, `struct` members containing types within submodules are harder to fix. This is because we have to settle on an order to process `struct` defs -- do we process this module before processing submodules? Or do we process submodules first?
-
-One possible solution to fix this issue is to gather all struct name declarations first (in all places), *then* we will try to populate the sizes of each of the struct declarations, at the same time trying to populate the sizes of each type found in its members. At this time, we can calculate offsets of each of the members of the struct.
-
-If the query for the size of its member (and their members) involves querying the size of itself, then the size of itself is undecidable and we *have to* throw `Recursive struct definitions without indirection are not allowed`
+- [ ] `bool` type
+  - [x] `true` and `false` literals
+  - [x] let `if` statements use both `u16` and `bool`
+  - [ ] logical operators `&&`, etc. to emit `bool` instead of `u16`
+- [ ] `char` type
 
 ## Appendix
 

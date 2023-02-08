@@ -1,8 +1,10 @@
 #include<std/mem>
 #include<std/math>
+#include<std/collection>
 
 mod io {
     using io
+    using collection
 
     global text_progress u16    100
     global text_ptr      u16*   0x0000
@@ -71,12 +73,15 @@ mod io {
         drop
     }
 
+    fn newline -> {
+        text_ptr load text_progress load + text_ptr store
+        100 text_progress store
+    }
+
     // todo: optimize
     fn print_char u16 -> {
         dup '\n' = if {
-            drop
-            text_ptr load text_progress load + text_ptr store
-            100 text_progress store
+            drop newline
         } else {
             text_ptr load swap
 
@@ -106,16 +111,14 @@ mod io {
     //     val
     fn print_nibble u16 -> {
         dup 4 >> 0xF & print_hex
-        dup 0xF & print_hex
-        drop
+        0xF & print_hex
     }
 
     // Print the word
     //    val
     fn print_word u16 -> {
         dup 8 >> 0xFF & print_nibble
-        dup 0xFF & print_nibble
-        drop
+        0xFF & print_nibble
     }
 
     fn print_ptr $a* -> {
@@ -124,7 +127,7 @@ mod io {
 
     inline _divmod_print {
         // div:u16 -> 
-        math::divmod swap dup do_print load || dup do_print store if {
+        math::divmod swap dup as(bool) do_print load || dup do_print store if {
             '0' + print_char
         } else {
             drop
@@ -132,7 +135,7 @@ mod io {
     }
 
     fn print_decimal u16 -> {
-        0 let do_print {
+        false let do_print {
             10000   _divmod_print
             1000    _divmod_print
             100     _divmod_print
@@ -151,44 +154,19 @@ mod io {
         drop drop
     }
 
-    // 1 2 3 4 5 6 ...
-    // r   w
-    // while r != w, read
-    struct KeyBuffer {
-        // the next position to read
-        read_offset  u16
-        // the next position to write
-        write_offset u16
-        buffer [32]  u16
-    }
-
-    global key_buffer KeyBuffer 0
+    global key_buffer           RingBuffer  0
+    global key_buffer_raw [32]  u16         0
 
     fn keyboard_init -> {
-        key_buffer as(u16*) 0 sizeof(KeyBuffer) mem::memset
+        key_buffer key_buffer_raw 5 RingBuffer::init
     }
 
     fn keyboard_handle_input -> {
-        // write the current position
-        get_keyboard_ascii
-        key_buffer .buffer key_buffer .write_offset load +
-        store
-
-        // update position
-        key_buffer .write_offset load 1 + 0x1F & key_buffer .write_offset store
+        key_buffer get_keyboard_ascii RingBuffer::enqueue
     }
 
-    fn keyboard_get_input -> u16 {
-        // while r != w
-        key_buffer .read_offset load key_buffer .write_offset load = ! if {
-            // read current char
-            key_buffer .buffer key_buffer .read_offset load + load
-
-            // advance read_offset
-            key_buffer .read_offset load 1 + 0x1F & key_buffer .read_offset store
-        } else {
-            0
-        }
+    fn keyboard_get_input -> u16 bool {
+        key_buffer RingBuffer::dequeue
     }
 
     // inputs

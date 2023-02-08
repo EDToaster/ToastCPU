@@ -5,7 +5,8 @@ mod assert {
     using io
 
     //        testname cond
-    fn assert u16* u16 -> {
+    fn assert u16* $a -> {
+        as(bool)
         if {
             //"Passed\n" ps
         } else {
@@ -17,7 +18,8 @@ mod assert {
         drop
     }
 
-    fn assert_false u16* u16 -> {
-        ! assert
+    fn assert_false u16* $a -> {
+        // todo use bool
+        as(bool) ! assert
     }
 }

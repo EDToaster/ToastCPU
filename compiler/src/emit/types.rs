@@ -25,6 +25,7 @@ pub trait TypeSize {
 #[derive(Clone, Eq, PartialEq)]
 pub enum Type {
     U16,
+    Bool,
     Pointer(isize, Box<Type>),
     Struct(String),
     Generic(String),
@@ -48,6 +49,9 @@ impl fmt::Debug for Type {
         match self {
             Type::U16 => {
                 write!(f, "u16")
+            }
+            Type::Bool => {
+                write!(f, "bool")
             }
             Type::Pointer(i, t) => write!(f, "{:?}{}", t, "*".repeat(*i as usize)),
             Type::Struct(s) => write!(f, "{s}"),
@@ -79,7 +83,7 @@ impl<T, U> ErrWithSpan<T, U> for Result<T, U> {
 impl TypeSize for Type {
     fn type_size(&self, structs: &HashMap<String, StructDefinition>) -> Result<usize, String> {
         match self {
-            Type::Generic(..) | Type::U16 | Type::Pointer(..) | Type::Function(..) => Ok(1),
+            Type::Generic(..) | Type::U16 | Type::Bool | Type::Pointer(..) | Type::Function(..) => Ok(1),
             Type::Struct(s) => structs
                 .get(s)
                 .ok_or(format!("Struct `{s}` not in scope"))
@@ -112,6 +116,12 @@ macro_rules! gen {
 macro_rules! u16 {
     () => {
         Type::U16
+    };
+}
+
+macro_rules! bool {
+    () => {
+        Type::Bool
     };
 }
 
@@ -254,6 +264,7 @@ impl Type {
         match t {
             LexType::Base(Identifier { name, .. }) => match name.as_str() {
                 "u16" => Ok(Type::U16),
+                "bool" => Ok(Type::Bool),
                 s => {
                     if let Some(struct_name) = Type::find_struct_def(s, struct_defs, using_stack) {
                         Ok(Type::Struct(struct_name))
@@ -327,3 +338,4 @@ pub(crate) use gen;
 pub(crate) use ptr;
 pub(crate) use tasm;
 pub(crate) use u16;
+pub(crate) use bool;

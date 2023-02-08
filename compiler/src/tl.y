@@ -86,6 +86,7 @@ Statements -> Result<Vec<Statement>, ()>: { Ok(vec![]) }
 Statement -> Result<Statement, ()>:
     IntLiteral      { Ok(Statement::IntLiteral($1?))    }
     | IntArray      { Ok(Statement::IntArray($1?))      }
+    | BoolLiteral   { Ok(Statement::BoolLiteral($1?))   }
     | Identifier    { Ok(Statement::Identifier($1?))    }
     | Operator      { Ok(Statement::Operator($1?))      }
     | Block         { Ok(Statement::Block($1?))         }
@@ -163,6 +164,11 @@ Identifier -> Result<Identifier, ()>:
             let v = $1.map_err(|_| ())?;
             Ok(Identifier { span: v.span(), name: $lexer.span_str(v.span()).to_string() })
         }
+    ;
+
+BoolLiteral -> Result<BoolLiteral, ()>:
+    'TRUE_BOOL' { Ok(BoolLiteral { span: $span, val: 1 }) }
+    | 'FALSE_BOOL' { Ok(BoolLiteral { span: $span, val: 0 }) }
     ;
 
 IntLiteral -> Result<IntLiteral, ()>:

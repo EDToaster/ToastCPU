@@ -29,7 +29,7 @@ mod func_ptr {
 
     // just testing that this is compilable
     fn do_growing (u16 -> u16 u16)* -> {
-        while { 0 } {
+        while { false } {
             1 over () drop drop
         }
         drop

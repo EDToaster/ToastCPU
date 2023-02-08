@@ -33,7 +33,7 @@ mod os {
         print_prompt
         while { 1 } {
             // handle input
-            while { keyboard_get_input dup } {
+            while { keyboard_get_input } {
                 dup '\n' = if {
                     print_char
                     // execute command

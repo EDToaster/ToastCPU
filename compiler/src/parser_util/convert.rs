@@ -53,7 +53,7 @@ pub fn string_int_arr(s: &str) -> Result<Vec<u16>, ()> {
     let mut string = vec![];
     let mut escaped = false;
 
-    for c in s[1..s.len() - 1].chars().into_iter() {
+    for c in s[1..s.len() - 1].chars() {
         if escaped {
             string.push(char_int_single(c, true)?);
             escaped = false;

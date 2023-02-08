@@ -47,6 +47,12 @@ pub struct IntArray {
 }
 
 #[derive(Debug, Clone)]
+pub struct BoolLiteral {
+    pub span: Span,
+    pub val: isize,
+}
+
+#[derive(Debug, Clone)]
 pub struct Identifier {
     pub span: Span,
     pub name: String,
@@ -56,6 +62,7 @@ pub struct Identifier {
 pub enum Statement {
     IntLiteral(IntLiteral),
     IntArray(IntArray),
+    BoolLiteral(BoolLiteral),
     Identifier(Identifier),
     Operator(Operator),
     Block(Block),

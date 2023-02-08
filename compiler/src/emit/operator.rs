@@ -194,8 +194,8 @@ pub fn emit_operator(
                 "||",
                 span,
                 stack_view,
-                &vec![u16!(), u16!()],
-                &[u16!()],
+                &vec![bool!(), bool!()],
+                &[bool!()],
             )?;
         }
 
@@ -220,8 +220,8 @@ pub fn emit_operator(
                 "&&",
                 span,
                 stack_view,
-                &vec![u16!(), u16!()],
-                &[u16!()],
+                &vec![bool!(), bool!()],
+                &[bool!()],
             )?;
         }
 
@@ -240,7 +240,7 @@ pub fn emit_operator(
     push! t1
                             "
             );
-            check_and_apply_stack_transition("!", span, stack_view, &vec![u16!()], &[u16!()])?;
+            check_and_apply_stack_transition("!", span, stack_view, &vec![bool!()], &[bool!()])?;
         }
 
         Operator::Eq(span) => {
@@ -263,7 +263,7 @@ pub fn emit_operator(
                 span,
                 stack_view,
                 &vec![gen!("$a"), gen!("$a")],
-                &[u16!()],
+                &[bool!()],
             )?;
         }
         Operator::Lt(span) => {
@@ -286,7 +286,7 @@ pub fn emit_operator(
                 span,
                 stack_view,
                 &vec![u16!(), u16!()],
-                &[u16!()],
+                &[bool!()],
             )?;
         }
         Operator::Lte(span) => {
@@ -309,7 +309,7 @@ pub fn emit_operator(
                 span,
                 stack_view,
                 &vec![u16!(), u16!()],
-                &[u16!()],
+                &[bool!()],
             )?;
         }
         Operator::Gt(span) => {
@@ -332,7 +332,7 @@ pub fn emit_operator(
                 span,
                 stack_view,
                 &vec![u16!(), u16!()],
-                &[u16!()],
+                &[bool!()],
             )?;
         }
         Operator::Gte(span) => {
@@ -355,7 +355,7 @@ pub fn emit_operator(
                 span,
                 stack_view,
                 &vec![u16!(), u16!()],
-                &[u16!()],
+                &[bool!()],
             )?;
         }
         Operator::Hole(span) => {

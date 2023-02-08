@@ -56,10 +56,10 @@ mod game {
                 0 as(Game*) 0 0 as(u16*)
             } 1 swap store
 
-            0 let game guess correct {
+            false let game guess correct {
                 0 while { dup game load .word_length load < } {
                     dup game load .word load + load guess load = if {
-                        1 correct store
+                        true correct store
 
                         // mark the letter correct
                         dup game load .correct_letters + 1 swap store
@@ -104,7 +104,7 @@ mod game {
         game Game::print_game
 
         while { 1 } {
-            while { io::keyboard_get_input dup } {
+            while { io::keyboard_get_input } {
                 game over Game::guess drop
                 game Game::print_game
             } drop

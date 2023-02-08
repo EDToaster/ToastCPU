@@ -8,12 +8,12 @@ mod logical {
 
     fn test -> {
         "Testing Logical... " print_string
-        "1 && 1"    { 1 1 && 1 = }  assert
-        "0 && 1"    { 0 1 && 0 = }  assert
-        "0 || 0"    { 0 0 || 0 = }  assert
-        "1 || 0"    { 1 0 || 1 = }  assert
-        "1 !"       { 1   !  0 = }  assert
-        "0 !"       { 0   !  1 = }  assert
+        "1 && 1"    { true true && }    assert
+        "0 && 1"    { false true && }   assert_false
+        "0 || 0"    { false false || }  assert_false
+        "1 || 0"    { true false || }   assert
+        "1 !"       { true   ! }        assert_false
+        "0 !"       { false  ! }        assert
     }
 }
 

@@ -1,15 +1,17 @@
 
 mod math {
+    using math
 
-    // multiply by repeated add
+    // multiply by shift add
     fn mul u16 u16 -> u16 {
-        0 let a b acc {
-            while { b load } {
-                // acc += a
-                acc load { a load } + acc store
-                // b -= 1
-                b load 1 - b store
+        0 let acc {
+            // a, b
+            // if a & 1, add b
+            unroll 16 {
+                over 1 & if { dup acc load + acc store } 1 << swap 1 >>> swap
             }
+
+            drop drop
             acc load
         }
     }

@@ -90,6 +90,11 @@
 					"comment": "Matches bin numbers",
 					"name": "constant.numeric.bin.toastlang",
 					"match": "\\b(0b[01]+)\\b"
+				},
+				{
+					"comment": "Matches boolean literals",
+					"name": "constant.numeric.bool.toastlang",
+					"match": "\\b(true|false)\\b"
 				}
 			]
 		},

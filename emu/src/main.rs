@@ -241,10 +241,12 @@ fn emulate(pc_buffer: &mut AllocRingBuffer<u16>) -> Result<(), String> {
 
     let vram: Vec<AtomicU16> = (0..6000).map(|_| AtomicU16::new(0)).collect();
 
-    let mut diag_vga: Vga = Vga::new(VGA_WIDTH, VGA_HEIGHT, stdout(), &vram);
+    let stdoutlock = Arc::new(Mutex::new(stdout()));
+
+    let mut diag_vga: Vga = Vga::new(VGA_WIDTH, VGA_HEIGHT, stdoutlock.clone(), &vram);
     diag_vga.reset();
 
-    let mut disp_vga: Vga = Vga::new(VGA_WIDTH, VGA_HEIGHT, stdout(), &vram);
+    let mut disp_vga: Vga = Vga::new(VGA_WIDTH, VGA_HEIGHT, stdoutlock.clone(), &vram);
     disp_vga.reset();
 
     let key: Arc<Mutex<u16>> = Arc::new(Mutex::new(0));
@@ -267,7 +269,7 @@ fn emulate(pc_buffer: &mut AllocRingBuffer<u16>) -> Result<(), String> {
         Diagnostics::new(diag_vga, Duration::new(0, 100_000_000));
 
     std::thread::scope(|scope| -> Result<(), String> {
-        
+
         // start keyboard thread
         let key_handler_thread = scope.spawn(move || key_handler.handle());
         // start vga thread

@@ -1,7 +1,7 @@
 use std::{
     io::stdout,
     process::exit,
-    sync::{Arc, Mutex},
+    sync::{Arc, Mutex, atomic::{AtomicBool, Ordering}},
 };
 
 use crossterm::{
@@ -38,8 +38,8 @@ impl Key {
         *self.key.lock().unwrap() = code;
     }
 
-    pub fn handle(&mut self) {
-        loop {
+    pub fn handle(&mut self, term: &AtomicBool) {
+        while !term.load(Ordering::Relaxed) {
             let event = read().unwrap();
             match event {
                 Event::Key(KeyEvent {

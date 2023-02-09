@@ -1,5 +1,4 @@
 mod devices;
-mod diagnostics;
 mod key;
 mod vga;
 
@@ -8,17 +7,21 @@ use std::fs;
 use std::io::stdout;
 use std::ops::{Index, IndexMut};
 use std::process;
+use std::sync::atomic::AtomicBool;
 use std::sync::atomic::AtomicU16;
+use std::sync::atomic::AtomicU64;
+use std::sync::atomic::Ordering;
 use std::sync::{Arc, Mutex};
-use std::thread;
 use std::time::Duration;
 
+use crossterm::cursor::Show;
+use crossterm::execute;
+use crossterm::terminal::disable_raw_mode;
 use regex::Regex;
 use ringbuffer::{AllocRingBuffer, RingBufferExt, RingBufferWrite};
 use vga::Vga;
 
 use crate::devices::Devices;
-use crate::diagnostics::Diagnostics;
 use crate::key::Key;
 
 const ROM_SIZE: usize = 0x8000;
@@ -241,12 +244,9 @@ fn emulate(pc_buffer: &mut AllocRingBuffer<u16>) -> Result<(), String> {
 
     let vram: Vec<AtomicU16> = (0..6000).map(|_| AtomicU16::new(0)).collect();
 
-    let stdoutlock = Arc::new(Mutex::new(stdout()));
+    let running_count = AtomicU64::new(0);
 
-    let mut diag_vga: Vga = Vga::new(VGA_WIDTH, VGA_HEIGHT, stdoutlock.clone(), &vram);
-    diag_vga.reset();
-
-    let mut disp_vga: Vga = Vga::new(VGA_WIDTH, VGA_HEIGHT, stdoutlock.clone(), &vram);
+    let mut disp_vga: Vga = Vga::new(VGA_WIDTH, VGA_HEIGHT, stdout(), &vram, Duration::new(0, 100_000_000), &running_count);
     disp_vga.reset();
 
     let key: Arc<Mutex<u16>> = Arc::new(Mutex::new(0));
@@ -265,15 +265,15 @@ fn emulate(pc_buffer: &mut AllocRingBuffer<u16>) -> Result<(), String> {
 
     let mut key_handler = Key::new(Arc::clone(&irq), Arc::clone(&key));
 
-    let mut diagnostics: Diagnostics =
-        Diagnostics::new(diag_vga, Duration::new(0, 100_000_000));
+    let term = AtomicBool::new(false);
+    let term1 = &term;
+    let term2 = &term;
 
     std::thread::scope(|scope| -> Result<(), String> {
-
         // start keyboard thread
-        let key_handler_thread = scope.spawn(move || key_handler.handle());
+        let key_handler_thread = scope.spawn(move || key_handler.handle(term1));
         // start vga thread
-        let display_thread = scope.spawn(move || disp_vga.start_loop());
+        let display_thread = scope.spawn(move || disp_vga.start_loop(term2));
 
         // main thread
         let mut mem = Devices::new(rom, &vram, ram, key);
@@ -300,15 +300,16 @@ fn emulate(pc_buffer: &mut AllocRingBuffer<u16>) -> Result<(), String> {
 
             pc_buffer.push(registers.pc);
 
-            let inst: u16 = mem
-                .read(registers.pc)
-                .map_err(|e| format!("Issue when read instruction pc={:#06x}: {e}", registers.pc))?;
+            let inst: u16 = mem.read(registers.pc).map_err(|e| {
+                format!("Issue when read instruction pc={:#06x}: {e}", registers.pc)
+            })?;
             let opcode: u16 = (inst & 0xF000) >> 12;
 
             let r1: u16 = (inst & 0x0F00) >> 8;
             let r2: u16 = (inst & 0x00F0) >> 4;
             let imoh_imm8: u16 = (inst & 0x00FF) << 8;
-            let imov_imm8: u16 = (inst & 0x00FF) | (if (inst & 0x0080) == 0 { 0x0000 } else { 0xFF00 });
+            let imov_imm8: u16 =
+                (inst & 0x00FF) | (if (inst & 0x0080) == 0 { 0x0000 } else { 0xFF00 });
 
             let alu_imm4: u16 = r2;
             let alu_op: u16 = inst & 0x000F;
@@ -338,10 +339,14 @@ fn emulate(pc_buffer: &mut AllocRingBuffer<u16>) -> Result<(), String> {
                 }
                 PUSH => {
                     registers[r1] -= 1;
-                    mem.write(registers[r1], registers[r2]).map_err(|e| format!("Issue when executing push at pc={:#06x}: {e}", registers.pc))?;
+                    mem.write(registers[r1], registers[r2]).map_err(|e| {
+                        format!("Issue when executing push at pc={:#06x}: {e}", registers.pc)
+                    })?;
                 }
                 POP => {
-                    registers[r1] = mem.read(registers[r2]).map_err(|e| format!("Issue when executing pop at pc={:#06x}: {e}", registers.pc))?;
+                    registers[r1] = mem.read(registers[r2]).map_err(|e| {
+                        format!("Issue when executing pop at pc={:#06x}: {e}", registers.pc)
+                    })?;
                     registers[r2] += 1;
                 }
                 HALT => {
@@ -389,11 +394,21 @@ fn emulate(pc_buffer: &mut AllocRingBuffer<u16>) -> Result<(), String> {
 
                     if do_jump {
                         if r {
-                            registers.pc = mem.read(registers.sp).map_err(|e| format!("Issue when executing jump at pc={:#06x}: {e}", registers.pc))?;
+                            registers.pc = mem.read(registers.sp).map_err(|e| {
+                                format!(
+                                    "Issue when executing jump at pc={:#06x}: {e}",
+                                    registers.pc
+                                )
+                            })?;
                             registers.sp += 1;
                         } else if l {
                             registers.sp -= 1;
-                            mem.write(registers.sp, registers.pc + 1).map_err(|e| format!("Issue when executing jump and link at pc={:#06x}: {e}", registers.pc))?;
+                            mem.write(registers.sp, registers.pc + 1).map_err(|e| {
+                                format!(
+                                    "Issue when executing jump and link at pc={:#06x}: {e}",
+                                    registers.pc
+                                )
+                            })?;
                             registers.pc = registers[r1];
                         } else {
                             registers.pc = registers[r1];
@@ -414,21 +429,24 @@ fn emulate(pc_buffer: &mut AllocRingBuffer<u16>) -> Result<(), String> {
                 _ => (),
             }
             registers.pc += 1;
-            diagnostics.increment();
+            running_count.fetch_add(1, Ordering::Relaxed);
         }
 
         let last_pc = registers.pc - 1;
-        diagnostics.halt(last_pc);
 
         // let v0 = registers[5];
 
         // println!("Program halted at PC={last_pc:04x}");
         // println!("Program halted at v0={v0:04x}");
+        term.swap(true, Ordering::Relaxed);
 
         key_handler_thread.join().unwrap();
         display_thread.join().unwrap();
 
         Ok(())
     })?;
+
+    execute!(stdout(), Show).unwrap();
+    disable_raw_mode().unwrap();
     Ok(())
 }

@@ -40,7 +40,7 @@ mod struct_ {
     global struct_instance NestedStruct 0
 
     fn test -> {
-        "Testing struct... " print_string
+        "Testing struct... " print
 
         "sizeof(Struct)"        { sizeof(Struct) 6 =        } assert
         "sizeof(NestedStruct)"  { sizeof(NestedStruct) 14 = } assert

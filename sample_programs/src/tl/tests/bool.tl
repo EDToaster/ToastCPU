@@ -12,7 +12,7 @@ mod bool_ {
     fn ret_false -> bool { false }
 
     fn test -> {
-        "Testing bools..." print_string
+        "Testing bools..." print
 
         "Return true"   { ret_true  } assert 
         "Return false"  { ret_false } assert_false

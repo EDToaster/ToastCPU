@@ -10,10 +10,10 @@ mod color {
     fn test -> {
         get_style
 
-        RED     fg "Toast"      print_string
-        YELLOW  fg "Lang "      print_string
-        GREEN   fg "Test "      print_string
-        BLUE    fg "Suite... "  print_string
+        RED     fg "Toast"      print
+        YELLOW  fg "Lang "      print
+        GREEN   fg "Test "      print
+        BLUE    fg "Suite... "  print
 
         "Black style" { BLACK fg BLACK bg get_style 0 =      } assert
         "White style" { WHITE fg WHITE bg get_style 0x3F00 = } assert

@@ -7,7 +7,7 @@ mod logical {
     using io
 
     fn test -> {
-        "Testing Logical... " print_string
+        "Testing Logical... " print
         "1 && 1"    { true true && }    assert
         "0 && 1"    { false true && }   assert_false
         "0 || 0"    { false false || }  assert_false

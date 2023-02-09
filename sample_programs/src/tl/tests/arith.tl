@@ -8,7 +8,7 @@ mod arith {
     using io
 
     fn test -> {
-        "Testing Arith... " print_string
+        "Testing Arith... " print
         "7 = 7"     { 7 7 = }   assert
         "6 = 7"     { 6 7 = }   assert_false
         "6 > 7"     { 6 7 > }   assert_false

@@ -52,9 +52,9 @@ mod test_suite {
     }
 
     fn run_test (->)* u16 -> {
-        1 + print_decimal ": " print_string
+        1 + print_decimal ": " print
         4 left_align ()
-        get_style GREEN fg 35 left_align "Passed\n" print_string set_style
+        get_style GREEN fg 35 left_align "Passed\n" print set_style
     }
 
     fn main -> {
@@ -85,17 +85,17 @@ mod test_suite {
         run_tests
         
         '\n' print_char
-        GREEN fg "Passed " print_string print_decimal " Test Cases!" print_string
+        GREEN fg "Passed " print print_decimal " Test Cases!" print
 
-        "\n\n\n" print_string
+        "\n\n\n" print
 
         WHITE bg BLACK fg
-        8 left_align "               __        \n" print_string
-        8 left_align "              / _)       \n" print_string
-        8 left_align "     _.----._/ /         \n" print_string
-        8 left_align "   _|         /          \n" print_string
-        8 left_align " _| .(  | (  |           \n" print_string
-        8 left_align "/_.' '|_|--|_| edtoaster \n" print_string
+        8 left_align "               __        \n" print
+        8 left_align "              / _)       \n" print
+        8 left_align "     _.----._/ /         \n" print
+        8 left_align "   _|         /          \n" print
+        8 left_align " _| .(  | (  |           \n" print
+        8 left_align "/_.' '|_|--|_| edtoaster \n" print
     }
 }
 

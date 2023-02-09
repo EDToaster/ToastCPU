@@ -13,7 +13,7 @@ mod memset {
     global memset_arr[8] u16 0
 
     fn test -> {
-        "Testing memset... " print_string
+        "Testing memset... " print
         "arr before init" { "\0\0\0\0\0\0\0\0" memset_arr 8 streq } assert
         memset_arr 0x0020 8 memset
         "arr after init" { "        " memset_arr 8 streq } assert

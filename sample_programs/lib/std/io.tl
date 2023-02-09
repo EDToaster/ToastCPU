@@ -145,13 +145,17 @@ mod io {
     }
 
     //     strptr
-    fn print_string u16* -> {
+    fn print u16* -> {
         dup
         while { load dup } {
             // str char
             print_char 1 + dup
         }
         drop drop
+    }
+
+    fn println u16* -> {
+        print '\n' print_char
     }
 
     global key_buffer           RingBuffer  0

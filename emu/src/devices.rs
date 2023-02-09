@@ -23,7 +23,6 @@ impl <'a> Devices<'a> {
             0x8000..=0xBFFF => Ok(self.ram[(addr - 0x8000) as usize]),
             0xFFFF => {
                 let a = *self.key.lock().unwrap();
-                // println!("{:04x} at {:04x}", a, addr);
                 Ok(a)
             }
             _ => Err(format!("Memory location {addr:#06x} not implemented")),
@@ -33,7 +32,6 @@ impl <'a> Devices<'a> {
     pub fn write(&mut self, addr: u16, val: u16) -> Result<(), String> {
         match addr {
             0..=0x7FFF => {
-                // println!("{:04x} at {:04x}", val, addr);
                 self.vram[addr as usize].swap(val, Ordering::Relaxed);
             }
             0x8000..=0xBFFF => self.ram[(addr - 0x8000) as usize] = val,

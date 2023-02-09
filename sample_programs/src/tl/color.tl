@@ -7,7 +7,7 @@ fn main -> {
         dup bg
         0 while { dup 8 < } {
             dup fg
-            " A" print_string
+            " A" print
             1 +
         } drop
         '\n' print_char

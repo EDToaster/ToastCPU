@@ -20,7 +20,7 @@ mod rec_types {
     global inner InnerRec1 0 
 
     fn test -> {
-        "Testing recursive types..." print_string
+        "Testing recursive types..." print
         "Inner size" { sizeof(Inner) 10 = } assert
 
         inner inner .a store

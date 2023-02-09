@@ -10,9 +10,9 @@ mod assert {
         if {
             //"Passed\n" ps
         } else {
-            35 left_align RED fg dup print_string
+            35 left_align RED fg dup print
             ' ' print_char
-            "Assert Failed\n" print_string
+            "Assert Failed\n" print
             halt
         }
         drop

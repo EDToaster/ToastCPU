@@ -10,7 +10,7 @@ mod rand {
     global random rand::Random 0
 
     fn test -> {
-        "Testing random... " print_string
+        "Testing random... " print
         random 0xDEAD rand_init
 
         // period

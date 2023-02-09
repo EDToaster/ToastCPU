@@ -11,7 +11,7 @@ mod collection {
     global internal_buffer [32] u16         0
 
     fn test -> {
-        "Testing collections..." print_string
+        "Testing collections..." print
 
         buffer internal_buffer 5 RingBuffer::init
 

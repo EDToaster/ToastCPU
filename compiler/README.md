@@ -20,7 +20,7 @@ The following list of features are subject to change as development continues.
 ### Hello World
 ```rust
 fn main -> {
-    "Hello from a piece of toast!\n" io::print_string
+    "Hello from a piece of toast!\n" io::print
 }
 ```
 

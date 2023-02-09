@@ -423,7 +423,6 @@ fn emulate(pc_buffer: &mut AllocRingBuffer<u16>) -> Result<(), String> {
                     registers.pc = mem.read(registers.sp)
                         .map_err(|e| format!("Issue when executing rti and popping the return address at pc={:#06x}: {e}", registers.pc))?;
                     registers.sp += 1;
-
                     registers.pc -= 1;
                 }
                 _ => (),
@@ -434,10 +433,6 @@ fn emulate(pc_buffer: &mut AllocRingBuffer<u16>) -> Result<(), String> {
 
         let last_pc = registers.pc - 1;
 
-        // let v0 = registers[5];
-
-        // println!("Program halted at PC={last_pc:04x}");
-        // println!("Program halted at v0={v0:04x}");
         term.swap(true, Ordering::Relaxed);
 
         key_handler_thread.join().unwrap();

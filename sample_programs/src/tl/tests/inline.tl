@@ -10,7 +10,7 @@ mod inline_ {
     inline INLINE_BLOCK { 0xDEAD 0xBEEF + }
 
     fn test -> {
-        "Testing inline... " print_string
+        "Testing inline... " print
 
         "INLINE_VAL"    { INLINE_VAL 0xC0FF = } assert
         "INLINE_BLOCK"  { INLINE_BLOCK 0xDEAD 0xBEEF + = } assert

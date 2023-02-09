@@ -16,7 +16,7 @@ fn main -> {
 
     //     [u16*] [u16*, u16] [u16*]
     //     v      v           v
-    "ABCD" ?? 1   ?? +        ?? print_string
+    "ABCD" ?? 1   ?? +        ?? print
 
     10 while { dup 0 >= } {
         // [u16]
@@ -30,7 +30,4 @@ fn main -> {
     // v
        ??
     drop
-
-    // block compilation
-    0
 }

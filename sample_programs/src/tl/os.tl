@@ -15,17 +15,17 @@ mod os {
     global command_buffer CommandBuffer 0
 
     fn print_prompt -> {
-        WHITE fg "> " print_string
+        WHITE fg "> " print
     }
 
     fn initialize -> {
         keyboard_init
         command_buffer CommandBuffer::reset
 
-        BLACK bg WHITE fg "Welcome to ToastOS!\n"   print_string
-                RED   fg "32k ROM "                 print_string
-                GREEN fg "16k RAM "                 print_string
-                BLUE  fg "16k MEM I/O\n"            print_string
+        BLACK bg WHITE fg "Welcome to ToastOS!\n"   print
+                RED   fg "32k ROM "                 print
+                GREEN fg "16k RAM "                 print
+                BLUE  fg "16k MEM I/O\n"            print
                 WHITE fg
     }
 
@@ -38,10 +38,10 @@ mod os {
                     print_char
                     // execute command
                     "ping" command_buffer .command 5 streq if {
-                        "pong!\n" print_string
+                        "pong!\n" print
                     } else {
-                        "Unknown command: " print_string 
-                        command_buffer .command print_string
+                        "Unknown command: " print 
+                        command_buffer .command print
                         '\n' print_char
                     }
 

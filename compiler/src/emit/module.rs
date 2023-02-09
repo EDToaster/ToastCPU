@@ -1,3 +1,5 @@
+use lrpar::Span;
+
 use crate::emit::function::{emit_function, emit_isr};
 use crate::emit::string_defs::emit_string_defs;
 use crate::emit::types::*;
@@ -13,7 +15,7 @@ fn gather_struct_declarations(
     module_prefix: &str,
     usings: &Stack<String>,
     structs: &mut HashMap<String, (Stack<String>, StructDef)>,
-) -> Result<(), String> {
+) -> Result<(), (Span, String)> {
     let mut usings = usings.clone();
 
     for using in &m.usings {
@@ -23,7 +25,7 @@ fn gather_struct_declarations(
     for s in &m.struct_defs {
         let name = format!("{module_prefix}{}", s.name.name);
         if structs.contains_key(&name) {
-            return Err(format!("Struct `{name}` is already defined."));
+            return Err((Span::new(0, 0), format!("Struct `{name}` is already defined.")));
         }
         structs.insert(name, (usings.clone(), s.clone()));
     }
@@ -114,7 +116,7 @@ pub fn emit_functions(
     global_state: &mut GlobalState,
     function_map: &mut HashMap<String, String>,
     using_stack: &Stack<String>,
-) -> Result<(), String> {
+) -> Result<(), (Span, String)> {
     // emit submodule functions
     for module in &m.modules {
         let submod_usings: Vec<String> = module
@@ -141,14 +143,13 @@ pub fn emit_functions(
             s @ "isr" => {
                 function_map.insert(
                     s.to_string(),
-                    emit_isr(f, global_state, using_stack).map_err(|(_, b)| b)?,
+                    emit_isr(f, global_state, using_stack)?,
                 );
             }
             s => {
                 function_map.insert(
                     s.to_string(),
-                    emit_function(f, module_prefix, global_state, using_stack)
-                        .map_err(|(_, b)| b)?,
+                    emit_function(f, module_prefix, global_state, using_stack)?,
                 );
             }
         }
@@ -157,7 +158,7 @@ pub fn emit_functions(
     Ok(())
 }
 
-pub fn emit_root_module(m: &Module) -> Result<String, String> {
+pub fn emit_root_module(m: &Module) -> Result<String, (Span, String)> {
     let mut global_state = GlobalState {
         function_signatures: HashMap::new(),
         function_dependencies: DependencyGraph::default(),
@@ -196,12 +197,12 @@ pub fn emit_root_module(m: &Module) -> Result<String, String> {
             &mut global_state.struct_defs,
             &struct_names,
             &mut seen,
-        )?;
+        ).map_err(|s| (Span::new(0, 0), s))?;
     }
 
     // all structs should have sizes populated
 
-    gather_definitions(m, "", &mut global_state, &mut using_stack)?;
+    gather_definitions(m, "", &mut global_state, &mut using_stack).map_err(|s| (Span::new(0, 0), s))?;
 
     // grab global variables
     let mut global_prog: String = String::new();
@@ -213,7 +214,7 @@ pub fn emit_root_module(m: &Module) -> Result<String, String> {
 
     for (identifier, (t, num, init)) in &global_state.globals {
         let label = global_label(identifier);
-        let size_words = t.type_size(&global_state.struct_defs)? * (*num) as usize;
+        let size_words = t.type_size(&global_state.struct_defs).map_err(|s| (Span::new(0, 0), s))? * (*num) as usize;
 
         tasm!(
             global_prog;;

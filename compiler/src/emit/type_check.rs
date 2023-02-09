@@ -93,7 +93,7 @@ pub fn check_and_apply_multiple_stack_transitions(
     s: &str,
     span: &Span,
     stack_view: &mut Stack<Type>,
-    rules: &Vec<(Vec<Type>, Vec<Type>)>,
+    rules: &Vec<(Vec<Type>, Vec<Type>)>
 ) -> Result<(), (Span, String)> {
     for (in_t, out_t) in rules {
         if check_and_apply_stack_transition(s, span, stack_view, in_t, out_t).is_ok() {
@@ -109,7 +109,7 @@ pub fn check_and_apply_stack_transition(
     span: &Span,
     stack_view: &mut Stack<Type>,
     in_t: &Vec<Type>,
-    out_t: &[Type],
+    out_t: &[Type]
 ) -> Result<Vec<Type>, (Span, String)> {
     let length = stack_view.len;
     if length < in_t.len() {

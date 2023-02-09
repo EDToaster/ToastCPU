@@ -77,7 +77,7 @@ fn get_args() -> Result<Options, ArgParseError> {
     .map_err(ArgParseError)
 }
 
-fn main() -> Result<(), String> {
+fn run() -> Result<(), String> {
     let options = get_args().map_err(|e| e.to_string())?;
     VERBOSE.set(options.verbose).expect("Cannot set VERBOSE flag twice. This is a bug inside the program, please contact the owner to resolve it.");
 
@@ -88,9 +88,9 @@ fn main() -> Result<(), String> {
     let mut program_text = fs::read_to_string(options.input).map_err(|e| e.to_string())?;
     program_text = preprocess(&program_text, &options.include_paths, &mut HashSet::new())?;
 
-    if is_verbose() {
-        println!("{program_text}");
-    }
+    // if is_verbose() {
+    //     println!("{program_text}");
+    // }
 
     let lexer_def = tl_l::lexerdef();
 
@@ -111,11 +111,21 @@ fn main() -> Result<(), String> {
         .ok_or("Some parser thing went wrong!")?
         .map_err(|_| "Some parser thing went wrong!")?;
 
+    let tasm = emit_root_module(&r).map_err(|(span, s)| format!("Error here: `\n{}\n`\n\n{s}", &program_text[span.start()..span.end()]))?;
+
     let newline_nuke = Regex::new(r"(\n|\r\n)\s*(\n|\r\n)").unwrap();
     let tasm = newline_nuke
-        .replace_all(emit_root_module(&r)?.as_str(), "\n")
+        .replace_all(&tasm, "\n")
         .to_string();
     fs::write(options.output, tasm).expect("Unable to write file");
 
     Ok(())
+}
+
+fn main() -> Result<(), ()> {
+    let res = run();
+    match res {
+        Err(e) => { println!("{e}"); Err(()) }
+        _ => Ok(()),
+    }
 }

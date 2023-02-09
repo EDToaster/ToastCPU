@@ -94,7 +94,7 @@ r110 cellular automata.
   - [ ] Instead of searching through all `using`s, create a datastructure to map shortnames -> items and pass that around
 - [ ] Function pointers
   - [x] Express types like `(u16 -> u16)` or `($a -> u16*)`
-  - [ ] Fix generic function type annotation: see Appendix 1 
+  - [ ] Fix generic function type annotation (See appendix)
   - [x] Better parsing of types instead of overloading identifiers
   - [ ] Better parsing of module member types instead of overloading identifier
 - [ ] Recursive struct definitions if size is known at compile time
@@ -103,12 +103,28 @@ r110 cellular automata.
   - [x] let `if` statements use both `u16` and `bool`
   - [ ] logical operators `&&`, etc. to emit `bool` instead of `u16`
 - [ ] `char` type
+- [ ] `cond` blocks 
+  - `true cond { { dup } { drop } { dup ! } { drop } } `
+- [ ] Structs on the stack (See appendix)
 
 ## Appendix
 
 ### Problem 1
 
 This doesn't work
+
+```
+fn generic_bug $a -> {
+  let a {
+    a drop
+  }
+}
+```
+
+This is because when we push `a` on to the stack, it will try to resolve that type. 
+However, this should not error, since the `$a` that it is trying to resolve was introduced in the function.
+
+Similar thing happens with the output type of a function pointer.
 
 ```
 fn generic_hackery $a (u16 -> $a)* -> {
@@ -123,3 +139,5 @@ Why?
 Because when we call the generic function using the `()` operator, we try to resolve the type `$a` within `generic_hackery`. This is not ideal as we only need to make sure that the two `$a` are the same. This can (and is) done when `generic_hackery` is called from other functions. 
 
 I don't know how to fix this and I don't really know if it matters...
+
+### Structs on the stack

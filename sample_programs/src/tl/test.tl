@@ -2,6 +2,9 @@
 #include<std/mem>
 #include<std/string>
 #include<std/rand>
+#include<std/iter>
+
+#include<tests/bugs>
 
 #include<tests/arith>
 #include<tests/bool>
@@ -40,6 +43,8 @@ mod test_suite {
     }
 
     fn run_tests -> u16 {
+        // TESTS .ptrs ptr(run_test) TESTS .size load  iter::for_each 
+        // TESTS .size load 
         0 while { dup TESTS .size load < } {
             TESTS .ptrs over + load over run_test
             1 +
@@ -89,8 +94,8 @@ mod test_suite {
         8 left_align "              / _)       \n" print_string
         8 left_align "     _.----._/ /         \n" print_string
         8 left_align "   _|         /          \n" print_string
-        8 left_align " _|  (  | (  |           \n" print_string
-        8 left_align "/__.-'|_|--|_| edtoaster \n" print_string
+        8 left_align " _| .(  | (  |           \n" print_string
+        8 left_align "/_.' '|_|--|_| edtoaster \n" print_string
     }
 }
 

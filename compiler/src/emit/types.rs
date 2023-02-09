@@ -108,21 +108,15 @@ macro_rules! ptr {
 }
 
 macro_rules! gen {
-    ($l:expr) => {
-        Type::new_generic($l)
-    };
+    ($l:expr) => { Type::new_generic($l) };
 }
 
 macro_rules! u16 {
-    () => {
-        Type::U16
-    };
+    () => { Type::U16 };
 }
 
 macro_rules! bool {
-    () => {
-        Type::Bool
-    };
+    () => { Type::Bool };
 }
 
 impl Type {

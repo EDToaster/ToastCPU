@@ -14,12 +14,12 @@ mod rand {
         random 0xDEAD rand_init
 
         // period
-        0
+        1
         while { random rand_int 0xDEAD = ! } {
             1 +
         }
 
-        "Random period = 2^16-1" { over 0xFFFE = } assert drop
+        "Random period = 2^16-1" { over 0xFFFF = } assert drop
     }
 }
 

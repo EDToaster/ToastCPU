@@ -142,8 +142,8 @@ pub fn emit_statement(
                         "dup",
                         span,
                         stack_view,
-                        &vec![gen!("$a")],
-                        &[gen!("$a"), gen!("$a")],
+                        &vec![gen!("a")],
+                        &[gen!("a"), gen!("a")],
                     )?;
                 }
                 "over" => {
@@ -158,8 +158,8 @@ pub fn emit_statement(
                         "over",
                         span,
                         stack_view,
-                        &vec![gen!("$a"), gen!("$b")],
-                        &[gen!("$a"), gen!("$b"), gen!("$a")],
+                        &vec![gen!("a"), gen!("b")],
+                        &[gen!("a"), gen!("b"), gen!("a")],
                     )?;
                 }
                 "swap" => {
@@ -174,8 +174,8 @@ pub fn emit_statement(
                         "swap",
                         span,
                         stack_view,
-                        &vec![gen!("$a"), gen!("$b")],
-                        &[gen!("$b"), gen!("$a")],
+                        &vec![gen!("a"), gen!("b")],
+                        &[gen!("b"), gen!("a")],
                     )?;
                 }
                 "rot" => {
@@ -190,8 +190,8 @@ pub fn emit_statement(
                         "rot",
                         span,
                         stack_view,
-                        &vec![gen!("$a"), gen!("$b"), gen!("$c")],
-                        &[gen!("$b"), gen!("$c"), gen!("$a")],
+                        &vec![gen!("a"), gen!("b"), gen!("c")],
+                        &[gen!("b"), gen!("c"), gen!("a")],
                     )?;
                 }
                 "halt" => {
@@ -213,7 +213,7 @@ pub fn emit_statement(
                         "drop",
                         span,
                         stack_view,
-                        &vec![gen!("$a")],
+                        &vec![gen!("a")],
                         &[],
                     )?;
                 }
@@ -230,8 +230,8 @@ pub fn emit_statement(
                         "load",
                         span,
                         stack_view,
-                        &vec![ptr!(gen!("$a"))],
-                        &[gen!("$a")],
+                        &vec![ptr!(gen!("a"))],
+                        &[gen!("a")],
                     )?;
                 }
                 "store" => {
@@ -246,7 +246,7 @@ pub fn emit_statement(
                         "store",
                         span,
                         stack_view,
-                        &vec![gen!("$a"), Type::Pointer(1, Box::new(gen!("$a")))],
+                        &vec![gen!("a"), Type::Pointer(1, Box::new(gen!("a")))],
                         &[],
                     )?;
                 }

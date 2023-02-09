@@ -33,8 +33,8 @@ pub fn emit_operator(
                 span,
                 stack_view,
                 &vec![
-                    (vec![ptr!(gen!("$a")), u16!()], vec![ptr!(gen!("$a"))]),
-                    (vec![u16!(), ptr!(gen!("$a"))], vec![ptr!(gen!("$a"))]),
+                    (vec![ptr!(gen!("a")), u16!()], vec![ptr!(gen!("a"))]),
+                    (vec![u16!(), ptr!(gen!("a"))], vec![ptr!(gen!("a"))]),
                     (vec![u16!(), u16!()], vec![u16!()]),
                 ],
             )?;
@@ -53,8 +53,8 @@ pub fn emit_operator(
                 span,
                 stack_view,
                 &vec![
-                    (vec![ptr!(gen!("$a")), u16!()], vec![ptr!(gen!("$a"))]),
-                    (vec![ptr!(gen!("$a")), ptr!(gen!("$a"))], vec![u16!()]),
+                    (vec![ptr!(gen!("a")), u16!()], vec![ptr!(gen!("a"))]),
+                    (vec![ptr!(gen!("a")), ptr!(gen!("a"))], vec![u16!()]),
                     (vec![u16!(), u16!()], vec![u16!()]),
                 ],
             )?;
@@ -262,7 +262,7 @@ pub fn emit_operator(
                 "=",
                 span,
                 stack_view,
-                &vec![gen!("$a"), gen!("$a")],
+                &vec![gen!("a"), gen!("a")],
                 &[bool!()],
             )?;
         }
@@ -367,7 +367,7 @@ pub fn emit_operator(
                 "()",
                 span,
                 stack_view,
-                &vec![ptr!(gen!("$a"))],
+                &vec![ptr!(gen!("a"))],
                 &[],
             )?[0];
 
@@ -428,7 +428,7 @@ push  t0
                 &format!("as({parsed_t:?})"),
                 span,
                 stack_view,
-                &vec![Type::new_generic("$a")],
+                &vec![Type::new_generic("a")],
                 &[parsed_t],
             )?;
         }
@@ -494,8 +494,8 @@ push  t0
                 &format!("[{offset}]"),
                 span,
                 stack_view,
-                &vec![ptr!(gen!("$a"))],
-                &[ptr!(gen!("$a"))],
+                &vec![ptr!(gen!("a"))],
+                &[ptr!(gen!("a"))],
             )?[0];
             let offset_size = offset
                 * dropped_t

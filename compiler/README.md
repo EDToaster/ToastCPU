@@ -106,6 +106,11 @@ r110 cellular automata.
 - [ ] `cond` blocks 
   - `true cond { { dup } { drop } { dup ! } { drop } } `
 - [ ] Structs on the stack (See appendix)
+- [ ] If no structs on the stack, then implement psuedotypes
+  - `type u16 bool Optional`
+  - `fn a -> Optional { 1 true }`
+  - These differ from structs in that they can exist on the stack, since they are completely transparent. For example, when calling `a`, 
+    the caller will see a `u16` and a `bool` directly on a stack. 
 
 ## Appendix
 
@@ -141,3 +146,7 @@ Because when we call the generic function using the `()` operator, we try to res
 I don't know how to fix this and I don't really know if it matters...
 
 ### Structs on the stack
+
+So... the semantics of this is kinda complicated, since operations like `drop` assume fixed-sized operands. I'm inclined to not implement this, since 
+doing a simple `swap` may require large amount of `memcpy`. A good (?) alternative are `type` declarations, which will transparently push
+its items on to the stack, as separate elements.

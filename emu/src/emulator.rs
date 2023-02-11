@@ -1,0 +1,370 @@
+use std::io::stdout;
+use std::ops::Index;
+use std::ops::IndexMut;
+use std::sync::atomic::AtomicBool;
+use std::sync::atomic::AtomicU16;
+use std::sync::atomic::AtomicU64;
+use std::sync::atomic::Ordering;
+use std::sync::{Arc, Mutex};
+use std::time::Duration;
+
+use crossterm::cursor::Show;
+use crossterm::execute;
+use crossterm::terminal::disable_raw_mode;
+use vga::Vga;
+
+use crate::devices::Devices;
+use crate::key::Key;
+use crate::vga;
+
+
+
+pub const ROM_SIZE: usize = 0x8000;
+pub const RAM_SIZE: usize = 0x4000;
+pub const VGA_WIDTH: usize = 100;
+pub const VGA_HEIGHT: usize = 60;
+
+pub const LOAD: u16 = 0;
+pub const STR: u16 = 1;
+pub const IMOV: u16 = 2;
+pub const IMOH: u16 = 3;
+pub const PUSH: u16 = 5;
+pub const POP: u16 = 6;
+pub const HALT: u16 = 7;
+pub const ALU: u16 = 8;
+pub const IALU: u16 = 9;
+pub const JMP: u16 = 10;
+pub const RTI: u16 = 12;
+
+enum StatusRegisterFlag {
+    X,
+    Z,
+    N,
+    C,
+    V,
+}
+impl StatusRegisterFlag {
+    fn mask(&self) -> u16 {
+        match *self {
+            StatusRegisterFlag::X => 0x0001,
+            StatusRegisterFlag::Z => 0x0002,
+            StatusRegisterFlag::N => 0x0004,
+            StatusRegisterFlag::C => 0x0008,
+            StatusRegisterFlag::V => 0x0010,
+        }
+    }
+}
+
+/**
+   if (set_VC) SR[4:3] <= {V, C};
+   SR[2:0] <= {N, Z, X};
+*/
+struct StatusRegister {
+    sr: u16,
+}
+
+impl StatusRegister {
+    fn get(&self, flag: StatusRegisterFlag) -> bool {
+        (self.sr & flag.mask()) != 0
+    }
+
+    fn set(&mut self, flag: StatusRegisterFlag, val: bool) {
+        if val {
+            self.sr |= flag.mask();
+        } else {
+            self.sr &= !flag.mask();
+        }
+    }
+}
+struct Registers {
+    general: [u16; 12],
+    // # r12 - ISR
+    // # r13 - SP
+    // # r14 - SR
+    // # r15 - PC
+    isr: u16,
+    sp: u16,
+    sr: StatusRegister,
+    pc: u16,
+}
+
+impl Index<u16> for Registers {
+    type Output = u16;
+
+    fn index(&self, index: u16) -> &Self::Output {
+        match index {
+            0..=11 => &self.general[index as usize],
+            12 => &self.isr,
+            13 => &self.sp,
+            14 => &self.sr.sr,
+            15 => &self.pc,
+            _ => panic!("Register index {index} is out of bounds!"),
+        }
+    }
+}
+
+impl IndexMut<u16> for Registers {
+    fn index_mut(&mut self, index: u16) -> &mut Self::Output {
+        match index {
+            0..=11 => &mut self.general[index as usize],
+            12 => &mut self.isr,
+            13 => &mut self.sp,
+            14 => &mut self.sr.sr,
+            15 => &mut self.pc,
+            _ => panic!("Register index {index} is out of bounds!"),
+        }
+    }
+}
+
+
+fn bit(n: i32, bit: u8) -> bool {
+    (n >> bit) & 1 != 0
+}
+
+fn alu(op: u16, a: i32, b: i32, sr: &mut StatusRegister) -> u16 {
+    let agg: i32 = match op {
+        0x0 => !a,
+        0x1 => a & b,
+        0x2 => a | b,
+        0x3 => a ^ b,
+        0x4 => a + b,
+        0x5 => a - b,
+        0x6 => b,
+        0x7 => a - b,
+        0x8 => ((a as u16) >> b) as i32,
+        0x9 => ((a as i16) >> b) as i32,
+        0xA => a << b,
+        _ => panic!("Invalid alu operation {op}"),
+    };
+
+    sr.set(StatusRegisterFlag::N, agg & 0x8000 != 0);
+    sr.set(StatusRegisterFlag::Z, agg == 0);
+    sr.set(StatusRegisterFlag::X, agg == 0xFFFF);
+
+    match op {
+        0x4 => {
+            sr.set(
+                StatusRegisterFlag::V,
+                (bit(a, 15) == bit(b, 15)) && (bit(a, 15) ^ bit(agg, 15)),
+            );
+            sr.set(StatusRegisterFlag::C, bit(agg, 16));
+        }
+        0x5 | 0x7 => {
+            sr.set(
+                StatusRegisterFlag::V,
+                (bit(a, 15) ^ bit(b, 15)) && (bit(a, 15) != bit(agg, 15)),
+            );
+            sr.set(StatusRegisterFlag::C, bit(agg, 16));
+        }
+        _ => (),
+    }
+
+    (agg & 0xFFFF) as u16
+}
+
+#[allow(unused_variables)]
+pub fn emulate(rom: Vec<u16>) -> Result<(), String> {
+
+    let ram: Vec<u16> = vec![0; RAM_SIZE];
+
+    let vram: Vec<AtomicU16> = (0..6000).map(|_| AtomicU16::new(0)).collect();
+
+    let running_count = AtomicU64::new(0);
+
+    let mut disp_vga: Vga = Vga::new(VGA_WIDTH, VGA_HEIGHT, stdout(), &vram, Duration::new(0, 100_000_000), &running_count);
+    disp_vga.reset();
+
+    let key: Arc<Mutex<u16>> = Arc::new(Mutex::new(0));
+    let irq: Arc<Mutex<bool>> = Arc::new(Mutex::new(false));
+
+    // INIT REGISTERS
+    let mut registers: Registers = Registers {
+        general: [0; 12],
+        isr: 0,
+        sp: 0xBFFF,
+        sr: StatusRegister { sr: 0 },
+        pc: 0x0000,
+    };
+
+    let mut halt: bool = false;
+
+    let mut key_handler = Key::new(Arc::clone(&irq), Arc::clone(&key));
+
+    let term = AtomicBool::new(false);
+    let term1 = &term;
+    let term2 = &term;
+
+    std::thread::scope(|scope| -> Result<(), String> {
+        // start keyboard thread
+        let key_handler_thread = scope.spawn(move || key_handler.handle(term1));
+        // start vga thread
+        let display_thread = scope.spawn(move || disp_vga.start_loop(term2));
+
+        // main thread
+        let mut mem = Devices::new(rom, &vram, ram, key);
+        while !halt {
+            if *irq.lock().unwrap() {
+                *irq.lock().unwrap() = false;
+                registers.sp -= 1;
+                mem.write(registers.sp, registers.pc).map_err(|e| {
+                    format!(
+                        "Issue when jumping to isr storing stack pointer instruction pc={:#06x}: {e}",
+                        registers.pc
+                    )
+                })?;
+                registers.sp -= 1;
+                mem.write(registers.sp, registers.sr.sr).map_err(|e| {
+                    format!(
+                        "Issue when jumping to isr storing status register instruction pc={:#06x}: {e}",
+                        registers.pc
+                    )
+                })?;
+                registers.pc = registers.isr;
+                continue;
+            }
+
+            let inst: u16 = mem.read(registers.pc).map_err(|e| {
+                format!("Issue when read instruction pc={:#06x}: {e}", registers.pc)
+            })?;
+            let opcode: u16 = (inst & 0xF000) >> 12;
+
+            let r1: u16 = (inst & 0x0F00) >> 8;
+            let r2: u16 = (inst & 0x00F0) >> 4;
+            let imoh_imm8: u16 = (inst & 0x00FF) << 8;
+            let imov_imm8: u16 =
+                (inst & 0x00FF) | (if (inst & 0x0080) == 0 { 0x0000 } else { 0xFF00 });
+
+            let alu_imm4: u16 = r2;
+            let alu_op: u16 = inst & 0x000F;
+            let load_offset: u16 = alu_op;
+            let jmp_op: u16 = alu_op;
+
+            match opcode {
+                LOAD => {
+                    registers[r1] = mem.read(registers[r2] + load_offset).map_err(|e| {
+                        format!("Issue when executing load at pc={:#06x}: {e}", registers.pc)
+                    })?;
+                }
+                STR => {
+                    mem.write(registers[r1] + load_offset, registers[r2])
+                        .map_err(|e| {
+                            format!(
+                                "Issue when executing store at pc={:#06x}: {e}",
+                                registers.pc
+                            )
+                        })?;
+                }
+                IMOV => {
+                    registers[r1] = imov_imm8;
+                }
+                IMOH => {
+                    registers[r1] = imoh_imm8 | (registers[r1] & 0x00FF);
+                }
+                PUSH => {
+                    registers[r1] -= 1;
+                    mem.write(registers[r1], registers[r2]).map_err(|e| {
+                        format!("Issue when executing push at pc={:#06x}: {e}", registers.pc)
+                    })?;
+                }
+                POP => {
+                    registers[r1] = mem.read(registers[r2]).map_err(|e| {
+                        format!("Issue when executing pop at pc={:#06x}: {e}", registers.pc)
+                    })?;
+                    registers[r2] += 1;
+                }
+                HALT => {
+                    halt = true;
+                }
+                ALU => {
+                    let agg = alu(
+                        alu_op,
+                        registers[r1] as i32,
+                        registers[r2] as i32,
+                        &mut registers.sr,
+                    );
+
+                    if alu_op != 0x7 {
+                        registers[r1] = agg;
+                    }
+                }
+                IALU => {
+                    let agg = alu(
+                        alu_op,
+                        registers[r1] as i32,
+                        alu_imm4 as i32,
+                        &mut registers.sr,
+                    );
+
+                    if alu_op != 0x7 {
+                        registers[r1] = agg;
+                    }
+                }
+                JMP => {
+                    let l: bool = r2 & 1 != 0;
+                    let r: bool = r2 & 2 != 0;
+
+                    let do_jump: bool = match jmp_op {
+                        0 => true,
+                        1 => registers.sr.get(StatusRegisterFlag::Z),
+                        2 => !registers.sr.get(StatusRegisterFlag::Z),
+                        3 => registers.sr.get(StatusRegisterFlag::N),
+                        4 => {
+                            !registers.sr.get(StatusRegisterFlag::Z)
+                                && !registers.sr.get(StatusRegisterFlag::N)
+                        }
+                        _ => false,
+                    };
+
+                    if do_jump {
+                        if r {
+                            registers.pc = mem.read(registers.sp).map_err(|e| {
+                                format!(
+                                    "Issue when executing jump at pc={:#06x}: {e}",
+                                    registers.pc
+                                )
+                            })?;
+                            registers.sp += 1;
+                        } else if l {
+                            registers.sp -= 1;
+                            mem.write(registers.sp, registers.pc + 1).map_err(|e| {
+                                format!(
+                                    "Issue when executing jump and link at pc={:#06x}: {e}",
+                                    registers.pc
+                                )
+                            })?;
+                            registers.pc = registers[r1];
+                        } else {
+                            registers.pc = registers[r1];
+                        }
+                        registers.pc -= 1;
+                    }
+                }
+                RTI => {
+                    registers.sr.sr = mem.read(registers.sp)
+                        .map_err(|e| format!("Issue when executing rti and popping the status register at pc={:#06x}: {e}", registers.pc))?;
+                    registers.sp += 1;
+                    registers.pc = mem.read(registers.sp)
+                        .map_err(|e| format!("Issue when executing rti and popping the return address at pc={:#06x}: {e}", registers.pc))?;
+                    registers.sp += 1;
+                    registers.pc -= 1;
+                }
+                _ => (),
+            }
+            registers.pc += 1;
+            running_count.fetch_add(1, Ordering::Relaxed);
+        }
+
+        let last_pc = registers.pc - 1;
+
+        term.swap(true, Ordering::Relaxed);
+
+        key_handler_thread.join().unwrap();
+        display_thread.join().unwrap();
+
+        Ok(())
+    })?;
+
+    execute!(stdout(), Show).unwrap();
+    disable_raw_mode().unwrap();
+    Ok(())
+}

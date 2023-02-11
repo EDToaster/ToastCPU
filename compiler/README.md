@@ -97,7 +97,7 @@ r110 cellular automata.
   - [ ] Fix generic function type annotation (See appendix)
   - [x] Better parsing of types instead of overloading identifiers
   - [ ] Better parsing of module member types instead of overloading identifier
-- [ ] Recursive struct definitions if size is known at compile time
+- [x] Recursive struct definitions if size is known at compile time
 - [ ] `bool` type
   - [x] `true` and `false` literals
   - [x] let `if` statements use both `u16` and `bool`

@@ -79,17 +79,17 @@
 				{
 					"comment": "Matches hex numbers",
 					"name": "constant.numeric.hex.toastlang",
-					"match": "\\b(0x[0-9A-Fa-f]+)\\b"
+					"match": "\\b(0x[0-9A-Fa-f_]+)\\b"
 				},
 				{
 					"comment": "Matches dec numbers",
 					"name": "constant.numeric.dec.toastlang",
-					"match": "\\b([0-9]+)\\b"
+					"match": "\\b([0-9_]+)\\b"
 				},
 				{
 					"comment": "Matches bin numbers",
 					"name": "constant.numeric.bin.toastlang",
-					"match": "\\b(0b[01]+)\\b"
+					"match": "\\b(0b[01_]+)\\b"
 				},
 				{
 					"comment": "Matches boolean literals",

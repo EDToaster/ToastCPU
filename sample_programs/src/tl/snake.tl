@@ -53,13 +53,13 @@ mod snake {
             // move head
             direction load 
             dup dir::UP = if {
-                0xFF9C
+                -100
             } else { dup dir::RIGHT = if {
-                0x0001
+                1
             } else { dup dir::DOWN = if {
-                0x0064
+                100
             } else { dup dir::LEFT = if {
-                0xFFFF
+                -1
             } else { 0 }}}}
             swap drop head load + dup head store
 

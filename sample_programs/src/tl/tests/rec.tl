@@ -16,6 +16,7 @@ mod rec {
 
     fn test -> {
         "Testing Recursion... " print
+        
         "fib(7)"  { 7 fib 13 =    } assert
         "fib(18)" { 18 fib 2584 = } assert
     }

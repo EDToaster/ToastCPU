@@ -1,14 +1,26 @@
+fn multi(s: &str) -> (isize, &str) {
+    if let Some(s) = s.strip_prefix('-') {
+        (-1, s)
+    } else {
+        (1, s)
+    }
+}
+
 // Any functions here are in scope for all the grammar actions above.
 pub fn dec_int(s: &str) -> Result<isize, ()> {
-    s.parse::<isize>().map_err(|_| ())
+    let (sign, s) = multi(s); 
+    Ok(sign * s.replace('_', "").parse::<isize>().map_err(|_| ())?)
 }
 
 pub fn bin_int(s: &str) -> Result<isize, ()> {
-    isize::from_str_radix(&s[2..], 2).map_err(|_| ())
+    let (sign, s) = multi(s); 
+    Ok(sign * isize::from_str_radix(&s[2..].replace('_', ""), 2).map_err(|_| ())?)
+    
 }
 
 pub fn hex_int(s: &str) -> Result<isize, ()> {
-    isize::from_str_radix(&s[2..], 16).map_err(|_| ())
+    let (sign, s) = multi(s); 
+    Ok(sign * isize::from_str_radix(&s[2..].replace('_', ""), 16).map_err(|_| ())?)
 }
 
 pub fn char_int(s: &str) -> Result<isize, ()> {

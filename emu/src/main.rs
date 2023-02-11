@@ -1,14 +1,13 @@
 mod args;
 mod devices;
+mod hardware;
 mod emulator;
 mod jit;
-mod key;
-mod vga;
 
 use std::fs;
 
 use args::get_args;
-use emulator::ROM_SIZE;
+use hardware::def::ROM_SIZE;
 use regex::Regex;
 
 use crate::emulator::emulate;

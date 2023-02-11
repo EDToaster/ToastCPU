@@ -9,13 +9,14 @@ mod rand {
 
     global random rand::Random 0
 
+    inline SEED 0xDEAD
+
     fn test -> {
         "Testing random... " print
-        random 0xDEAD rand_init
+        random SEED rand_init
 
         // period
-        1
-        while { random rand_int 0xDEAD = ! } {
+        1 while { random rand_int SEED = ! } {
             1 +
         }
 

@@ -8,6 +8,7 @@ mod let_ {
 
     fn test -> {
         "Testing let... " print
+        
         11 0xA 0xB let a b {
             { 11 = } "11" swap assert
             "a1" { a load 0xA = } assert

@@ -46,7 +46,7 @@ mod struct_ {
         "sizeof(NestedStruct)"  { sizeof(NestedStruct) 14 = } assert
 
         struct_instance init_nested_struct drop
-        "init_nested_struct" { "ZABCDEFABCDEFZ" struct_instance as(u16*) sizeof(NestedStruct) streq } assert
+        "init_nested_struct"    { "ZABCDEFABCDEFZ" struct_instance as(u16*) sizeof(NestedStruct) streq } assert
     }
 }
 

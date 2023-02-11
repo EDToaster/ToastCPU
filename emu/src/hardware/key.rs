@@ -1,12 +1,15 @@
 use std::{
     io::stdout,
     process::exit,
-    sync::{Arc, Mutex, atomic::{AtomicBool, Ordering}},
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc, Mutex,
+    }, time::Duration,
 };
 
 use crossterm::{
     cursor::Show,
-    event::{read, Event, KeyCode, KeyEvent, KeyModifiers},
+    event::{read, Event, KeyCode, KeyEvent, KeyModifiers, poll},
     execute,
     style::ResetColor,
     terminal::{disable_raw_mode, enable_raw_mode},
@@ -40,6 +43,10 @@ impl Key {
 
     pub fn handle(&mut self, term: &AtomicBool) {
         while !term.load(Ordering::Relaxed) {
+            if !poll(Duration::from_millis(100)).unwrap() {
+                continue;
+            }
+            
             let event = read().unwrap();
             match event {
                 Event::Key(KeyEvent {

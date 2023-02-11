@@ -8,6 +8,10 @@ endif
 
 all: mandelbrot-small.mif fib.mif life.mif simple.mif
 
+
+%: %.mif
+	cargo run --release --manifest-path ../../../../emu/Cargo.toml -- $<
+
 %.mif: %.tasm
 	python3 ../../../../assembler/assembler.py -i $^ -o $@
 

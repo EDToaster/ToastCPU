@@ -25,7 +25,7 @@ mod rec_types {
 
         inner inner .a store
 
-        "Inner recursive decent" { inner inner .a load .a load .a load .a load .a load .a load .a load .a load = } assert
+        "Infinite struct self-reference" { inner inner .a load .a load .a load .a load .a load .a load .a load .a load = } assert
     }
 }
 

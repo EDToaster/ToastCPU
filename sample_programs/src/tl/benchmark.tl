@@ -12,8 +12,8 @@ fn main -> {
         } drop
         1 +
 
-        io::clear
-        dup io::print_decimal " million iterations" io::println
-        io::print_reset
+        io::print_reset "                         " io::println
+        io::print_reset dup io::print_decimal " million iterations" io::println
+        
     } drop
 }

@@ -111,6 +111,8 @@ r110 cellular automata.
   - `fn a -> Optional { 1 true }`
   - These differ from structs in that they can exist on the stack, since they are completely transparent. For example, when calling `a`, 
     the caller will see a `u16` and a `bool` directly on a stack. 
+- [ ] Underscores in integer literals `0b00_00_0000`
+- [x] Negative numbers `-1` `-0x0001` `-0b00000001` all translate to `0xFFFF`
 
 ## Appendix
 

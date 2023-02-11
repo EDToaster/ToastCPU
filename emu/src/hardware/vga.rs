@@ -1,7 +1,9 @@
+use std::io::Write;
 use std::time::{Duration, SystemTime};
 use std::{io::Stdout, sync::atomic::Ordering};
 use std::sync::atomic::{AtomicU16, AtomicBool, AtomicU64};
 
+use crossterm::QueueableCommand;
 use crossterm::{
     cursor::{Hide, MoveTo},
     execute,
@@ -88,28 +90,44 @@ impl <'a> Vga<'a> {
             SetColors(Colors::new(Color::White, Color::Blue)),
             MoveTo(x, 0),
             Print(format!("{: <width$}", s, width = self.width)),
-        )
-        .expect("Something went wrong writing to the virtual terminal!");
+        ).expect("Something went wrong writing to the virtual terminal!");
+    }
+
+    fn char_of(val: u16) -> char {
+        match val {
+            0x20..=0x7E => val as u8 as char,
+            _ => ' '
+        }
     }
 
     pub fn flush_page(&mut self) {
-        for offset in 0..self.vram.len() {
-            let val = self.vram[offset].load(Ordering::Relaxed);
+        let mut prevbg = 0; 
+        let mut prevfg = 0; 
+        let mut first = true;
 
-            let x = offset % self.width;
-            let y = offset / self.width + 1;
+        for line in 0..60u16 {
+            self.stdout.queue(MoveTo(0, line + 1)).unwrap();
 
-            let bg = ((val & (0b0000011100000000)) >> 8) as usize;
-            let fg = ((val & (0b0011100000000000)) >> 11) as usize;
+            for col in 0..100u16 {
+                let offset = line * 100 + col;
+                let val = self.vram[offset as usize].load(Ordering::Relaxed);
+    
+                let bg = ((val & (0b0000011100000000)) >> 8) as usize;
+                let fg = ((val & (0b0011100000000000)) >> 11) as usize;
+            
+                if first || prevbg != bg || prevfg != fg {
+                    first = false;
+                    prevbg = bg;
+                    prevfg = fg;
+                    self.stdout.queue(SetColors(Colors::new(COLORS[fg], COLORS[bg]))).unwrap();
+                }
 
-            execute!(
-                self.stdout,
-                MoveTo(x as u16, y as u16),
-                SetColors(Colors::new(COLORS[fg], COLORS[bg])),
-                Print((val & 0x00FF) as u8 as char),
-            )
-            .expect("Something went wrong writing to the virtual terminal!");
+                self.stdout.queue(Print(Self::char_of(val & 0x00FF))).unwrap();
+            }
         }
+
+        self.stdout.flush().unwrap();
+
         self.running_frame_count += 1;
 
         let now: SystemTime = SystemTime::now();

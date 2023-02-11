@@ -1,121 +1,17 @@
 use std::io::stdout;
-use std::ops::Index;
-use std::ops::IndexMut;
-use std::sync::atomic::AtomicBool;
-use std::sync::atomic::AtomicU16;
-use std::sync::atomic::AtomicU64;
-use std::sync::atomic::Ordering;
+use std::sync::atomic::{AtomicBool, AtomicU16, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use crossterm::cursor::Show;
 use crossterm::execute;
 use crossterm::terminal::disable_raw_mode;
-use vga::Vga;
 
 use crate::devices::Devices;
-use crate::key::Key;
-use crate::vga;
-
-
-
-pub const ROM_SIZE: usize = 0x8000;
-pub const RAM_SIZE: usize = 0x4000;
-pub const VGA_WIDTH: usize = 100;
-pub const VGA_HEIGHT: usize = 60;
-
-pub const LOAD: u16 = 0;
-pub const STR: u16 = 1;
-pub const IMOV: u16 = 2;
-pub const IMOH: u16 = 3;
-pub const PUSH: u16 = 5;
-pub const POP: u16 = 6;
-pub const HALT: u16 = 7;
-pub const ALU: u16 = 8;
-pub const IALU: u16 = 9;
-pub const JMP: u16 = 10;
-pub const RTI: u16 = 12;
-
-enum StatusRegisterFlag {
-    X,
-    Z,
-    N,
-    C,
-    V,
-}
-impl StatusRegisterFlag {
-    fn mask(&self) -> u16 {
-        match *self {
-            StatusRegisterFlag::X => 0x0001,
-            StatusRegisterFlag::Z => 0x0002,
-            StatusRegisterFlag::N => 0x0004,
-            StatusRegisterFlag::C => 0x0008,
-            StatusRegisterFlag::V => 0x0010,
-        }
-    }
-}
-
-/**
-   if (set_VC) SR[4:3] <= {V, C};
-   SR[2:0] <= {N, Z, X};
-*/
-struct StatusRegister {
-    sr: u16,
-}
-
-impl StatusRegister {
-    fn get(&self, flag: StatusRegisterFlag) -> bool {
-        (self.sr & flag.mask()) != 0
-    }
-
-    fn set(&mut self, flag: StatusRegisterFlag, val: bool) {
-        if val {
-            self.sr |= flag.mask();
-        } else {
-            self.sr &= !flag.mask();
-        }
-    }
-}
-struct Registers {
-    general: [u16; 12],
-    // # r12 - ISR
-    // # r13 - SP
-    // # r14 - SR
-    // # r15 - PC
-    isr: u16,
-    sp: u16,
-    sr: StatusRegister,
-    pc: u16,
-}
-
-impl Index<u16> for Registers {
-    type Output = u16;
-
-    fn index(&self, index: u16) -> &Self::Output {
-        match index {
-            0..=11 => &self.general[index as usize],
-            12 => &self.isr,
-            13 => &self.sp,
-            14 => &self.sr.sr,
-            15 => &self.pc,
-            _ => panic!("Register index {index} is out of bounds!"),
-        }
-    }
-}
-
-impl IndexMut<u16> for Registers {
-    fn index_mut(&mut self, index: u16) -> &mut Self::Output {
-        match index {
-            0..=11 => &mut self.general[index as usize],
-            12 => &mut self.isr,
-            13 => &mut self.sp,
-            14 => &mut self.sr.sr,
-            15 => &mut self.pc,
-            _ => panic!("Register index {index} is out of bounds!"),
-        }
-    }
-}
-
+use crate::hardware::def::*;
+use crate::hardware::key::Key;
+use crate::hardware::register::{Registers, StatusRegister, StatusRegisterFlag};
+use crate::hardware::vga::Vga;
 
 fn bit(n: i32, bit: u8) -> bool {
     (n >> bit) & 1 != 0
@@ -164,14 +60,20 @@ fn alu(op: u16, a: i32, b: i32, sr: &mut StatusRegister) -> u16 {
 
 #[allow(unused_variables)]
 pub fn emulate(rom: Vec<u16>) -> Result<(), String> {
-
     let ram: Vec<u16> = vec![0; RAM_SIZE];
 
     let vram: Vec<AtomicU16> = (0..6000).map(|_| AtomicU16::new(0)).collect();
 
     let running_count = AtomicU64::new(0);
 
-    let mut disp_vga: Vga = Vga::new(VGA_WIDTH, VGA_HEIGHT, stdout(), &vram, Duration::new(0, 100_000_000), &running_count);
+    let mut disp_vga: Vga = Vga::new(
+        VGA_WIDTH,
+        VGA_HEIGHT,
+        stdout(),
+        &vram,
+        Duration::new(0, 100_000_000),
+        &running_count,
+    );
     disp_vga.reset();
 
     let key: Arc<Mutex<u16>> = Arc::new(Mutex::new(0));

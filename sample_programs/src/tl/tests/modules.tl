@@ -53,16 +53,16 @@ using io
 fn test_modules -> {
     "Testing Modules... " print
     
-    "Inline val"                { module::INLINE_VAL 0xDEAD = }     assert::assert
-    "Inline block"              { module::INLINE_BLOCK 3 = }        assert::assert
+    "Inline val"                { module::INLINE_VAL 0xDEAD =  } assert::assert
+    "Inline block"              { module::INLINE_BLOCK 3 =     } assert::assert
 
     module::g module::init_struct drop
 
-    "module::foo"               { module::foo 0xBEEF = }            assert::assert
-    "module::g .a load"         { module::g .a load 0xBEEF = }      assert::assert
+    "module::foo"               { module::foo 0xBEEF =         } assert::assert
+    "module::g .a load"         { module::g .a load 0xBEEF =   } assert::assert
 
-    "module::nested::foo"       { module::nested::foo 0xABAB = }    assert::assert
+    "module::nested::foo"       { module::nested::foo 0xABAB = } assert::assert
 
-    "using_module::foo"         { foo 0x5678 = }                    assert::assert
-    "using_module::nested::bar" { bar 0x9999 = }                    assert::assert
+    "using_module::foo"         { foo 0x5678 =                 } assert::assert
+    "using_module::nested::bar" { bar 0x9999 =                 } assert::assert
 }

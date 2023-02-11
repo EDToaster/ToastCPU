@@ -17,8 +17,8 @@ mod sum {
 
     fn test -> {
         "Testing Sum... " print
-        "sum(7) == 21"      { 7 sum 28 - 0 = }      assert
-        "sum(22) == 253"    { 22 sum 253 - 0 = }    assert
+        "sum(7) == 21"      { 7 sum 28 -   } assert_false
+        "sum(22) == 253"    { 22 sum 253 - } assert_false
     }
 }
 

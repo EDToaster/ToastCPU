@@ -99,21 +99,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "compiler"
-version = "0.1.0"
-dependencies = [
- "argparse",
- "cfgrammar",
- "colored",
- "itertools",
- "lazy_static",
- "lrlex",
- "lrpar",
- "once_cell",
- "regex",
-]
-
-[[package]]
 name = "either"
 version = "1.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -519,6 +504,21 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d967f99f534ca7e495c575c62638eebc2898a8c84c119b89e250477bc4ba16b2"
 dependencies = [
  "time-core",
+]
+
+[[package]]
+name = "tlc"
+version = "0.1.0"
+dependencies = [
+ "argparse",
+ "cfgrammar",
+ "colored",
+ "itertools",
+ "lazy_static",
+ "lrlex",
+ "lrpar",
+ "once_cell",
+ "regex",
 ]
 
 [[package]]

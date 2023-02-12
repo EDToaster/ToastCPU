@@ -377,15 +377,12 @@ impl ConstAllocation {
                 // need to extend sequence at the end
                 new_arr.extend_from_slice(&self.seq[(self.seq.len()-extend_len as usize)..])
             }
-            
-            println!("start {start}");
 
             // need to shift all markers by start
             for marker in &mut self.markers {
                 marker.offset = marker.offset + start;
             }
         
-
             self.markers.push(Marker { id: id.to_owned(), offset: 0 });
 
             // swap vectors
@@ -409,7 +406,6 @@ impl ConstAllocationArena {
         let id = format!("{}", self.id);
         // check each allocation to see if we can add arr to it.
         for alloc in &mut self.allocs {
-            println!("{:?}", alloc.markers);
             if alloc.try_insert(&arr, &id) {
                 return id
             }

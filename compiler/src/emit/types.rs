@@ -2,6 +2,7 @@ use crate::parser_util::types::{FuncType, Identifier, LexType, Statement, Struct
 use crate::util::dep_graph::DependencyGraph;
 use crate::util::gss::Stack;
 use core::fmt;
+use std::cmp::min;
 use lrpar::Span;
 use std::collections::{HashMap, HashSet};
 use std::fmt::Formatter;
@@ -309,9 +310,120 @@ impl Type {
 }
 
 #[derive(Debug)]
+pub struct Marker {
+    pub id: String,
+    pub offset: usize,
+}
+
+#[derive(Debug)]
+pub struct ConstAllocation {
+    // markers are offset from the start of the sequence
+    // for example, a const value of `4` in vec![0, 1, 2, 3, 4]
+    // would have an offset of 4
+    pub markers: Vec<Marker>,
+    pub seq: Vec<u16>,
+}
+
+// This allows for overlap of tail-substrings
+// for example, "abcd" and "bcd" can share memory
+#[derive(Debug)]
+pub struct ConstAllocationArena {
+    id: usize,
+    pub allocs: Vec<ConstAllocation>,
+}
+
+impl ConstAllocation {
+
+    // check if a and b overlap by searching at the start of "a"
+    // returns start and end of index into b where a would be overlayed on
+    // Example:
+    // overlap_start([2, 3, 4, 5, 6], [0, 1, 2, 3]) == Some((2, 6))
+    fn overlap_start(a: &Vec<u16>, b: &Vec<u16>) -> Option<(usize, usize)> {
+        for i in 0..b.len() {
+            let common_len = min(a.len(), b.len() - i);
+            if a[0..common_len] == b[i..(common_len + i)] {
+                return Some((i, i + a.len()))
+            }
+        }
+
+        None
+    }
+
+    pub fn try_insert(&mut self, arr: &Vec<u16>, id: &str) -> bool {
+        // we can insert if the overlap of two sequences is non empty
+        // for example, here are the cases where insertion is allowed
+
+        //    bcdef
+        //   abc    
+        //     cde
+        //       efg
+
+        if let Some((start, end)) = Self::overlap_start(arr, &self.seq) {
+            let extend_len = end as isize - self.seq.len() as isize;
+            if extend_len > 0 {
+                // need to extend sequence at the end
+                self.seq.extend_from_slice(&arr[(arr.len()-extend_len as usize)..])
+            }
+
+            // add marker
+            self.markers.push(Marker { id: id.to_owned(), offset: start });
+            return true;
+        }
+
+        if let Some((start, end)) = Self::overlap_start(&self.seq, arr) {
+            let mut new_arr = arr.clone();
+            let extend_len = end as isize - arr.len() as isize;
+            if extend_len > 0 {
+                // need to extend sequence at the end
+                new_arr.extend_from_slice(&self.seq[(self.seq.len()-extend_len as usize)..])
+            }
+            
+            println!("start {start}");
+
+            // need to shift all markers by start
+            for marker in &mut self.markers {
+                marker.offset = marker.offset + start;
+            }
+        
+
+            self.markers.push(Marker { id: id.to_owned(), offset: 0 });
+
+            // swap vectors
+            self.seq.clear();
+            self.seq.extend(new_arr);
+            return true;
+        }
+
+        false
+    }
+}
+
+
+impl ConstAllocationArena {
+    pub fn new() -> Self {
+        ConstAllocationArena { id: 0, allocs: vec![] }
+    }
+
+    pub fn allocate(&mut self, arr: &Vec<u16>) -> String {
+        self.id += 1;
+        let id = format!("{}", self.id);
+        // check each allocation to see if we can add arr to it.
+        for alloc in &mut self.allocs {
+            println!("{:?}", alloc.markers);
+            if alloc.try_insert(&arr, &id) {
+                return id
+            }
+        }
+        
+        // otherwise, add a new allocation
+        self.allocs.push(ConstAllocation { markers: vec![Marker{ id: id.clone(), offset: 0}], seq: arr.clone() });
+        id
+    }
+}
+
+#[derive(Debug)]
 pub struct GlobalState {
-    pub string_allocs_counter: isize,
-    pub string_allocs: HashMap<Vec<u16>, String>,
+    pub const_allocs: ConstAllocationArena,
     pub struct_defs: HashMap<String, StructDefinition>,
     pub function_signatures: HashMap<String, FunctionType>,
     pub function_dependencies: DependencyGraph,

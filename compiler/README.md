@@ -180,3 +180,46 @@ swapping the registers around, removing the two instructions altogether.
 ### Optimization: Semantic-aware destacking
 
 The name of this optimization is completely made up. It just means that we can forego the "stack-based" instructions if it means the semantics stay the same.
+
+### Optimization: String (and Const-Array) space optimization
+
+A naive approach to string optimization would be to reuse the same const array that is emitted, if the strings are equal. That is to say:
+
+```
+"aaa" "aaa" = assert
+```
+
+> Note: the operation `=` above is evaluating the equality of the two pointers in rom!
+
+However, this scheme breaks down if a string is a substring of another string, such as with "aaa" and "aaaa"
+
+We can extend the optimization to include all subsequences.
+
+```
+.string_1
+    'a'
+.string_2
+    'a'
+    'a'
+    'a'
+    '\0'
+```
+
+> Note: Since strings are null-terminated, optimizing as such with strings will 
+> require the strings to be tail-subsequences. That is, one string appears at 
+> the tail of another string.
+
+However, generalizing this to const-arrays where null termination is not
+enforced, any overlap would be optimizable. For example, the following snippet may
+represent const-arrays `[10, 20, 30]` and `[20]`. This is fine, since it would
+be up to the programmer to keep track of the length information.
+
+```
+.arr_1
+    10
+.arr_2
+    20
+    30
+```
+
+This optimization is quite good for programs with many short strings. For reference, at the time of writing, this optimization brought down the space requirements of strings from `1888` words to `1815` words.

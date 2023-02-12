@@ -1,4 +1,8 @@
-use crate::emit::types::{tasm, GlobalState};
+use std::collections::HashMap;
+
+use crate::{emit::types::{tasm, GlobalState}, util::labels::const_label, is_verbose};
+
+use super::types::Marker;
 
 fn char_comment(i: u16) -> String {
     match i {
@@ -11,24 +15,38 @@ fn char_comment(i: u16) -> String {
     }
 }
 
-pub fn emit_string_defs(global_state: &GlobalState) -> String {
+pub fn emit_consts(global_state: &GlobalState) -> String {
+    let mut words = 0;
     let mut string_defs: String = String::new();
 
-    for (k, v) in global_state.string_allocs.iter() {
-        tasm!(
-            string_defs;;
-            r"
-.{v}
-"
-                                                        );
+    for alloc in &global_state.const_allocs.allocs {
+        // translate markers to map
+        let mut marker_map: HashMap<usize, Vec<String>> = HashMap::new();
+        for Marker { id, offset } in &alloc.markers {
+            marker_map.entry(*offset).or_insert_with(|| vec![]).push(id.clone());
+        }
 
-        for u in k {
+        for (i, u) in alloc.seq.iter().enumerate() {
+            if let Some(ids) = marker_map.get(&i) {
+                for id in ids {
+                    let label = const_label(id);
+                    tasm!(
+                        string_defs;;
+                        ".{label}\n"
+                    );
+                }
+            }
             tasm!(
                 string_defs;
                 char_comment(*u);
                 "    {u:#06X}{}\n"
             );
+            words += 1;
         }
+    }
+
+    if is_verbose() {
+        println!("Strings take up {words} words")
     }
 
     string_defs

@@ -22,3 +22,7 @@ pub fn function_label(identifier: &str) -> String {
 pub fn global_label(identifier: &str) -> String {
     format!("variable_alloc_{identifier}")
 }
+
+pub fn const_label(identifier: &str) -> String {
+    format!("const_{identifier}")
+}

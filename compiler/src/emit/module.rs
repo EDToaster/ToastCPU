@@ -1,7 +1,6 @@
 use lrpar::Span;
 
 use crate::emit::function::{emit_function, emit_isr};
-use crate::emit::string_defs::emit_string_defs;
 use crate::emit::types::*;
 use crate::is_verbose;
 use crate::parser_util::types::*;
@@ -9,6 +8,8 @@ use crate::util::dep_graph::DependencyGraph;
 use crate::util::gss::Stack;
 use crate::util::labels::global_label;
 use std::collections::{HashMap, HashSet};
+
+use super::string_defs::emit_consts;
 
 fn gather_struct_declarations(
     m: &Module,
@@ -163,8 +164,7 @@ pub fn emit_root_module(m: &Module) -> Result<String, (Span, String)> {
         function_signatures: HashMap::new(),
         function_dependencies: DependencyGraph::default(),
         struct_defs: HashMap::new(),
-        string_allocs_counter: 0,
-        string_allocs: HashMap::new(),
+        const_allocs: ConstAllocationArena::new(),
         globals: HashMap::new(),
         inlines: HashMap::new(),
     };
@@ -319,7 +319,13 @@ fn .fn_isr
     }
 
     // gather string defs
-    prog.push_str(&emit_string_defs(&global_state));
+    tasm!(
+        prog;
+        emit_consts(&global_state);
+        r"
+{}
+        "
+    );
 
     prog.push_str(&functions);
     Ok(prog)

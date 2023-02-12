@@ -86,19 +86,13 @@ pub fn emit_statement(
             )?;
         }
         Statement::IntArray(IntArray { val, span }) => {
-            let mut string_alloc_label =
-                &*format!("string_alloc_{}", global_state.string_allocs_counter);
-            global_state.string_allocs_counter += 1;
-
-            string_alloc_label = global_state
-                .string_allocs
-                .entry(val.clone())
-                .or_insert_with(|| string_alloc_label.into());
+            let const_id = global_state.const_allocs.allocate(val);
+            let label = const_label(&const_id);
 
             tasm!(
                 block;;
                 r"
-    imov! t0 .{string_alloc_label}
+    imov! t0 .{label}
     push! t0
                 "
             );
@@ -273,7 +267,6 @@ pub fn emit_statement(
     push  t0
                             "
                         );
-                        global_state.string_allocs_counter += 1;
                         check_and_apply_stack_transition(
                             s,
                             span,

@@ -51,9 +51,9 @@ mod func_ptr {
     fn test -> {
         "Testing function pointers... " print
         
-        "do_twice(2, &add_1)" { 2 ptr(add_1) do_twice 4 = } assert
-        "do_many(5, &mul_2)" { 5 ptr(mul_2) do_many 160 = } assert
-        "do_many(2, &mul_2)" { 2 ptr(mul_2) do_many 128 = } assert
+        "do_twice(2, &add_1)" { 2 ptr(add_1) do_twice  4 = } assert
+        "do_many(5, &mul_2)"  { 5 ptr(mul_2) do_many 160 = } assert
+        "do_many(2, &mul_2)"  { 2 ptr(mul_2) do_many 128 = } assert
         
         // should not compile
         // 1 ptr(foo) mismatched_generics

@@ -4,10 +4,9 @@
 #include<std/rand>
 #include<std/iter>
 
-#include<tests/bugs>
-
 #include<tests/arith>
 #include<tests/bool>
+#include<tests/bugs>
 #include<tests/color>
 #include<tests/collection>
 #include<tests/func_ptr>
@@ -24,6 +23,7 @@
 #include<tests/string>
 #include<tests/struct>
 #include<tests/sum>
+#include<tests/intern>
 
 mod test_suite {
     using test_suite
@@ -35,67 +35,77 @@ mod test_suite {
         size u16
     }
 
-    global TESTS TestSuite 0
+    mod TestSuite {
+        using test_suite::TestSuite
 
-    fn push_test (->)* -> {
-        TESTS .ptrs TESTS .size load + store
-        TESTS .size dup load ++ swap store
-    }
+        fn push TestSuite* (->)* -> {
+            over dup .ptrs  // suite ptr suite ptrs
+            swap .size load // suite ptr ptrs size
+            + store         // suite 
+            
+            dup .size load ++ swap .size store
+        }
 
-    fn run_tests -> u16 {
-        // TESTS .ptrs ptr(run_test) TESTS .size load  iter::for_each 
-        // TESTS .size load 
-        0 while { dup TESTS .size load < } {
-            TESTS .ptrs over + load over run_test
-            ++
+        fn run_all TestSuite* -> u16 {
+            0 while { over .size load over > } {
+                over .ptrs over + load over run_test
+                ++
+            } swap drop
+        }
+
+        fn run_test (->)* u16 -> {
+            ++ print_decimal ": " print
+            4 left_align ()
+            get_style GREEN fg 35 left_align "Passed\n" print set_style
         }
     }
 
-    fn run_test (->)* u16 -> {
-        ++ print_decimal ": " print
-        4 left_align ()
-        get_style GREEN fg 35 left_align "Passed\n" print set_style
-    }
+    global suite        TestSuite 0
+    global impl_details TestSuite 0 
 
     fn main -> {
-        BLACK bg WHITE fg
+
+        suite ptr(test_color)         TestSuite::push
+        suite ptr(test_sum)           TestSuite::push
+        suite ptr(test_arith)         TestSuite::push
+        suite ptr(test_logical)       TestSuite::push
+        suite ptr(test_strlen)        TestSuite::push
+        suite ptr(test_let)           TestSuite::push
+        suite ptr(test_streq)         TestSuite::push
+        suite ptr(test_mul)           TestSuite::push
+        suite ptr(test_global)        TestSuite::push
+        suite ptr(test_rand)          TestSuite::push
+        suite ptr(test_inline)        TestSuite::push
+        suite ptr(test_rec)           TestSuite::push
+        suite ptr(test_struct)        TestSuite::push
+        suite ptr(test_memset)        TestSuite::push
+        suite ptr(test_modules)       TestSuite::push
+        suite ptr(test_func_ptr)      TestSuite::push
+        suite ptr(test_rec_types)     TestSuite::push
+        suite ptr(test_bool)          TestSuite::push
+        suite ptr(test_collection)    TestSuite::push
+
+        impl_details ptr(test_intern) TestSuite::push
+
         clear
 
-        ptr(test_color)         push_test
-        ptr(test_sum)           push_test
-        ptr(test_arith)         push_test
-        ptr(test_logical)       push_test
-        ptr(test_strlen)        push_test
-        ptr(test_let)           push_test
-        ptr(test_streq)         push_test
-        ptr(test_mul)           push_test
-        ptr(test_global)        push_test
-        ptr(test_rand)          push_test
-        ptr(test_inline)        push_test
-        ptr(test_rec)           push_test
-        ptr(test_struct)        push_test
-        ptr(test_memset)        push_test
-        ptr(test_modules)       push_test
-        ptr(test_func_ptr)      push_test
-        ptr(test_rec_types)     push_test
-        ptr(test_bool)          push_test
-        ptr(test_collection)    push_test
+        BLACK bg WHITE fg
+        suite TestSuite::run_all
+        '\n' print_char GREEN fg "Passed " print print_decimal " Test Cases!\n" println
 
-        // run all test cases
-        run_tests
-        
-        '\n' print_char
-        GREEN fg "Passed " print print_decimal " Test Cases!" print
+        BLACK bg WHITE fg
+        impl_details TestSuite::run_all
+        '\n' print_char GREEN fg "Passed " print print_decimal " Implementation Test Cases!\n" println
 
-        "\n\n\n" print
+        "\n\n" print
 
         WHITE bg BLACK fg
-        8 left_align "               __        \n" print
-        8 left_align "              / _)       \n" print
-        8 left_align "     _.----._/ /         \n" print
-        8 left_align "   _|         /          \n" print
-        8 left_align " _| .(  | (  |           \n" print
-        8 left_align "/_.' '|_|--|_| edtoaster \n" print
+        8 left_align "               __        " println
+        8 left_align "              / _)       " println
+        8 left_align "     _.----._/ /         " println
+        8 left_align "   _|         /          " println
+        8 left_align " _| .(  | (  |           " println
+        8 left_align "/_.' '|_|--|_| edtoaster " println
     }
 }
 

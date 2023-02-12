@@ -113,6 +113,9 @@ r110 cellular automata.
     the caller will see a `u16` and a `bool` directly on a stack. 
 - [ ] Underscores in integer literals `0b00_00_0000`
 - [x] Negative numbers `-1` `-0x0001` `-0b00000001` all translate to `0xFFFF`
+- [ ] `enum`s
+- [x] `++` `--`
+- [ ] Optimizations (See appendix)
 
 ## Appendix
 
@@ -152,3 +155,28 @@ I don't know how to fix this and I don't really know if it matters...
 So... the semantics of this is kinda complicated, since operations like `drop` assume fixed-sized operands. I'm inclined to not implement this, since 
 doing a simple `swap` may require large amount of `memcpy`. A good (?) alternative are `type` declarations, which will transparently push
 its items on to the stack, as separate elements.
+
+### Optimization: Virtual Registers
+
+Whether we use `t0` or `t1` during push or pop operations doesn't really matter. 
+
+```rust
+1 +
+```
+
+The snippet above compiles to
+```
+imov t0 1
+push t0     # a
+pop  t1     # b
+pop  t0
+add  t1 t0
+push t1
+```
+
+Notice that the two instructions labeled `a` and `b` are unecessary, and can be changed to `mov t1 t0`. However, we can optimize this further by 
+swapping the registers around, removing the two instructions altogether. 
+
+### Optimization: Semantic-aware destacking
+
+The name of this optimization is completely made up. It just means that we can forego the "stack-based" instructions if it means the semantics stay the same.

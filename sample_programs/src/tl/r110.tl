@@ -32,10 +32,10 @@ mod r110 {
 
         let n buf {
             0 while { dup n load < } {
-                rand rand_int bool::from_u16 buf load ?? store
+                rand rand_int bool::from_u16 buf load store
 
-                buf load 1 + buf ?? store
-                1 +
+                buf load ++ buf store
+                ++
             }
             drop
         }
@@ -53,7 +53,7 @@ mod r110 {
     fn print_buf bool* -> {
         1 while { dup WIDTH <= } {
             over over + load print_dot
-            1 + 
+            ++
         }
         drop drop
     }
@@ -90,11 +90,11 @@ mod r110 {
                 // index for current cell
                 
                 // ((*curr_buff)[i-1] << 1) i
-                curr_buff load over + 1 - load as(u16) 1 << swap
+                curr_buff load over + -- load as(u16) 1 << swap
                 // ((*curr_buff)[i] + ((*curr_buff)[i-1] << 1) << 1) i
                 curr_buff load over + load as(u16) rot + 1 << swap
                 // i sum
-                curr_buff load over + 1 + load as(u16) rot + ??
+                curr_buff load over + ++ load as(u16) rot + ??
 
                 // back_buff[i] = !(sum == 7 || sum == 4 || sum == 0)
 

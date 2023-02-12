@@ -17,7 +17,7 @@ fn main -> {
         dup bottles " on the wall" println
         dup bottles "" println
         "Take one down, pass it around" println
-        1 -
+        --
         dup bottles " on the wall" println
         "" println
     }

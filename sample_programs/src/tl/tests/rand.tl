@@ -17,7 +17,7 @@ mod rand {
 
         // period
         1 while { random rand_int SEED = ! } {
-            1 +
+            ++
         }
 
         "Random period = 2^16-1" { over 0xFFFF = } assert drop

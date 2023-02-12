@@ -65,14 +65,14 @@ mod game {
                         dup game load .correct_letters + 1 swap store
                     }
 
-                    1 + 
+                    ++ 
                 } drop
                 game load correct load
             }
 
             // game guess
             ! if {
-                dup .incorrect_guesses load 1 + over .incorrect_guesses store
+                dup .incorrect_guesses load ++ over .incorrect_guesses store
             }
 
             drop
@@ -87,7 +87,7 @@ mod game {
                     } else {
                         '_' 
                     } io::print_char
-                    1 + 
+                    ++
                 } drop
 
                 // print number of wrong guesses

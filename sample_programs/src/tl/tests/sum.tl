@@ -10,7 +10,7 @@ mod sum {
     fn sum u16 -> u16 {
         0 swap
         while {dup} {
-            swap over + swap 1 -
+            swap over + swap --
         }
         drop
     }

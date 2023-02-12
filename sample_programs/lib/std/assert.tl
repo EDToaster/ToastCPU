@@ -12,8 +12,7 @@ mod assert {
         } else {
             35 left_align RED fg dup print
             ' ' print_char
-            "Assert Failed\n" print
-            halt
+            "Assert Failed" print halt
         }
         drop
     }

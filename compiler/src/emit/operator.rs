@@ -23,7 +23,7 @@ pub fn emit_operator(
             tasm!(
                 operation;;
                 r"
-    pop!  t1 t0
+    pop!  t0 t1
     add   t0 t1
     push! t0
                             "
@@ -43,9 +43,9 @@ pub fn emit_operator(
             tasm!(
                 operation;;
                 r"
-    pop!  t1 t0
-    sub   t0 t1
-    push! t0
+    pop!  t0 t1
+    sub   t1 t0
+    push! t1
                             "
             );
             check_and_apply_multiple_stack_transitions(
@@ -59,11 +59,49 @@ pub fn emit_operator(
                 ],
             )?;
         }
+        Operator::Incr(span) => {
+            tasm!(
+                operation;;
+                r"
+    pop!  t0
+    iadd  t0 1
+    push! t0
+                "
+            );
+            check_and_apply_multiple_stack_transitions(
+                "++",
+                span,
+                stack_view,
+                &vec![
+                    (vec![ptr!(gen!("a"))], vec![ptr!(gen!("a"))]),
+                    (vec![u16!()], vec![u16!()]),
+                ],
+            )?;
+        }
+        Operator::Decr(span) => {
+            tasm!(
+                operation;;
+                r"
+    pop   t0
+    isub  t0 1
+    push  t0
+                "
+            );
+            check_and_apply_multiple_stack_transitions(
+                "--",
+                span,
+                stack_view,
+                &vec![
+                    (vec![ptr!(gen!("a"))], vec![ptr!(gen!("a"))]),
+                    (vec![u16!()], vec![u16!()]),
+                ],
+            )?;
+        }
         Operator::BOr(span) => {
             tasm!(
                 operation;;
                 r"
-    pop!  t1 t0
+    pop!  t0 t1
     or    t0 t1
     push! t0
                             "
@@ -80,7 +118,7 @@ pub fn emit_operator(
             tasm!(
                 operation;;
                 r"
-    pop!  t1 t0
+    pop!  t0 t1
     and   t0 t1
     push! t0
                             "
@@ -108,9 +146,9 @@ pub fn emit_operator(
             tasm!(
                 operation;;
                 r"
-    pop!  t1 t0
-    sshr  t0 t1
-    push! t0
+    pop!  t0 t1
+    sshr  t1 t0
+    push! t1
                             "
             );
             check_and_apply_stack_transition(
@@ -125,9 +163,9 @@ pub fn emit_operator(
             tasm!(
                 operation;;
                 r"
-    pop!  t1 t0
-    shr   t0 t1
-    push! t0
+    pop!  t0 t1
+    shr   t1 t0
+    push! t1
                             "
             );
             check_and_apply_stack_transition(
@@ -142,9 +180,9 @@ pub fn emit_operator(
             tasm!(
                 operation;;
                 r"
-    pop!  t1 t0
-    shl   t0 t1
-    push! t0
+    pop!  t0 t1
+    shl   t1 t0
+    push! t1
                             "
             );
             check_and_apply_stack_transition(
@@ -159,7 +197,7 @@ pub fn emit_operator(
             tasm!(
                 operation;;
                 r"
-    pop!  t1 t0
+    pop!  t0 t1
     xor   t0 t1
     push! t0
                             "
@@ -406,8 +444,8 @@ pub fn emit_operator(
                 function_label(&name)
                 ;
                 r"
-imov! t0 .{}
-push  t0
+    imov! t0 .{}
+    push  t0
                 "
             );
             global_state

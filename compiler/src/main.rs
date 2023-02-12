@@ -45,6 +45,7 @@ struct Options {
     output: String,
     include_paths: Vec<String>,
     verbose: bool,
+    only_preprocess: bool,
 }
 
 fn get_args() -> Result<Options, ArgParseError> {
@@ -52,6 +53,7 @@ fn get_args() -> Result<Options, ArgParseError> {
     let mut output: String = "".to_string();
     let mut include_paths: Vec<String> = vec![];
     let mut verbose: bool = false;
+    let mut only_preprocess: bool = false;
     {
         let mut ap = ArgumentParser::new();
         ap.set_description("Compile ToastLang to ToastASM");
@@ -66,6 +68,8 @@ fn get_args() -> Result<Options, ArgParseError> {
         );
         ap.refer(&mut verbose)
             .add_option(&["-v", "--verbose"], StoreTrue, "Verbose mode");
+        ap.refer(&mut only_preprocess)
+            .add_option(&["-p", "--only-preprocess"], StoreTrue, "Emit the preprocessed code, and do not compile to tasm");
         ap.parse_args()
     }
     .map(|_| Options {
@@ -73,6 +77,7 @@ fn get_args() -> Result<Options, ArgParseError> {
         output,
         include_paths,
         verbose,
+        only_preprocess,
     })
     .map_err(ArgParseError)
 }
@@ -87,6 +92,11 @@ fn run() -> Result<(), String> {
 
     let mut program_text = fs::read_to_string(options.input).map_err(|e| e.to_string())?;
     program_text = preprocess(&program_text, &options.include_paths, &mut HashSet::new())?;
+
+    if options.only_preprocess {
+        fs::write(options.output, program_text).expect("Unable to write file");
+        return Ok(());
+    }
 
     // if is_verbose() {
     //     println!("{program_text}");

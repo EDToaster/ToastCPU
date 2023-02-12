@@ -12,20 +12,20 @@ mod io {
 
     global text_style u16 0b0011100000000000
 
-    inline BLACK    0b000
-    inline BLUE     0b001
-    inline GREEN    0b010
-    inline CYAN     0b011
-    inline RED      0b100
-    inline MAGENTA  0b101
-    inline YELLOW   0b110
-    inline WHITE    0b111
+    inline BLACK    0
+    inline BLUE     1
+    inline GREEN    2
+    inline CYAN     3
+    inline RED      4
+    inline MAGENTA  5
+    inline YELLOW   6
+    inline WHITE    7
 
     fn clear -> {
         print_reset
         0 while { dup 6000 < } {
             ' ' print_char
-            1 + 
+            ++ 
         } drop
         print_reset
     }
@@ -90,9 +90,9 @@ mod io {
             text_style load |
             over store
 
-            1 + text_ptr store
+            ++ text_ptr store
 
-            text_progress load 1 - dup 0 = if {
+            text_progress load -- dup 0 = if {
                 drop 100
             }
             text_progress store
@@ -149,7 +149,7 @@ mod io {
     fn print u16* -> {
         while { dup load dup } {
             // str char
-            print_char 1 +
+            print_char ++
         }
         drop drop
     }

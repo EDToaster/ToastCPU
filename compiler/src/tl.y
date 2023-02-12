@@ -99,6 +99,8 @@ Statement -> Result<Statement, ()>:
 Operator -> Result<Operator, ()>:
     'ADD'       { Ok(Operator::Add($span))      }
     | 'SUB'     { Ok(Operator::Sub($span))      }
+    | 'INCR'    { Ok(Operator::Incr($span))     }
+    | 'DECR'    { Ok(Operator::Decr($span))     }
     | 'BOR'     { Ok(Operator::BOr($span))      }
     | 'BAND'    { Ok(Operator::BAnd($span))     }
     | 'BNOT'    { Ok(Operator::BNot($span))     }

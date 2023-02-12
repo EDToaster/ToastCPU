@@ -8,9 +8,9 @@ fn main -> {
         0 while { dup 8 < } {
             dup fg
             " A" print
-            1 +
+            ++
         } drop
         '\n' print_char
-        1 +
+        ++
     } drop
 }

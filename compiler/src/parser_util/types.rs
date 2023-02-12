@@ -4,6 +4,8 @@ use lrpar::Span;
 pub enum Operator {
     Add(Span),
     Sub(Span),
+    Incr(Span),
+    Decr(Span),
     BOr(Span),
     BAnd(Span),
     BNot(Span),

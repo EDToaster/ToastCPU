@@ -238,8 +238,8 @@ pub fn emit_statement(
                     tasm!(
                         block;;
                         r"
-    pop!  t1 t0
-    str   t1 t0
+    pop!  t0 t1
+    str   t0 t1
                         "
                     );
                     check_and_apply_stack_transition(
@@ -565,8 +565,8 @@ pub fn emit_statement(
                     r"
     # pop from the data stack
     # push to return stack
-    pop!  t1
-    push  t5 t1
+    pop!  t0
+    push  t5 t0
                     "
                 );
             }

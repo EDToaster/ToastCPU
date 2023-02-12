@@ -17,7 +17,7 @@ mod mem {
             0 while { dup num load < } {
                 { val load } { over dest load + } store
 
-                1 +
+                ++
             }
             drop
         }
@@ -28,7 +28,7 @@ mod mem {
         let arr num {
             0 while { dup num load < } {
                 { arr load } over + load print_word
-                1 +
+                ++
             }
             drop
         }
@@ -38,8 +38,8 @@ mod mem {
         swap as(u16*) swap
         while { dup 0 > } {
             swap dup load if { '1' } else { '0' } print_char
-            1 + swap
-            1 -
+            ++ swap
+            --
         }
         drop drop
     }

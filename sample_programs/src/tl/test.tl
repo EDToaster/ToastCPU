@@ -39,7 +39,7 @@ mod test_suite {
 
     fn push_test (->)* -> {
         TESTS .ptrs TESTS .size load + store
-        TESTS .size dup load 1 + swap store
+        TESTS .size dup load ++ swap store
     }
 
     fn run_tests -> u16 {
@@ -47,12 +47,12 @@ mod test_suite {
         // TESTS .size load 
         0 while { dup TESTS .size load < } {
             TESTS .ptrs over + load over run_test
-            1 +
+            ++
         }
     }
 
     fn run_test (->)* u16 -> {
-        1 + print_decimal ": " print
+        ++ print_decimal ": " print
         4 left_align ()
         get_style GREEN fg 35 left_align "Passed\n" print set_style
     }

@@ -8,7 +8,7 @@ mod rec {
 
     fn fib u16 -> u16 {
         dup 1 >  if {
-            dup 1 - fib
+            dup -- fib
             swap 2 - fib
             +
         }

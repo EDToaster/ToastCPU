@@ -23,7 +23,7 @@ fn main -> {
         // v
            ?? 
         dup print_word
-        1 -
+        --
     }
     
     // [u16]

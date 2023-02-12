@@ -8,7 +8,7 @@ mod func_ptr {
     using assert
 
     fn add_1 u16 -> u16 {
-        1 +
+        ++
     }
 
     fn mul_2 u16 -> u16 {

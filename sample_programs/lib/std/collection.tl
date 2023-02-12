@@ -18,7 +18,7 @@ mod collection {
             u16         // n        : 2^n is the size of the buffer
             ->
         {
-            1 swap << 1 - rot dup ._mask rot swap store
+            1 swap << -- rot dup ._mask rot swap store
             swap over .buffer store
 
             RingBuffer::reset
@@ -39,7 +39,7 @@ mod collection {
             store                 // buffer
 
             // increment widx and use mask
-            dup ._widx load 1 + // buffer widx+1
+            dup ._widx load ++  // buffer widx+1
             over ._mask load    // buffer widx+1 mask
             &
             swap ._widx store
@@ -58,7 +58,7 @@ mod collection {
                 dup .buffer load over ._ridx load + load
 
                 swap dup // val buffer buffer
-                ._ridx load 1 + over ._mask load & // val buffer ridx+1
+                ._ridx load ++ over ._mask load & // val buffer ridx+1
                 swap ._ridx store
 
                 true
@@ -66,6 +66,6 @@ mod collection {
         }
 
         // RingBuffer* -> u16
-        inline size { ._mask load 1 + }
+        inline size { ._mask load ++ }
     }
 }

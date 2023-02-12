@@ -59,12 +59,12 @@
 				{
 					"comment": "Matches .fn_label that is preceeded by whitespace or start of line",
 					"name": "entity.name.type.label.tasm",
-					"match": "(^|(?<=\\s))(\\.fn_[\\w]+)\\b"
+					"match": "(^|(?<=\\s))(\\.fn_[\\w:]+)\\b"
 				},
 				{
 					"comment": "Matches .label that is preceeded by whitespace or start of line",
 					"name": "variable.other.constant.label.tasm",
-					"match": "(^|(?<=\\s))(\\.[\\w]+)\\b"
+					"match": "(^|(?<=\\s))(\\.[\\w:]+)\\b"
 				}
 			]
 		},

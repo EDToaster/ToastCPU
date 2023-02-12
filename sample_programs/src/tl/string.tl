@@ -1,4 +1,4 @@
 
 fn main -> {
-    "aaa" "aaaa" drop drop
+    "aaaa" "aaa\0f" drop drop
 }

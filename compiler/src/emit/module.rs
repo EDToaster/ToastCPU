@@ -9,7 +9,7 @@ use crate::util::gss::Stack;
 use crate::util::labels::global_label;
 use std::collections::{HashMap, HashSet};
 
-use super::string_defs::emit_consts;
+use super::const_defs::emit_consts;
 
 fn gather_struct_declarations(
     m: &Module,

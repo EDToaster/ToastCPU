@@ -102,7 +102,6 @@ r110 cellular automata.
   - [x] `true` and `false` literals
   - [x] let `if` statements use both `u16` and `bool`
   - [ ] logical operators `&&`, etc. to emit `bool` instead of `u16`
-- [ ] `char` type
 - [ ] `cond` blocks 
   - `true cond { { dup } { drop } { dup ! } { drop } } `
 - [ ] Structs on the stack (See appendix)

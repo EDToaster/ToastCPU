@@ -1,6 +1,7 @@
 #include<std/mem>
 #include<std/math>
 #include<std/collection>
+#include<std/addrs>
 
 mod io {
     using io
@@ -31,12 +32,12 @@ mod io {
 
     fn fg u16 -> {
         0b1100011111111111 text_style load &
-        over 11 << | text_style store drop
+        swap 11 << | text_style store
     }
 
     fn bg u16 -> {
         0b1111100011111111 text_style load &
-        over 8 << | text_style store drop
+        swap 8 << | text_style store
     }
 
     fn get_style -> u16 {
@@ -146,10 +147,9 @@ mod io {
 
     //     strptr
     fn print u16* -> {
-        dup
-        while { load dup } {
+        while { dup load dup } {
             // str char
-            print_char 1 + dup
+            print_char 1 +
         }
         drop drop
     }
@@ -176,6 +176,6 @@ mod io {
     // inputs
     fn get_keyboard_ascii -> u16 {
         "              `      q1   zsaw2  cxde43   vftr5  nbhgy6   mju78  ,kio09  ./l;p-     [=    \n] \\                                                                                                                                                                  "
-        0xFFFF as(u16*) load + load
+        addrs::KEYBOARD load + load
     }
 }

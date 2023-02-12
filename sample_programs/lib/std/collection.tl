@@ -18,7 +18,7 @@ mod collection {
             u16         // n        : 2^n is the size of the buffer
             ->
         {
-            1 swap << 1 - rot dup ._mask rot swap store ??
+            1 swap << 1 - rot dup ._mask rot swap store
             swap over .buffer store
 
             RingBuffer::reset
@@ -63,7 +63,6 @@ mod collection {
 
                 true
             }
-
         }
 
         // RingBuffer* -> u16

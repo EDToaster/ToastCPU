@@ -487,7 +487,7 @@ class Program:
         return None
 
     def parse_label(self, token) -> Optional[Label]:
-        x = re.search("^\\.([0-9A-Za-z-_]+)$", token)
+        x = re.search("^\\.([0-9A-Za-z-_:]+)$", token)
         if x is not None:
             return Label(x.group(1))
         else:

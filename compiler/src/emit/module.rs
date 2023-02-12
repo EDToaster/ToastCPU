@@ -247,7 +247,7 @@ pub fn emit_root_module(m: &Module) -> Result<String, (Span, String)> {
 
 fn .reset
     # setup isr and jump to main
-    imov! isr .isr
+    imov! isr .fn_isr
     # initialize ret stack ptrs
     imov! t5 .ret_stack
     imov! t0 0x03FF
@@ -256,7 +256,7 @@ fn .reset
     push  t5 t1
     # initialize our global variables
     call! .init_globals
-    jmp!  .main
+    jmp!  .fn_main
 .reset_ret
     halt
 #end .reset
@@ -311,10 +311,10 @@ fn .init_globals
     if !isr_found {
         tasm!(prog;;
         r"
-fn .isr
+fn .fn_isr
     isr!
     rti!
-#end .isr
+#end .fn_isr
         ");
     }
 

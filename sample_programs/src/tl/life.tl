@@ -146,6 +146,9 @@ fn main -> {
     // x
     // x  x
     // xxx
+
+    
+    // 93 at 8x8 produces small diagonal glider
     
     93 dup life::init
 

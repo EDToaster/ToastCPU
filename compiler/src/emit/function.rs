@@ -48,14 +48,14 @@ pub fn emit_isr(
     let mut func = String::new();
     tasm!(func;;
     r"
-fn .isr
+fn .fn_isr
     isr!
     push! p0 p1 p2 p3 v0 t0 t1 t2 t3 t4
 {block}
 .{function_out_label}
     pop!  t4 t3 t2 t1 t0 v0 p3 p2 p1 p0
     rti!
-#end .isr
+#end .fn_isr
     ");
     Ok(func)
 }

@@ -69,6 +69,10 @@ mod snake {
 
             0 while { dup 30000 < } { 1 + } drop
 
+            0 while { dup 32000 < } {
+                1 + 
+            } drop
+
             // drop the 0 at the end
             drop
         }

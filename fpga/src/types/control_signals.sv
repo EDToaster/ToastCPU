@@ -31,3 +31,13 @@ package alu_output_override_t;
         imm8_high
     } t;
 endpackage
+
+package register_write_mode_t;
+    typedef enum {
+        def,
+        dec_r1,
+        inc_r2,
+        dec_sp,
+        inc_sp
+    } t;
+endpackage

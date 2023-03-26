@@ -42,15 +42,18 @@ module registers (
     input [15:0] write_data,
     input write_en,
     
-    // 13, 14, 15
-    // SP, SR, PC are accessible from registers but 
+    // 14, 15
+    // SR, PC are accessible from registers but 
     // are read-only
-    input [15:0] SP, SR, PC
+    input [15:0] SR, PC,
+
+    input reset
 );
     
     reg [15:0] banked[8];
     
     reg [15:0] ISR;
+    reg [15:0] SP;
     
     reg [15:0] scratch[4];
     
@@ -78,24 +81,29 @@ module registers (
         read_datapoke
     );
     
-    always_ff @(posedge clock) begin: write_cycle
-        if (write_en) begin
-            case(write_addr)
-                4'h0, 
-                4'h1, 
-                4'h2, 
-                4'h3, 
-                4'h4, 
-                4'h5, 
-                4'h6, 
-                4'h7: banked[write_addr[2:0]][15:0] <= write_data;
-                4'h8,
-                4'h9, 
-                4'hA, 
-                4'hB: scratch[write_addr[1:0]][15:0] <= write_data;
-                4'hC: ISR <= write_data;
-                default:; // no op for writing to SP, SR, PC
-            endcase
+    always_ff @(posedge clock or negedge reset) begin: write_cycle
+        if (~reset) begin
+            SP <= 16'hBFFF;
+        end else begin
+            if (write_en) begin
+                case(write_addr)
+                    4'h0, 
+                    4'h1, 
+                    4'h2, 
+                    4'h3, 
+                    4'h4, 
+                    4'h5, 
+                    4'h6, 
+                    4'h7: banked[write_addr[2:0]][15:0] <= write_data;
+                    4'h8,
+                    4'h9, 
+                    4'hA, 
+                    4'hB: scratch[write_addr[1:0]][15:0] <= write_data;
+                    4'hC: ISR <= write_data;
+                    4'hD: SP <= write_data;
+                    default:; // no op for writing to SR, PC
+                endcase
+            end
         end
     end
 

@@ -4,11 +4,17 @@ ADDRESS_RADIX = HEX;          -- The radix for address values
 DATA_RADIX = HEX;             -- The radix for data values
 CONTENT                       -- start of (address : data pairs)
 BEGIN
-0000 : 2088; -- imov r0 136
-0001 : 5D00; -- push r0
-0002 : 2000; -- imov r0 0
-0003 : 81D6; -- mov  r1 r13
-0004 : 9115; -- isub r1 1
-0005 : 0010; -- load r0 r1
-0006 : 7000; -- halt
+0000 : 2620; -- . imov [imov! t0 0x3F20]			{[Label(name='start')]}
+0001 : 363F; -- ' imoh			{}
+0002 : 2710; -- . imov [imov! t1 0x10]			{}
+0003 : 3700; -- ' imoh			{}
+0004 : 5760; --   push  t1 t0			{}
+0005 : 5760; --   push  t1 t0			{}
+0006 : 5760; --   push  t1 t0			{}
+0007 : 5760; --   push  t1 t0			{}
+0008 : 5760; --   push  t1 t0			{}
+0009 : 5760; --   push  t1 t0			{}
+000A : 5760; --   push  t1 t0			{}
+000B : 5760; --   push  t1 t0			{}
+000C : 7000; --   halt			{}
 END;

@@ -1,9 +1,13 @@
 .start
-    imov r0 136
-    push r0
-    imov r0 0
-    // move stack pointer to r1
-    mov  r1 r13
-    isub r1 1
-    load r0 r1
+    imov! t0 0x3F20
+    imov! t1 0x10
+
+    push  t1 t0
+    push  t1 t0
+    push  t1 t0
+    push  t1 t0
+    push  t1 t0
+    push  t1 t0
+    push  t1 t0
+    push  t1 t0
     halt

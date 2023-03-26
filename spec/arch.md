@@ -94,13 +94,13 @@ imoh rxx  imm8
 
 0100 Unused
 
-0101 1101 xxxx ----
-push      rsrc
-     (D-type) Push rsrc onto the stack, then increment SP.
+0101 xxxx xxxx ----
+push rxx  rsrc
+     (D-type) Write data in rsrc into mem addr at rxx, then decrement rxx.
 
-0110 xxxx 1101 ----
-pop  rdst
-     (D-type) Decrement SP, then pop from the stack, storing in rdst.
+0110 xxxx xxxx ----
+pop  rdst rxx
+     (D-type) Increment rxx, then read the mem addr at rxx, storing in rdst.
 
 0111 ---- ---- ----
 halt

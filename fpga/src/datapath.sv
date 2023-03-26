@@ -21,9 +21,9 @@ module datapath (
     
     input mem_write_addr_source_t::t mem_write_addr_source,
     input mem_write_data_source_t::t mem_write_data_source,	// set the memory write data to this source
-        
-    input logic set_sp,					// should we set the sp on this cycle?
-    input logic increase_sp,			// should the set_sp be an increase?
+
+    input register_write_mode_t::t register_write_mode,
+
     input logic reset_irq,
     
     input logic [3:0] register_addrpoke, 
@@ -47,7 +47,7 @@ module datapath (
     
 );
     // sp/sr/pc
-    logic [15:0] SP, SR, PC;
+    logic [15:0] SR, PC;
     
     wire [15:0] next_PC;
     always_comb begin: next_PC_select
@@ -59,8 +59,6 @@ module datapath (
         endcase
     end
 
-    wire [15:0] next_SP = increase_sp ? SP + 16'h1 : SP - 16'h1;
-    
     assign PC_poke = PC;
     assign mem_poke = mem_rdata;
     
@@ -68,14 +66,15 @@ module datapath (
     wire [15:0] mem_raddr, mem_rdata, mem_waddr, mem_wdata;
     wire mem_wenable = mem_write, mem_rvalid;
     
-    assign mem_raddr = mem_read_is_pc ? PC : (mem_read_is_sp ? SP : reg_rdata2);	// always reading from pc sp or r2
+    assign mem_waddr = reg_rdata1; // read from r1 or sp
+    assign mem_raddr = mem_read_is_pc ? PC : reg_rdata2;	// always reading from pc sp or r2
 
-    always_comb begin: mem_waddr_select
-        unique case(mem_write_addr_source)
-            mem_write_addr_source_t::register_data 	: mem_waddr = reg_rdata1;
-            mem_write_addr_source_t::sp             : mem_waddr = SP;
-        endcase
-    end
+    // always_comb begin: mem_waddr_select
+    //     unique case(mem_write_addr_source)
+    //         mem_write_addr_source_t::register_data 	: mem_waddr = reg_rdata1;
+    //         mem_write_addr_source_t::sp             : mem_waddr = sp_poke; // todo: remove this case
+    //     endcase
+    // end
 
     always_comb begin: mem_wdata_select
         unique case(mem_write_data_source) 
@@ -109,8 +108,8 @@ module datapath (
     
     wire [3:0]  opcode = current_instruction[15:12];
     wire [3:0]  r1 = current_instruction[11:8], 
-                     r2 = current_instruction[7:4],
-                     jump_reg = r1;
+                r2 = current_instruction[7:4],
+                jump_reg = r1;
     wire [3:0]  alu_op = current_instruction[3:0];
     // sign extend immediate value to 16 bits
     wire [3:0] 	imm4 = current_instruction[7:4];
@@ -119,11 +118,46 @@ module datapath (
     
     
     // registers
-    wire [7:0] reg_raddr1 = (pc_data_source == pc_data_source_t::irq) ? 4'hC : r1, reg_raddr2 = r2;
+    wire [7:0]  reg_raddr1; 
+    wire [7:0]  reg_raddr2 = mem_read_is_sp ? 4'hD : r2;
     wire [15:0] reg_rdata1, reg_rdata2;
-    wire [7:0] reg_waddr = r1;		// always will be writing to r1
-    wire [15:0] reg_wdata = mem_to_reg ? mem_rdata : alu_out;
     
+    wire [7:0]  reg_waddr;
+    wire [15:0] reg_wdata;
+    
+
+    always_comb begin: reg_write_select
+        if (pc_data_source == pc_data_source_t::irq) begin
+            reg_raddr1 <= 4'hC;
+        end else if (register_write_mode == register_write_mode_t::dec_sp || 
+                    register_write_mode == register_write_mode_t::inc_sp || 
+                    mem_write_addr_source == mem_write_addr_source_t::sp) begin
+            reg_raddr1 <= 4'hD;
+        end else begin
+            reg_raddr1 <= r1;
+        end
+
+        unique case(register_write_mode) 
+            register_write_mode_t::def, 
+            register_write_mode_t::dec_r1  : reg_waddr <= r1;
+            register_write_mode_t::inc_r2  : reg_waddr <= r2;
+            register_write_mode_t::dec_sp,
+            register_write_mode_t::inc_sp  : reg_waddr <= 4'hD;
+        endcase
+        
+        if (mem_to_reg) begin
+            reg_wdata <= mem_rdata;
+        end else begin
+            unique case(register_write_mode)
+                register_write_mode_t::def : reg_wdata <= alu_out;
+                register_write_mode_t::dec_r1  : reg_wdata <= reg_rdata1 - 1'b1;
+                register_write_mode_t::inc_r2  : reg_wdata <= reg_rdata2 + 1'b1;
+                register_write_mode_t::dec_sp  : reg_wdata <= reg_rdata1 - 1'b1;
+                register_write_mode_t::inc_sp  : reg_wdata <= reg_rdata1 + 1'b1;
+            endcase
+        end
+    end
+
 //	display_word(
 //		mem_rdata,
 //		HEX0, HEX1, HEX2, HEX3
@@ -147,10 +181,12 @@ module datapath (
         .write_data(reg_wdata), 
         .write_en(reg_write),
         
-        // 13, 14, 15
-        // SP, SR, PC are accessible from registers but 
+        // 14, 15
+        // SR, PC are accessible from registers but 
         // are read-only
-        .SP, .SR, .PC
+        .SR, .PC,
+
+        .reset
     );
     
     
@@ -188,7 +224,6 @@ module datapath (
     always_ff @(posedge clock or negedge reset)
     begin
         if (~reset) begin
-            SP <= 16'h8000;
             SR <= 16'h0000;
             PC <= 16'h0000;
         end else begin
@@ -209,9 +244,9 @@ module datapath (
                 PC <= next_PC;
             end
             
-            if (set_sp) begin
-                SP <= next_SP;
-            end
+            // if (set_sp) begin
+            //     SP <= next_SP;
+            // end
 
         end
     end

@@ -26,12 +26,11 @@ module controlpath(
     output logic sr_from_mem,
     output logic reset_irq,				// todo: posedge clock reset IRQ line (currently async)
     
-    output logic set_sp,
-    output logic increase_sp,
-    
     output logic mem_write,
     output mem_write_addr_source_t::t mem_write_addr_source,
     output mem_write_data_source_t::t mem_write_data_source,
+
+    output register_write_mode_t::t   register_write_mode,
         
     output logic [9:0] state
 );
@@ -49,9 +48,9 @@ module controlpath(
         op_store,
         
         op_push_store,
-        op_push_inc,
+        op_push_dec,
         
-        op_pop_dec,
+        op_pop_inc,
         op_pop_set_addr,
         op_pop_set_register,
         
@@ -158,8 +157,8 @@ module controlpath(
         mem_write_addr_source = mem_write_addr_source_t::register_data;
         mem_write_data_source = mem_write_data_source_t::register_data;
 
-        set_sp = 1'b0;
-        increase_sp = 1'b0;
+        register_write_mode = register_write_mode_t::def;
+
         reset_irq = 1'b0;
         
         unique case(curr_state)
@@ -171,6 +170,7 @@ module controlpath(
             op_decode:;
             
             op_load_set_addr, op_pop_set_addr:;
+            
             op_jmp_ret_set_addr, op_rti_set_addr: begin
                 mem_read_is_sp = 1'b1;
             end
@@ -199,23 +199,29 @@ module controlpath(
             
             op_push_store: begin
                 mem_write = 1'b1;
-                mem_write_addr_source = mem_write_addr_source_t::sp;
             end
             
-            op_push_inc: begin
-                set_sp = 1'b1;
-                increase_sp = 1'b1;
+            op_push_dec: begin
+                // set r1 = r1 - 1
+                reg_write = 1'b1;
+                register_write_mode = register_write_mode_t::dec_r1;
                 set_pc = 1'b1;
             end
             
             op_jmp_link_inc, op_irq_jmp_link_inc, op_irq_jmp_status_inc: begin
-                set_sp = 1'b1;
-                increase_sp = 1'b1;
+                reg_write = 1'b1;
+                register_write_mode = register_write_mode_t::dec_sp;
             end
             
-            op_pop_dec, op_jmp_ret_dec, op_rti_dec: begin
-                set_sp = 1'b1;
-                increase_sp = 1'b0;
+            op_jmp_ret_dec, op_rti_dec: begin
+                reg_write = 1'b1;
+                register_write_mode = register_write_mode_t::inc_sp;
+            end
+
+            op_pop_inc: begin
+                // set r2 = r2 + 1
+                reg_write = 1'b1;
+                register_write_mode = register_write_mode_t::inc_r2;
             end
 
             op_jmp_link: begin
@@ -273,7 +279,7 @@ module controlpath(
             4'b0000: op_decode_state = op_load_set_addr;
             4'b0001: op_decode_state = op_store;
             4'b0101: op_decode_state = op_push_store;
-            4'b0110: op_decode_state = op_pop_dec;
+            4'b0110: op_decode_state = op_pop_inc;
             4'b0010, 4'b0011: op_decode_state = op_imov;
             4'b1010: op_decode_state = (ret_jump & do_jump) ? op_jmp_ret_dec : ((link_jump & do_jump) ? op_jmp_link : op_jmp); // if do_jump is false, fallback to op_jmp and inc PC
             4'b1100: op_decode_state = op_rti_dec;
@@ -296,10 +302,10 @@ module controlpath(
             
             op_store					: next_state = reset_state;
             
-            op_push_store				: next_state = op_push_inc;
-            op_push_inc					: next_state = reset_state;
+            op_push_store				: next_state = op_push_dec;
+            op_push_dec					: next_state = reset_state;
             
-            op_pop_dec					: next_state = op_pop_set_addr;
+            op_pop_inc					: next_state = op_pop_set_addr;
             op_pop_set_addr				: next_state = op_pop_set_register;
             op_pop_set_register			: next_state = reset_state;
             

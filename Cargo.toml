@@ -1,0 +1,19 @@
+[workspace]
+resolver = "2"
+members = [
+    "compiler",
+    "language-server-tl",
+    "emu",
+]
+
+# Shared dependency versions. The compiler frontend library and the language
+# server both (transitively) depend on lrlex/lrpar, so pinning them here keeps
+# every workspace member on the same grmtools version via one shared lockfile.
+[workspace.dependencies]
+lrlex = "0.12.0"
+lrpar = "0.12.0"
+cfgrammar = "0.12"
+argparse = "0.2.2"
+
+[profile.release]
+opt-level = 3

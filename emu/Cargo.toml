@@ -10,10 +10,10 @@ regex = "1.6.0"
 crossterm = "0.23"
 ringbuffer = "0.11.1"
 
-argparse = "0.2.2"
+argparse.workspace = true
 
 # jit stuff
 libc = "0.2.139"
 
-[profile.release]
-opt-level = 3
+# NOTE: the release profile lives in the workspace root Cargo.toml (profiles are
+# only honored there), and keeps opt-level = 3 for the emulator's JIT.

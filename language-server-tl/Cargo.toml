@@ -8,3 +8,6 @@ edition = "2021"
 [dependencies]
 tower-lsp = "0.18.0"
 tokio = { version = "1.25.0", features = ["full"] }
+
+# The shared compiler frontend (lexer, parser, preprocessor, type checker).
+tlc = { path = "../compiler" }

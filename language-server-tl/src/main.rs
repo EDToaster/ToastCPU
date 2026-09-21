@@ -14,14 +14,27 @@ impl LanguageServer for Backend {
     }
 
     async fn initialized(&self, _: InitializedParams) {
+        // Smoke test: prove the shared `tlc` frontend is reachable as a library.
+        let diagnostic_count = frontend_smoke_test();
         self.client
-            .log_message(MessageType::INFO, "server initialized!")
+            .log_message(
+                MessageType::INFO,
+                format!("server initialized! frontend produced {diagnostic_count} diagnostic(s) on the smoke-test snippet"),
+            )
             .await;
     }
 
     async fn shutdown(&self) -> Result<()> {
         Ok(())
     }
+}
+
+/// Minimal smoke test proving the LSP crate can call into the shared `tlc`
+/// frontend library: parse a snippet and return the diagnostic count.
+fn frontend_smoke_test() -> usize {
+    let source = "fn main -> { 1 2 + }";
+    let analysis = tlc::analyze(source, &[]);
+    analysis.diagnostics.len()
 }
 
 #[tokio::main]

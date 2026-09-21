@@ -1,33 +1,14 @@
-use lrlex::lrlex_mod;
-use lrpar::{lrpar_mod, LexParseError, NonStreamingLexer};
-use std::collections::HashSet;
-
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 use std::fs;
+
 extern crate argparse;
 extern crate core;
 
-use crate::emit::module::emit_root_module;
-use crate::preprocess::preprocess;
 use argparse::{ArgumentParser, Collect, Store, StoreTrue};
 use regex::Regex;
 
-use once_cell::sync::OnceCell;
-
-lrlex_mod!("tl.l");
-lrpar_mod!("tl.y");
-
-mod emit;
-mod parser_util;
-mod preprocess;
-mod util;
-
-static VERBOSE: OnceCell<bool> = OnceCell::new();
-
-pub fn is_verbose() -> bool {
-    *VERBOSE.get().unwrap_or(&false)
-}
+use tlc::{is_verbose, DiagnosticKind};
 
 #[derive(Debug)]
 struct ArgParseError(i32);
@@ -84,49 +65,43 @@ fn get_args() -> Result<Options, ArgParseError> {
 
 fn run() -> Result<(), String> {
     let options = get_args().map_err(|e| e.to_string())?;
-    VERBOSE.set(options.verbose).expect("Cannot set VERBOSE flag twice. This is a bug inside the program, please contact the owner to resolve it.");
+    tlc::set_verbose(options.verbose);
 
     if is_verbose() {
         println!("{options:?}");
     }
 
-    let mut program_text = fs::read_to_string(options.input).map_err(|e| e.to_string())?;
-    program_text = preprocess(&program_text, &options.include_paths, &mut HashSet::new())?;
+    let program_text = fs::read_to_string(&options.input).map_err(|e| e.to_string())?;
+    // Run the `#include` preprocessor via the frontend library.
+    let program_text = tlc::preprocess_source(&program_text, &options.include_paths)
+        .map_err(|d| d.message)?;
 
     if options.only_preprocess {
         fs::write(options.output, program_text).expect("Unable to write file");
         return Ok(());
     }
 
-    // if is_verbose() {
-    //     println!("{program_text}");
-    // }
-
-    let lexer_def = tl_l::lexerdef();
-
-    let lexer = lexer_def.lexer(&program_text);
-    let (res, errs) = tl_y::parse(&lexer);
-    for e in errs {
-        println!("Error found: {}", e.pp(&lexer, &tl_y::token_epp));
-
-        match e {
-            LexParseError::LexError(e) => {
-                println!("Token: \"{}\"", lexer.span_str(e.span()));
-            }
-            LexParseError::ParseError(_) => {}
+    // Lex + parse via the frontend library, then reproduce the historical
+    // print-and-exit CLI behavior on top of the returned diagnostics.
+    let (ast, diagnostics) = tlc::parse(&program_text);
+    for d in &diagnostics {
+        println!("Error found: {}", d.message);
+        if d.kind == DiagnosticKind::Lex {
+            println!("Token: \"{}\"", &program_text[d.start..d.end]);
         }
     }
 
-    let r = res
-        .ok_or("Some parser thing went wrong!")?
-        .map_err(|_| "Some parser thing went wrong!")?;
+    let r = ast.ok_or("Some parser thing went wrong!")?;
 
-    let tasm = emit_root_module(&r).map_err(|(span, s)| format!("Error here: `\n{}\n`\n\n{s}", &program_text[span.start()..span.end()]))?;
+    let tasm = tlc::emit::module::emit_root_module(&r).map_err(|(span, s)| {
+        format!(
+            "Error here: `\n{}\n`\n\n{s}",
+            &program_text[span.start()..span.end()]
+        )
+    })?;
 
     let newline_nuke = Regex::new(r"(\n|\r\n)\s*(\n|\r\n)").unwrap();
-    let tasm = newline_nuke
-        .replace_all(&tasm, "\n")
-        .to_string();
+    let tasm = newline_nuke.replace_all(&tasm, "\n").to_string();
     fs::write(options.output, tasm).expect("Unable to write file");
 
     Ok(())
@@ -135,7 +110,10 @@ fn run() -> Result<(), String> {
 fn main() -> Result<(), ()> {
     let res = run();
     match res {
-        Err(e) => { println!("{e}"); Err(()) }
+        Err(e) => {
+            println!("{e}");
+            Err(())
+        }
         _ => Ok(()),
     }
 }

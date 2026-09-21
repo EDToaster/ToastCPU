@@ -302,6 +302,82 @@ pub fn check(module: &Module) -> Vec<Diagnostic> {
     }
 }
 
+/// A diagnostic whose location has been mapped back to a specific source file.
+///
+/// Unlike [`Diagnostic`] (whose offsets are into preprocessed text), the offsets
+/// here are into the original `file` the problem lives in — which may be the
+/// document being edited or one of its `#include`d files.
+#[derive(Debug, Clone)]
+pub struct MappedDiagnostic {
+    /// Path of the file this diagnostic is located in.
+    pub file: String,
+    /// Byte offset range within `file`.
+    pub start: usize,
+    pub end: usize,
+    pub severity: Severity,
+    pub kind: DiagnosticKind,
+    pub message: String,
+}
+
+/// Run the type / stack-effect checker over `source` *with `#include`s expanded*
+/// and map every diagnostic back to the real file and byte offset it belongs to.
+///
+/// `root_path` is the path of `source` itself (used both to resolve relative
+/// includes' provenance and to let callers tell which diagnostics belong to the
+/// document being edited). `include_paths` is searched for `#include<name>`.
+///
+/// This is what lets the language server surface type errors on files that use
+/// `#include` — the plain [`analyze`]/[`check`] path reports offsets into the
+/// expanded text, which do not line up with the file on disk.
+///
+/// Note: like the checker it wraps, this currently yields at most one
+/// type-check diagnostic per call. If preprocessing fails (an include cannot be
+/// resolved) a single [`DiagnosticKind::Preprocess`] diagnostic is returned,
+/// located at the offending `#include` in `root_path` when known.
+pub fn check_mapped(
+    source: &str,
+    root_path: &str,
+    include_paths: &[String],
+) -> Vec<MappedDiagnostic> {
+    let (preprocessed, map) = match preprocess::preprocess_mapped(source, root_path, include_paths) {
+        Ok(pair) => pair,
+        Err(e) => {
+            let (start, end) = e.root_span.unwrap_or((0, 0));
+            return vec![MappedDiagnostic {
+                file: root_path.to_string(),
+                start,
+                end,
+                severity: Severity::Error,
+                kind: DiagnosticKind::Preprocess,
+                message: e.message,
+            }];
+        }
+    };
+
+    let (ast, _parse_diags) = parse(&preprocessed);
+    let module = match ast {
+        Some(m) => m,
+        // Parse errors are reported separately (against the raw document, where
+        // their offsets are correct), so don't duplicate them here.
+        None => return Vec::new(),
+    };
+
+    let mut out = Vec::new();
+    for d in check(&module) {
+        if let Some((file, start, end)) = map.map_range(d.start, d.end) {
+            out.push(MappedDiagnostic {
+                file: file.to_string(),
+                start,
+                end,
+                severity: d.severity,
+                kind: d.kind,
+                message: d.message,
+            });
+        }
+    }
+    out
+}
+
 /// Full frontend pipeline: preprocess -> parse -> check.
 ///
 /// Given source text and a list of include base paths, returns the (possibly
@@ -376,6 +452,62 @@ mod tests {
         assert!(toks.iter().any(|t| t.kind == TokenKind::Operator));
         // Braces are punctuation and are intentionally not emitted.
         assert!(toks.iter().all(|t| t.kind != TokenKind::Punct));
+    }
+
+    #[test]
+    fn check_mapped_without_includes_is_identity() {
+        let src = "fn main -> { + }";
+        let plus = src.find('+').unwrap();
+        let diags = check_mapped(src, "mem://main.tl", &[]);
+        let td = diags
+            .iter()
+            .find(|d| d.kind == DiagnosticKind::TypeCheck)
+            .expect("expected a type-check diagnostic");
+        assert_eq!(td.file, "mem://main.tl");
+        assert_eq!(td.start, plus, "offset should be unchanged without includes");
+    }
+
+    #[test]
+    fn check_mapped_maps_type_error_past_include() {
+        use std::fs;
+        let dir = std::env::temp_dir().join("tlc_test_map_past_include");
+        let _ = fs::remove_dir_all(&dir);
+        fs::create_dir_all(dir.join("lib/std")).unwrap();
+        // A larger include, so the preprocessed offset of `+` differs a lot from
+        // its offset in the original file.
+        fs::write(
+            dir.join("lib/std/helper.tl"),
+            "mod helper {\n  fn a -> { }\n  fn b -> { }\n  fn c -> { }\n}\n",
+        )
+        .unwrap();
+
+        let root_path = dir.join("main.tl").to_string_lossy().to_string();
+        let source = "#include<std/helper>\nfn main -> { + }\n";
+        let plus_off = source.find('+').unwrap();
+        let include_paths = vec![dir.join("lib").to_string_lossy().to_string()];
+
+        let diags = check_mapped(source, &root_path, &include_paths);
+        let td = diags
+            .iter()
+            .find(|d| d.kind == DiagnosticKind::TypeCheck)
+            .expect("expected a mapped type-check diagnostic");
+        assert_eq!(td.file, root_path);
+        assert_eq!(
+            td.start, plus_off,
+            "diagnostic must map back to the `+` in the original file, not the expanded offset"
+        );
+
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn check_mapped_reports_missing_include() {
+        let src = "#include<does/not/exist>\nfn main -> { }";
+        let diags = check_mapped(src, "main.tl", &[]);
+        assert_eq!(diags.len(), 1);
+        assert_eq!(diags[0].kind, DiagnosticKind::Preprocess);
+        assert_eq!(diags[0].start, 0, "should point at the include directive");
+        assert!(diags[0].end > diags[0].start);
     }
 
     #[test]

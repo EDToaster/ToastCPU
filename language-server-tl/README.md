@@ -49,11 +49,20 @@ Milestone 1 notes:
   structs, modules, `let` locals, type names, `$a` type parameters, struct
   fields — and highlighting still degrades to the lexical layer when a file does
   not parse. Implemented in `src/semantic.rs`.
-- **Diagnostics**: lex/parse errors are always published with correct positions.
-  Type/stack-effect errors are published **only for files without `#include<…>`**
-  — the preprocessor expands includes in place, which shifts byte offsets so
-  checker spans would otherwise land in the wrong location. Lifting this is the
-  first item under *Known frontend follow-ups*.
+- **Diagnostics**: lex/parse errors come from the raw document (correct
+  positions; `#include` lines lex as comments). Type/stack-effect errors come
+  from an **include-expanded, source-mapped** analysis (`tlc::check_mapped`):
+  the preprocessor now records provenance (`SourceMap`), so a checker span in
+  the expanded program is mapped back to the real file and offset. Errors that
+  map to the open document are shown at the right place; errors inside included
+  files are left to those files. Include search paths mirror the compiler
+  convention (`-I../../lib -I./`): the document's directory plus any ancestor
+  `lib/`. Implemented in `src/main.rs` (`publish_diagnostics`, `include_paths_for`).
+  - *Caveat*: a **library file opened on its own** may show errors it wouldn't as
+    part of a program — e.g. `std/io.tl` reports `io::clear is already defined`
+    because `mem.tl` includes `std/io`, so rooting the include graph at `io.tl`
+    double-defines it. The compiler reports the same thing; such files simply
+    aren't valid compilation roots.
 
 Everything below is the wishlist — not yet implemented.
 
@@ -104,15 +113,23 @@ TextMate grammar (`../vscode-syntax-tl`) cannot:
 
 ## Known frontend follow-ups (needed to make the above great)
 
+- [x] **Include-aware diagnostics.** Type errors now surface on files that use
+      `#include`, via a provenance-tracking preprocessor (`SourceMap` /
+      `preprocess_mapped`) and `tlc::check_mapped`, which map expanded offsets
+      back to the real file.
 - [ ] **Multiple type-check diagnostics per file.** The type/stack-effect check
       is currently interwoven with codegen (`emit::module::emit_root_module`),
       which returns a *single* `(Span, String)` error. So today the LSP surfaces
       at most **one** `TypeCheck` diagnostic per run (lex/parse diagnostics are
       genuinely multiple). Refactoring the checker to accumulate all type errors
-      with spans is a prerequisite for good diagnostics UX.
+      with spans is the next diagnostics-quality step.
+- [ ] **Publish diagnostics into included files.** Errors that map to an
+      `#include`d file are currently dropped from the open document's list; they
+      could instead be published under that file's own URI.
 - [ ] **Incremental / cached analysis.** Re-analyzing the whole document (and its
-      includes) on every keystroke is fine to start, but a document store with a
-      workspace include-graph and caching will be needed for responsiveness.
+      includes, which are re-read from disk) on every keystroke is fine to start,
+      but a document store with a workspace include-graph and caching will be
+      needed for responsiveness.
 - [ ] **Robust error recovery.** Lean on grmtools recovery so a half-typed file
       still yields a partial AST + diagnostics for all read-only features.
 

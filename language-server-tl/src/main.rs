@@ -6,6 +6,8 @@
 
 mod semantic;
 
+use std::path::Path;
+
 use dashmap::DashMap;
 use tower_lsp::jsonrpc::Result;
 use tower_lsp::lsp_types::*;
@@ -101,12 +103,13 @@ impl LanguageServer for Backend {
 impl Backend {
     /// Analyze `text` and publish diagnostics for `uri`.
     ///
-    /// Lex/parse diagnostics are always published (their spans are correct for
-    /// the document as typed). Type/stack-effect diagnostics are only published
-    /// when the file has no `#include<...>`: the preprocessor expands includes
-    /// in place, which shifts byte offsets so checker spans would land in the
-    /// wrong place. Cross-include diagnostics via a source map are a follow-up
-    /// (see README).
+    /// Two layers, both with correct positions for the document as typed:
+    /// 1. **Lex/parse** diagnostics from the raw document (`#include` lines lex
+    ///    as comments, so their offsets are already correct).
+    /// 2. **Type/stack-effect** diagnostics from an include-expanded, source-
+    ///    mapped analysis ([`tlc::check_mapped`]), keeping only those that map
+    ///    back to *this* document. This is what lets type errors surface on
+    ///    files that use `#include`.
     async fn publish_diagnostics(&self, uri: Url, text: &str, version: Option<i32>) {
         let (ast, frontend_diags) = tlc::parse(text);
         let mut diags: Vec<Diagnostic> = frontend_diags
@@ -114,11 +117,27 @@ impl Backend {
             .map(|d| to_lsp_diagnostic(text, d))
             .collect();
 
-        let has_includes = text.contains("#include<");
-        if !has_includes {
-            if let Some(module) = &ast {
-                for d in tlc::check(module) {
-                    diags.push(to_lsp_diagnostic(text, &d));
+        match uri.to_file_path() {
+            Ok(path) => {
+                let doc_path = path.to_string_lossy().into_owned();
+                let include_paths = include_paths_for(&path);
+                for md in tlc::check_mapped(text, &doc_path, &include_paths) {
+                    // Only diagnostics located in this document (mapped offsets
+                    // are into `text`); errors inside included files are theirs.
+                    if md.file == doc_path {
+                        diags.push(mapped_to_lsp_diagnostic(text, &md));
+                    }
+                }
+            }
+            Err(_) => {
+                // Non-file buffer (e.g. unsaved): we can't resolve includes, so
+                // fall back to include-free type checking.
+                if !text.contains("#include<") {
+                    if let Some(module) = &ast {
+                        for d in tlc::check(module) {
+                            diags.push(to_lsp_diagnostic(text, &d));
+                        }
+                    }
                 }
             }
         }
@@ -127,8 +146,47 @@ impl Backend {
     }
 }
 
+/// Include search paths for a document, mirroring the project's compiler
+/// convention (`-I../../lib/ -I./`): the file's own directory, plus any ancestor
+/// directory that contains a `lib/` subdirectory.
+fn include_paths_for(doc: &Path) -> Vec<String> {
+    let mut paths: Vec<String> = Vec::new();
+    if let Some(dir) = doc.parent() {
+        paths.push(dir.to_string_lossy().into_owned());
+    }
+    for ancestor in doc.ancestors() {
+        let lib = ancestor.join("lib");
+        if lib.is_dir() {
+            let s = lib.to_string_lossy().into_owned();
+            if !paths.contains(&s) {
+                paths.push(s);
+            }
+        }
+    }
+    paths
+}
+
 /// Convert a frontend [`tlc::Diagnostic`] (byte-offset span) to an LSP one.
 fn to_lsp_diagnostic(source: &str, d: &tlc::Diagnostic) -> Diagnostic {
+    let severity = match d.severity {
+        tlc::Severity::Error => DiagnosticSeverity::ERROR,
+        tlc::Severity::Warning => DiagnosticSeverity::WARNING,
+    };
+    Diagnostic {
+        range: Range {
+            start: byte_to_position(source, d.start),
+            end: byte_to_position(source, d.end),
+        },
+        severity: Some(severity),
+        source: Some("toastlang".to_string()),
+        message: d.message.clone(),
+        ..Diagnostic::default()
+    }
+}
+
+/// Convert a mapped frontend diagnostic (byte offsets into the document text)
+/// to an LSP diagnostic.
+fn mapped_to_lsp_diagnostic(source: &str, d: &tlc::MappedDiagnostic) -> Diagnostic {
     let severity = match d.severity {
         tlc::Severity::Error => DiagnosticSeverity::ERROR,
         tlc::Severity::Warning => DiagnosticSeverity::WARNING,

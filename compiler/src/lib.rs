@@ -13,7 +13,8 @@
 //! top of this API.
 
 use lrlex::lrlex_mod;
-use lrpar::{lrpar_mod, LexParseError, Lexeme};
+use lrlex::LexerDef;
+use lrpar::{lrpar_mod, LexParseError, Lexeme, Lexer};
 use once_cell::sync::OnceCell;
 use std::collections::HashSet;
 
@@ -28,6 +29,8 @@ lrlex_mod!("tl.l");
 lrpar_mod!("tl.y");
 
 pub use parser_util::types::Module;
+/// Source span type used throughout the public AST (re-exported from `lrpar`).
+pub use lrpar::Span;
 
 static VERBOSE: OnceCell<bool> = OnceCell::new();
 
@@ -118,6 +121,111 @@ pub fn line_col(source: &str, byte_offset: usize) -> (usize, usize) {
         }
     }
     (line, col)
+}
+
+/// A lexical category for a [`Token`], used to drive semantic highlighting.
+///
+/// This is a coarse, lexer-level classification (it cannot, on its own, tell a
+/// function name from a struct name — both are [`TokenKind::Ident`]). Consumers
+/// that want the finer distinction combine this with the parsed AST, upgrading
+/// identifier spans to their true role.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TokenKind {
+    /// A language keyword (`fn`, `let`, `if`, `struct`, `mod`, `as`, ...).
+    Keyword,
+    /// A boolean literal (`true` / `false`).
+    Bool,
+    /// An integer literal (decimal, hex or binary).
+    Number,
+    /// A string literal.
+    Str,
+    /// A character literal.
+    Char,
+    /// An operator (`+`, `<<`, `||`, `??`, `*`, `$`, ...).
+    Operator,
+    /// A struct field access (`.field`).
+    StructAccess,
+    /// A bare identifier (word / function call / type name / variable).
+    Ident,
+    /// Bracketing / grouping punctuation (`(` `)` `[` `]` `{` `}`).
+    Punct,
+    /// Anything the lexer could not match.
+    Unknown,
+}
+
+/// A lexed token: a source span plus its lexical [`TokenKind`].
+#[derive(Debug, Clone, Copy)]
+pub struct Token {
+    /// Inclusive start byte offset into `source`.
+    pub start: usize,
+    /// Exclusive end byte offset into `source`.
+    pub end: usize,
+    pub kind: TokenKind,
+}
+
+/// Classify a lexer rule name (as declared in `tl.l`) into a [`TokenKind`].
+fn classify_token_name(name: &str) -> TokenKind {
+    match name {
+        "GLOBAL" | "INLINE" | "FN" | "LET" | "STRUCT" | "MOD" | "USING" | "UNROLL" | "IF"
+        | "ELSE" | "WHILE" | "PTR_OP" | "AS" | "SIZEOF" | "RETURN" | "RARROW" => TokenKind::Keyword,
+        "TRUE_BOOL" | "FALSE_BOOL" => TokenKind::Bool,
+        "DEC_INT" | "HEX_INT" | "BIN_INT" => TokenKind::Number,
+        "STRING" => TokenKind::Str,
+        "CHAR" => TokenKind::Char,
+        "LOR" | "LAND" | "LNOT" | "INCR" | "DECR" | "ADD" | "SUB" | "BOR" | "BAND" | "BNOT"
+        | "SSHR" | "SHR" | "SHL" | "XOR" | "EQ" | "LT" | "LTE" | "GT" | "GTE" | "HOLE"
+        | "GENERIC" | "PTR" => TokenKind::Operator,
+        "STRUCT_ACCESS" => TokenKind::StructAccess,
+        "IDENT" => TokenKind::Ident,
+        "LP" | "RP" | "LS" | "RS" | "LB" | "RB" => TokenKind::Punct,
+        _ => TokenKind::Unknown,
+    }
+}
+
+/// Lex `source` into a flat list of classified [`Token`]s, in source order.
+///
+/// This reuses the compiler's generated lexer (`tl.l`) so token boundaries and
+/// classification stay in lock-step with the language. Comments and whitespace
+/// are skipped by the lexer and so are not represented here. Faulty (error)
+/// lexemes are reported as [`TokenKind::Unknown`] rather than dropped, so a
+/// broken file still highlights the parts around the error.
+pub fn lex(source: &str) -> Vec<Token> {
+    let lexer_def = tl_l::lexerdef();
+    let lexer = lexer_def.lexer(source);
+    let mut tokens = Vec::new();
+    for lexeme in lexer.iter() {
+        match lexeme {
+            Ok(l) => {
+                let span = l.span();
+                // Map the lexeme's token id back to its `tl.l` rule name, then
+                // classify. Lexemes always come from a named rule, so a missing
+                // name falls back to `Unknown`.
+                let kind = lexer_def
+                    .get_rule_by_id(l.tok_id())
+                    .name
+                    .as_deref()
+                    .map(classify_token_name)
+                    .unwrap_or(TokenKind::Unknown);
+                if kind != TokenKind::Punct {
+                    tokens.push(Token {
+                        start: span.start(),
+                        end: span.end(),
+                        kind,
+                    });
+                }
+            }
+            Err(e) => {
+                let span = e.span();
+                tokens.push(Token {
+                    start: span.start(),
+                    end: span.end(),
+                    kind: TokenKind::Unknown,
+                });
+            }
+        }
+    }
+
+    tokens
 }
 
 /// Result of running the full frontend over a source file.
@@ -254,6 +362,20 @@ mod tests {
             "expected a type-check diagnostic, got {:?}",
             analysis.diagnostics
         );
+    }
+
+    #[test]
+    fn lex_classifies_tokens() {
+        let toks = lex("fn main -> { 1 \"hi\" + }");
+        // First token is the `fn` keyword.
+        assert_eq!(toks[0].kind, TokenKind::Keyword);
+        // The identifier `main` is present.
+        assert!(toks.iter().any(|t| t.kind == TokenKind::Ident));
+        assert!(toks.iter().any(|t| t.kind == TokenKind::Number));
+        assert!(toks.iter().any(|t| t.kind == TokenKind::Str));
+        assert!(toks.iter().any(|t| t.kind == TokenKind::Operator));
+        // Braces are punctuation and are intentionally not emitted.
+        assert!(toks.iter().all(|t| t.kind != TokenKind::Punct));
     }
 
     #[test]

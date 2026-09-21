@@ -6,8 +6,9 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-tower-lsp = "0.18.0"
-tokio = { version = "1.25.0", features = ["full"] }
+tower-lsp = "0.20.0"
+tokio = { version = "1", features = ["full"] }
+dashmap = "6"
 
 # The shared compiler frontend (lexer, parser, preprocessor, type checker).
 tlc = { path = "../compiler" }

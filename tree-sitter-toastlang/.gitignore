@@ -1,0 +1,7 @@
+# Build artifacts
+/node_modules
+*.so
+/package-lock.json
+
+# tree-sitter generated bindings we don't use (parser sources under src/ ARE committed)
+/bindings

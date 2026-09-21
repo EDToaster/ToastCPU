@@ -1,0 +1,14 @@
+{
+  "name": "tree-sitter-toastlang",
+  "version": "0.1.0",
+  "description": "Tree-sitter grammar for ToastLang (.tl)",
+  "license": "MIT",
+  "main": "bindings/node",
+  "scripts": {
+    "generate": "tree-sitter generate --abi 14",
+    "parse": "tree-sitter parse"
+  },
+  "devDependencies": {
+    "tree-sitter-cli": "^0.24.7"
+  }
+}

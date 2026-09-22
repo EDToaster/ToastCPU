@@ -13,6 +13,23 @@ macro_rules! tasm {
     }
 }
 
+/// Whether a piece of emitted code falls through to the statement after it, or
+/// diverges (control leaves and never returns to this point, e.g. via `return`).
+/// Code following a diverging statement is unreachable, so it is neither
+/// emitted nor stack-checked, and a diverging branch imposes no constraint on
+/// the surrounding block's resulting stack.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Flow {
+    Falls,
+    Diverges,
+}
+
+impl Flow {
+    pub fn diverges(self) -> bool {
+        matches!(self, Flow::Diverges)
+    }
+}
+
 #[derive(Debug)]
 pub struct StructDefinition {
     pub members: HashMap<String, (usize, Type)>,

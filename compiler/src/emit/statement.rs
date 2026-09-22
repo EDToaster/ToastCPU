@@ -64,8 +64,9 @@ pub fn emit_statement(
     function_state: &mut FunctionState,
     stack_view: &mut Stack<Type>,
     using_stack: &Stack<String>,
-) -> Result<String, (Span, String)> {
+) -> Result<(String, Flow), (Span, String)> {
     let mut block = String::new();
+    let mut flow = Flow::Falls;
 
     match s {
         Statement::IntLiteral(IntLiteral { val, span }) => {
@@ -297,7 +298,7 @@ pub fn emit_statement(
                         find_inline(s, &global_state.inlines, using_stack)
                     {
                         // is an inline value
-                        let expansion = emit_statement(
+                        let (expansion, sflow) = emit_statement(
                             block_id,
                             &statement,
                             global_state,
@@ -305,6 +306,7 @@ pub fn emit_statement(
                             stack_view,
                             using_stack,
                         )?;
+                        flow = sflow;
                         tasm!(
                             block;;
                             r"
@@ -351,7 +353,7 @@ pub fn emit_statement(
             }
         }
         Statement::Operator(r) => {
-            let op = emit_operator(
+            let (op, oflow) = emit_operator(
                 &generate_label_with_context(block_id, "operator"),
                 r,
                 global_state,
@@ -359,6 +361,7 @@ pub fn emit_statement(
                 stack_view,
                 using_stack,
             )?;
+            flow = oflow;
             tasm!(
                 block;;
                 r"
@@ -367,7 +370,7 @@ pub fn emit_statement(
             );
         }
         Statement::Block(b) => {
-            let subblock = emit_block(
+            let (subblock, bflow) = emit_block(
                 &generate_label(block_id),
                 b,
                 global_state,
@@ -375,6 +378,7 @@ pub fn emit_statement(
                 stack_view,
                 using_stack,
             )?;
+            flow = bflow;
             tasm!(
                 block;;
                 r"
@@ -388,7 +392,7 @@ pub fn emit_statement(
             ..
         }) => {
             for _ in 0..*val {
-                let subblock = emit_block(
+                let (subblock, bflow) = emit_block(
                     &generate_label(block_id),
                     body,
                     global_state,
@@ -402,6 +406,11 @@ pub fn emit_statement(
 {subblock}
                     "
                 );
+                // A diverging iteration makes every later one unreachable.
+                if bflow.diverges() {
+                    flow = Flow::Diverges;
+                    break;
+                }
             }
         }
         Statement::If(If {
@@ -423,9 +432,11 @@ pub fn emit_statement(
                 }
             }?;
 
+            // else_stack starts as the fall-through stack (condition popped),
+            // which is also the resulting stack when there is no else block.
             let mut else_stack = stack_view.clone();
             // stack_view is end == if_stack
-            let if_subblock = emit_block(
+            let (if_subblock, if_flow) = emit_block(
                 &if_id,
                 if_block,
                 global_state,
@@ -434,8 +445,8 @@ pub fn emit_statement(
                 using_stack,
             )?;
 
-            let else_subblock = match else_block {
-                None => "".to_string(),
+            let (else_subblock, else_flow) = match else_block {
+                None => ("".to_string(), Flow::Falls),
                 Some(e) => emit_block(
                     &else_id,
                     e,
@@ -446,9 +457,30 @@ pub fn emit_statement(
                 )?,
             };
 
-            if stack_view != &else_stack {
-                return Err((*span, format!("If and else blocks do not have the same elements on the stack after execution. If has {stack_view:?} and else has {else_stack:?}")));
+            // A diverging branch never reaches the merge point, so it imposes no
+            // constraint on the resulting stack; only branches that fall through
+            // must agree. The `if` as a whole diverges only if both do.
+            match (if_flow.diverges(), else_flow.diverges()) {
+                (false, false) => {
+                    if stack_view != &else_stack {
+                        return Err((*span, format!("If and else blocks do not have the same elements on the stack after execution. If has {stack_view:?} and else has {else_stack:?}")));
+                    }
+                }
+                // if-branch is dead: the else path's stack is what survives.
+                (true, false) => *stack_view = else_stack.clone(),
+                // else path is dead: the if-branch's stack (already in
+                // stack_view) survives; nothing to do.
+                (false, true) => {}
+                (true, true) => flow = Flow::Diverges,
             }
+
+            // The if-branch normally jumps over the else-branch to the merge
+            // point; when it diverges it has already left, so the jump is dead.
+            let if_exit_jump = if if_flow.diverges() {
+                "".to_string()
+            } else {
+                format!("    jmp!  .{if_else_exit}")
+            };
 
             tasm!(
                 block;;
@@ -458,7 +490,7 @@ pub fn emit_statement(
     jz!   .{else_id}
 .{if_id}
 {if_subblock}
-    jmp!  .{if_else_exit}
+{if_exit_jump}
 .{else_id}
 {else_subblock}
 .{if_else_exit}
@@ -474,7 +506,7 @@ pub fn emit_statement(
 
             let before_eval = stack_view.clone();
 
-            let while_eval_subblock = emit_block(
+            let (while_eval_subblock, _) = emit_block(
                 &while_eval_id,
                 eval,
                 global_state,
@@ -496,7 +528,7 @@ pub fn emit_statement(
             // end stack view is after eval
             let mut after_body = stack_view.clone();
 
-            let while_body_subblock = emit_block(
+            let (while_body_subblock, body_flow) = emit_block(
                 &while_body_id,
                 body,
                 global_state,
@@ -505,8 +537,11 @@ pub fn emit_statement(
                 using_stack,
             )?;
 
-            // after body == before eval
-            if after_body != before_eval {
+            // after body == before eval. A body that diverges never loops back
+            // to the condition, so its resulting stack imposes no constraint.
+            // The while itself always falls through (the condition may be false
+            // on entry, skipping the body entirely).
+            if !body_flow.diverges() && after_body != before_eval {
                 return Err((*span, format!(
                     "Stack state after while body and before condition evaluation need to identical. Before evaluation {before_eval:?}, after body {after_body:?}")));
             }
@@ -568,7 +603,7 @@ pub fn emit_statement(
 
             // emit inner block
             let let_block_id = &*generate_label_with_context(block_id, "let_inner");
-            let let_block = emit_block(
+            let (let_block, body_flow) = emit_block(
                 let_block_id,
                 body,
                 global_state,
@@ -576,15 +611,28 @@ pub fn emit_statement(
                 stack_view,
                 using_stack,
             )?;
+            flow = body_flow;
+
             tasm!(
                 block;;
                 r"
 {let_block}
+                "
+            );
+
+            // If the body diverges, control never reaches the merge point: the
+            // return that carried us out already unwound these bindings from the
+            // return stack, so emitting the pop here would be dead code.
+            if !body_flow.diverges() {
+                tasm!(
+                    block;;
+                    r"
     # pop {num_bindings} elements from return stack
     imov! t0 {num_bindings}
     add   t5 t0
-                "
-            );
+                    "
+                );
+            }
 
             // pop bindings off
             function_state.function_let_bindings -= num_bindings as isize;
@@ -594,5 +642,5 @@ pub fn emit_statement(
         }
     }
 
-    Ok(block)
+    Ok((block, flow))
 }

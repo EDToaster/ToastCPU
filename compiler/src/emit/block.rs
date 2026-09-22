@@ -11,11 +11,21 @@ pub fn emit_block(
     function_state: &mut FunctionState,
     stack_view: &mut Stack<Type>,
     using_stack: &Stack<String>,
-) -> Result<String, (Span, String)> {
+) -> Result<(String, Flow), (Span, String)> {
     let mut block = "".to_string();
+    let mut flow = Flow::Falls;
 
     for i in &b.body {
-        let statement = emit_statement(
+        // Once a statement diverges (e.g. via `return`), any statement after it
+        // in the block can never execute. Reject it as unreachable code.
+        if flow.diverges() {
+            return Err((
+                i.span(),
+                "Unreachable code: this statement can never be reached because control has already left via an earlier `return`.".to_string(),
+            ));
+        }
+
+        let (statement, sflow) = emit_statement(
             block_id,
             i,
             global_state,
@@ -23,6 +33,7 @@ pub fn emit_block(
             stack_view,
             using_stack,
         )?;
+        flow = sflow;
         tasm!(
           block;;
             r"
@@ -31,5 +42,5 @@ pub fn emit_block(
         );
     }
 
-    Ok(block)
+    Ok((block, flow))
 }

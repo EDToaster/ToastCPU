@@ -87,7 +87,7 @@ mod game {
                 } drop
 
                 // print number of wrong guesses
-                "   Wrong guesses: " io::print game load .incorrect_guesses load io::print_decimal "\n\n" io::print
+                "   Wrong guesses: " io::print game load .incorrect_guesses load io::print_decimal "\n" io::print
             }
         }
     }

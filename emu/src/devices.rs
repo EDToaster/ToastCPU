@@ -1,19 +1,19 @@
-use std::sync::{Arc, Mutex, atomic::{AtomicU16, Ordering}};
+use std::sync::atomic::{AtomicU16, Ordering};
 
 pub struct Devices<'a> {
     rom: Vec<u16>,
     vram: &'a Vec<AtomicU16>,
     ram: Vec<u16>,
-    key: Arc<Mutex<u16>>,
+    key: &'a AtomicU16,
 }
 
 impl <'a> Devices<'a> {
     pub fn new(
         rom: Vec<u16>,
-        vram: &Vec<AtomicU16>,
+        vram: &'a Vec<AtomicU16>,
         ram: Vec<u16>,
-        key: Arc<Mutex<u16>>,
-    ) -> Devices {
+        key: &'a AtomicU16,
+    ) -> Devices<'a> {
         Devices { rom, vram, ram, key }
     }
 
@@ -22,7 +22,7 @@ impl <'a> Devices<'a> {
             0..=0x7FFF => Ok(self.rom[addr as usize]),
             0x8000..=0xBFFF => Ok(self.ram[(addr - 0x8000) as usize]),
             0xFFFF => {
-                let a = *self.key.lock().unwrap();
+                let a = self.key.load(Ordering::Relaxed);
                 Ok(a)
             }
             _ => Err(format!("Memory location {addr:#06x} not implemented")),

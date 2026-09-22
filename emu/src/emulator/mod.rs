@@ -1,6 +1,5 @@
 use std::io::stdout;
 use std::sync::atomic::{AtomicBool, AtomicU16, AtomicU64, Ordering};
-use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use crossterm::cursor::Show;
@@ -10,14 +9,20 @@ use crossterm::terminal::disable_raw_mode;
 use crate::devices::Devices;
 use crate::hardware::def::*;
 use crate::hardware::key::Key;
-use crate::hardware::register::{Registers, StatusRegister, StatusRegisterFlag};
+use crate::hardware::register::{Registers, StatusRegisterFlag, REG_ISR, REG_PC, REG_SP, REG_SR};
 use crate::hardware::vga::Vga;
+
+/// How many instructions to count locally before publishing the total to the
+/// shared `running_count` atomic. Keeps the per-instruction cost to a plain
+/// local increment instead of a locked atomic RMW; the VGA thread only samples
+/// the count every ~100ms for its diagnostics, so this granularity is ample.
+const COUNT_BATCH: u64 = 1 << 16;
 
 fn bit(n: i32, bit: u8) -> bool {
     (n >> bit) & 1 != 0
 }
 
-fn alu(op: u16, a: i32, b: i32, sr: &mut StatusRegister) -> u16 {
+fn alu(op: u16, a: i32, b: i32, sr: &mut u16) -> u16 {
     let agg: i32 = match op {
         0x0 => !a,
         0x1 => a & b,
@@ -33,24 +38,24 @@ fn alu(op: u16, a: i32, b: i32, sr: &mut StatusRegister) -> u16 {
         _ => panic!("Invalid alu operation {op}"),
     };
 
-    sr.set(StatusRegisterFlag::N, agg & 0x8000 != 0);
-    sr.set(StatusRegisterFlag::Z, agg == 0);
-    sr.set(StatusRegisterFlag::X, agg == 0xFFFF);
+    StatusRegisterFlag::N.write(sr, agg & 0x8000 != 0);
+    StatusRegisterFlag::Z.write(sr, agg == 0);
+    StatusRegisterFlag::X.write(sr, agg == 0xFFFF);
 
     match op {
         0x4 => {
-            sr.set(
-                StatusRegisterFlag::V,
+            StatusRegisterFlag::V.write(
+                sr,
                 (bit(a, 15) == bit(b, 15)) && (bit(a, 15) ^ bit(agg, 15)),
             );
-            sr.set(StatusRegisterFlag::C, bit(agg, 16));
+            StatusRegisterFlag::C.write(sr, bit(agg, 16));
         }
         0x5 | 0x7 => {
-            sr.set(
-                StatusRegisterFlag::V,
+            StatusRegisterFlag::V.write(
+                sr,
                 (bit(a, 15) ^ bit(b, 15)) && (bit(a, 15) != bit(agg, 15)),
             );
-            sr.set(StatusRegisterFlag::C, bit(agg, 16));
+            StatusRegisterFlag::C.write(sr, bit(agg, 16));
         }
         _ => (),
     }
@@ -76,21 +81,16 @@ pub fn emulate(rom: Vec<u16>) -> Result<(), String> {
     );
     disp_vga.reset();
 
-    let key: Arc<Mutex<u16>> = Arc::new(Mutex::new(0));
-    let irq: Arc<Mutex<bool>> = Arc::new(Mutex::new(false));
+    let key: AtomicU16 = AtomicU16::new(0);
+    let irq: AtomicBool = AtomicBool::new(false);
 
     // INIT REGISTERS
-    let mut registers: Registers = Registers {
-        general: [0; 12],
-        isr: 0,
-        sp: 0xBFFF,
-        sr: StatusRegister { sr: 0 },
-        pc: 0x0000,
-    };
+    let mut registers: Registers = Registers { regs: [0u16; 16] };
+    registers[REG_SP] = 0xBFFF;
 
     let mut halt: bool = false;
 
-    let mut key_handler = Key::new(Arc::clone(&irq), Arc::clone(&key));
+    let mut key_handler = Key::new(&irq, &key);
 
     let term = AtomicBool::new(false);
     let term1 = &term;
@@ -103,30 +103,31 @@ pub fn emulate(rom: Vec<u16>) -> Result<(), String> {
         let display_thread = scope.spawn(move || disp_vga.start_loop(term2));
 
         // main thread
-        let mut mem = Devices::new(rom, &vram, ram, key);
+        let mut mem = Devices::new(rom, &vram, ram, &key);
+        let mut local_count: u64 = 0;
         while !halt {
-            if *irq.lock().unwrap() {
-                *irq.lock().unwrap() = false;
-                registers.sp -= 1;
-                mem.write(registers.sp, registers.pc).map_err(|e| {
+            if irq.load(Ordering::Acquire) {
+                irq.store(false, Ordering::Relaxed);
+                registers[REG_SP] -= 1;
+                mem.write(registers[REG_SP], registers[REG_PC]).map_err(|e| {
                     format!(
                         "Issue when jumping to isr storing stack pointer instruction pc={:#06x}: {e}",
-                        registers.pc
+                        registers[REG_PC]
                     )
                 })?;
-                registers.sp -= 1;
-                mem.write(registers.sp, registers.sr.sr).map_err(|e| {
+                registers[REG_SP] -= 1;
+                mem.write(registers[REG_SP], registers[REG_SR]).map_err(|e| {
                     format!(
                         "Issue when jumping to isr storing status register instruction pc={:#06x}: {e}",
-                        registers.pc
+                        registers[REG_PC]
                     )
                 })?;
-                registers.pc = registers.isr;
+                registers[REG_PC] = registers[REG_ISR];
                 continue;
             }
 
-            let inst: u16 = mem.read(registers.pc).map_err(|e| {
-                format!("Issue when read instruction pc={:#06x}: {e}", registers.pc)
+            let inst: u16 = mem.read(registers[REG_PC]).map_err(|e| {
+                format!("Issue when read instruction pc={:#06x}: {e}", registers[REG_PC])
             })?;
             let opcode: u16 = (inst & 0xF000) >> 12;
 
@@ -144,7 +145,7 @@ pub fn emulate(rom: Vec<u16>) -> Result<(), String> {
             match opcode {
                 LOAD => {
                     registers[r1] = mem.read(registers[r2] + load_offset).map_err(|e| {
-                        format!("Issue when executing load at pc={:#06x}: {e}", registers.pc)
+                        format!("Issue when executing load at pc={:#06x}: {e}", registers[REG_PC])
                     })?;
                 }
                 STR => {
@@ -152,7 +153,7 @@ pub fn emulate(rom: Vec<u16>) -> Result<(), String> {
                         .map_err(|e| {
                             format!(
                                 "Issue when executing store at pc={:#06x}: {e}",
-                                registers.pc
+                                registers[REG_PC]
                             )
                         })?;
                 }
@@ -165,12 +166,12 @@ pub fn emulate(rom: Vec<u16>) -> Result<(), String> {
                 PUSH => {
                     registers[r1] -= 1;
                     mem.write(registers[r1], registers[r2]).map_err(|e| {
-                        format!("Issue when executing push at pc={:#06x}: {e}", registers.pc)
+                        format!("Issue when executing push at pc={:#06x}: {e}", registers[REG_PC])
                     })?;
                 }
                 POP => {
                     registers[r1] = mem.read(registers[r2]).map_err(|e| {
-                        format!("Issue when executing pop at pc={:#06x}: {e}", registers.pc)
+                        format!("Issue when executing pop at pc={:#06x}: {e}", registers[REG_PC])
                     })?;
                     registers[r2] += 1;
                 }
@@ -182,7 +183,7 @@ pub fn emulate(rom: Vec<u16>) -> Result<(), String> {
                         alu_op,
                         registers[r1] as i32,
                         registers[r2] as i32,
-                        &mut registers.sr,
+                        &mut registers[REG_SR],
                     );
 
                     if alu_op != 0x7 {
@@ -194,7 +195,7 @@ pub fn emulate(rom: Vec<u16>) -> Result<(), String> {
                         alu_op,
                         registers[r1] as i32,
                         alu_imm4 as i32,
-                        &mut registers.sr,
+                        &mut registers[REG_SR],
                     );
 
                     if alu_op != 0x7 {
@@ -205,58 +206,64 @@ pub fn emulate(rom: Vec<u16>) -> Result<(), String> {
                     let l: bool = r2 & 1 != 0;
                     let r: bool = r2 & 2 != 0;
 
+                    let sr = registers[REG_SR];
                     let do_jump: bool = match jmp_op {
                         0 => true,
-                        1 => registers.sr.get(StatusRegisterFlag::Z),
-                        2 => !registers.sr.get(StatusRegisterFlag::Z),
-                        3 => registers.sr.get(StatusRegisterFlag::N),
-                        4 => {
-                            !registers.sr.get(StatusRegisterFlag::Z)
-                                && !registers.sr.get(StatusRegisterFlag::N)
-                        }
+                        1 => StatusRegisterFlag::Z.read(sr),
+                        2 => !StatusRegisterFlag::Z.read(sr),
+                        3 => StatusRegisterFlag::N.read(sr),
+                        4 => !StatusRegisterFlag::Z.read(sr) && !StatusRegisterFlag::N.read(sr),
                         _ => false,
                     };
 
                     if do_jump {
                         if r {
-                            registers.pc = mem.read(registers.sp).map_err(|e| {
+                            registers[REG_PC] = mem.read(registers[REG_SP]).map_err(|e| {
                                 format!(
                                     "Issue when executing jump at pc={:#06x}: {e}",
-                                    registers.pc
+                                    registers[REG_PC]
                                 )
                             })?;
-                            registers.sp += 1;
+                            registers[REG_SP] += 1;
                         } else if l {
-                            registers.sp -= 1;
-                            mem.write(registers.sp, registers.pc + 1).map_err(|e| {
+                            registers[REG_SP] -= 1;
+                            mem.write(registers[REG_SP], registers[REG_PC] + 1).map_err(|e| {
                                 format!(
                                     "Issue when executing jump and link at pc={:#06x}: {e}",
-                                    registers.pc
+                                    registers[REG_PC]
                                 )
                             })?;
-                            registers.pc = registers[r1];
+                            registers[REG_PC] = registers[r1];
                         } else {
-                            registers.pc = registers[r1];
+                            registers[REG_PC] = registers[r1];
                         }
-                        registers.pc -= 1;
+                        registers[REG_PC] -= 1;
                     }
                 }
                 RTI => {
-                    registers.sr.sr = mem.read(registers.sp)
-                        .map_err(|e| format!("Issue when executing rti and popping the status register at pc={:#06x}: {e}", registers.pc))?;
-                    registers.sp += 1;
-                    registers.pc = mem.read(registers.sp)
-                        .map_err(|e| format!("Issue when executing rti and popping the return address at pc={:#06x}: {e}", registers.pc))?;
-                    registers.sp += 1;
-                    registers.pc -= 1;
+                    registers[REG_SR] = mem.read(registers[REG_SP])
+                        .map_err(|e| format!("Issue when executing rti and popping the status register at pc={:#06x}: {e}", registers[REG_PC]))?;
+                    registers[REG_SP] += 1;
+                    registers[REG_PC] = mem.read(registers[REG_SP])
+                        .map_err(|e| format!("Issue when executing rti and popping the return address at pc={:#06x}: {e}", registers[REG_PC]))?;
+                    registers[REG_SP] += 1;
+                    registers[REG_PC] -= 1;
                 }
                 _ => (),
             }
-            registers.pc += 1;
-            running_count.fetch_add(1, Ordering::Relaxed);
+            registers[REG_PC] += 1;
+            local_count += 1;
+            if local_count >= COUNT_BATCH {
+                running_count.fetch_add(local_count, Ordering::Relaxed);
+                local_count = 0;
+            }
         }
 
-        let last_pc = registers.pc - 1;
+        // Publish any instructions counted since the last batch so the final
+        // diagnostics frame isn't missing them.
+        running_count.fetch_add(local_count, Ordering::Relaxed);
+
+        let last_pc = registers[REG_PC] - 1;
 
         term.swap(true, Ordering::Relaxed);
 

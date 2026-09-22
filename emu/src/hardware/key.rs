@@ -1,23 +1,21 @@
 use std::{
     io::stdout,
     process::exit,
-    sync::{
-        atomic::{AtomicBool, Ordering},
-        Arc, Mutex,
-    }, time::Duration,
+    sync::atomic::{AtomicBool, AtomicU16, Ordering},
+    time::Duration,
 };
 
 use crossterm::{
     cursor::Show,
-    event::{read, Event, KeyCode, KeyEvent, KeyModifiers, poll},
+    event::{poll, read, Event, KeyCode, KeyEvent, KeyModifiers},
     execute,
     style::ResetColor,
     terminal::{disable_raw_mode, enable_raw_mode},
 };
 
-pub struct Key {
-    irq: Arc<Mutex<bool>>,
-    key: Arc<Mutex<u16>>,
+pub struct Key<'a> {
+    irq: &'a AtomicBool,
+    key: &'a AtomicU16,
 }
 
 const CODES: [u16; 26] = [
@@ -26,19 +24,21 @@ const CODES: [u16; 26] = [
     0x0035, 0x001A,
 ];
 
-impl Key {
+impl<'a> Key<'a> {
     fn convert_to_scan_code(&self, c: u8) -> u16 {
         CODES[(c - b'a') as usize]
     }
 
-    pub fn new(irq: Arc<Mutex<bool>>, key: Arc<Mutex<u16>>) -> Key {
+    pub fn new(irq: &'a AtomicBool, key: &'a AtomicU16) -> Key<'a> {
         enable_raw_mode().unwrap();
         Key { irq, key }
     }
 
     fn irq(&mut self, code: u16) {
-        *self.irq.lock().unwrap() = true;
-        *self.key.lock().unwrap() = code;
+        // Publish the key first, then raise the flag with Release ordering so a
+        // reader that observes the flag (with Acquire) is guaranteed to see the key.
+        self.key.store(code, Ordering::Relaxed);
+        self.irq.store(true, Ordering::Release);
     }
 
     pub fn handle(&mut self, term: &AtomicBool) {
@@ -46,7 +46,7 @@ impl Key {
             if !poll(Duration::from_millis(100)).unwrap() {
                 continue;
             }
-            
+
             let event = read().unwrap();
             match event {
                 Event::Key(KeyEvent {

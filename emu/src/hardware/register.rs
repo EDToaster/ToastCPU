@@ -1,6 +1,13 @@
-
 use core::ops::Index;
 use std::ops::IndexMut;
+
+/// Register-file indices for the four special registers. The general-purpose
+/// registers occupy indices 0..=11. These are `u16` so they can be used
+/// directly with the `Index<u16>`/`IndexMut<u16>` impls below.
+pub const REG_ISR: u16 = 12;
+pub const REG_SP: u16 = 13;
+pub const REG_SR: u16 = 14;
+pub const REG_PC: u16 = 15;
 
 pub enum StatusRegisterFlag {
     X,
@@ -20,65 +27,48 @@ impl StatusRegisterFlag {
             StatusRegisterFlag::V => 0x0010,
         }
     }
-}
 
-/**
-   if (set_VC) SR[4:3] <= {V, C};
-   SR[2:0] <= {N, Z, X};
-*/
-pub struct StatusRegister {
-    pub sr: u16,
-}
-
-impl StatusRegister {
-    pub fn get(&self, flag: StatusRegisterFlag) -> bool {
-        (self.sr & flag.mask()) != 0
+    /// Read this flag out of a raw status-register word.
+    #[inline]
+    pub fn read(&self, sr: u16) -> bool {
+        (sr & self.mask()) != 0
     }
 
-    pub fn set(&mut self, flag: StatusRegisterFlag, val: bool) {
+    /// Set or clear this flag in a raw status-register word.
+    #[inline]
+    pub fn write(&self, sr: &mut u16, val: bool) {
         if val {
-            self.sr |= flag.mask();
+            *sr |= self.mask();
         } else {
-            self.sr &= !flag.mask();
+            *sr &= !self.mask();
         }
     }
 }
+
+/// The register file, stored as one flat array so that indexed access
+/// (`registers[r]`, where `r` is a 4-bit register number decoded from an
+/// instruction) is a single array index rather than a match. Register numbers
+/// 12..=15 alias the special registers, matching the ISA where programs may
+/// address ISR/SP/SR/PC by number.
+///
+///   r0..=r11 - general purpose
+///   r12 - ISR   r13 - SP   r14 - SR   r15 - PC
 pub struct Registers {
-    pub general: [u16; 12],
-    // # r12 - ISR
-    // # r13 - SP
-    // # r14 - SR
-    // # r15 - PC
-    pub isr: u16,
-    pub sp: u16,
-    pub sr: StatusRegister,
-    pub pc: u16,
+    pub regs: [u16; 16],
 }
 
 impl Index<u16> for Registers {
     type Output = u16;
 
+    #[inline]
     fn index(&self, index: u16) -> &Self::Output {
-        match index {
-            0..=11 => &self.general[index as usize],
-            12 => &self.isr,
-            13 => &self.sp,
-            14 => &self.sr.sr,
-            15 => &self.pc,
-            _ => panic!("Register index {index} is out of bounds!"),
-        }
+        &self.regs[index as usize]
     }
 }
 
 impl IndexMut<u16> for Registers {
+    #[inline]
     fn index_mut(&mut self, index: u16) -> &mut Self::Output {
-        match index {
-            0..=11 => &mut self.general[index as usize],
-            12 => &mut self.isr,
-            13 => &mut self.sp,
-            14 => &mut self.sr.sr,
-            15 => &mut self.pc,
-            _ => panic!("Register index {index} is out of bounds!"),
-        }
+        &mut self.regs[index as usize]
     }
 }

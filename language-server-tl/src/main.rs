@@ -4,6 +4,7 @@
 //! both driven by the shared compiler frontend (`tlc`). See `README.md` for the
 //! roadmap of remaining features.
 
+mod definition;
 mod semantic;
 
 use std::path::Path;
@@ -43,6 +44,7 @@ impl LanguageServer for Backend {
                         },
                     ),
                 ),
+                definition_provider: Some(OneOf::Left(true)),
                 ..ServerCapabilities::default()
             },
         })
@@ -80,6 +82,24 @@ impl LanguageServer for Backend {
         self.documents.remove(&uri);
         // Clear diagnostics for the now-closed file.
         self.client.publish_diagnostics(uri, Vec::new(), None).await;
+    }
+
+    async fn goto_definition(
+        &self,
+        params: GotoDefinitionParams,
+    ) -> Result<Option<GotoDefinitionResponse>> {
+        let uri = params.text_document_position_params.text_document.uri;
+        let position = params.text_document_position_params.position;
+        let text = match self.documents.get(&uri) {
+            Some(t) => t.clone(),
+            None => return Ok(None),
+        };
+        let locations = definition::goto(&uri, &text, position);
+        if locations.is_empty() {
+            Ok(None)
+        } else {
+            Ok(Some(GotoDefinitionResponse::Array(locations)))
+        }
     }
 
     async fn semantic_tokens_full(

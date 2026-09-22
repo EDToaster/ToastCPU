@@ -20,8 +20,6 @@ mod str {
             while { len load 0 > } {
                 over load over load = ! if {
                     drop drop false return
-                    // todo: fix this since everything after return is unreachable
-                    drop 0 as(u16*) 0 as(u16*)
                 }
 
                 ++ swap ++ swap

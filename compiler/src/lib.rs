@@ -378,6 +378,16 @@ pub fn check_mapped(
     out
 }
 
+/// The transitive set of source files reachable from `source` via `#include`,
+/// with `root_path` first. Useful for building a cross-file symbol index (e.g.
+/// go-to-definition). If preprocessing fails, only `root_path` is returned.
+pub fn included_files(source: &str, root_path: &str, include_paths: &[String]) -> Vec<String> {
+    match preprocess::preprocess_mapped(source, root_path, include_paths) {
+        Ok((_, map)) => map.files().to_vec(),
+        Err(_) => vec![root_path.to_string()],
+    }
+}
+
 /// Full frontend pipeline: preprocess -> parse -> check.
 ///
 /// Given source text and a list of include base paths, returns the (possibly

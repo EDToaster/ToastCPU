@@ -31,7 +31,7 @@ pub fn emit_isr(
 
     let mut stack_view = Stack::empty();
 
-    let block = emit_block(
+    let (block, flow) = emit_block(
         &format!("{func_name}_body"),
         &f.body,
         global_state,
@@ -41,7 +41,9 @@ pub fn emit_isr(
     )
     .map_err(|(span, err)| (span, format!("{func_name}: {err}")))?;
 
-    if !stack_view.is_empty() {
+    // If the body diverges the stack at the (unreachable) fall-through end is
+    // meaningless, so only check it when control can actually reach there.
+    if !flow.diverges() && !stack_view.is_empty() {
         return Err((f.span, format!("Interrupt service routine (isr) has to handle all stack items, but {stack_view:?} remains on the stack.")));
     }
 
@@ -84,7 +86,7 @@ pub fn emit_function(
 
     let mut stack_view: Stack<Type> = Stack::from(in_t);
 
-    let block = emit_block(
+    let (block, flow) = emit_block(
         &format!("{func_label}_body"),
         &f.body,
         global_state,
@@ -96,7 +98,10 @@ pub fn emit_function(
 
     let FunctionType { out_t, .. } = global_state.function_signatures.get(func_name).unwrap();
 
-    if !stack_view.eq_vec(out_t) {
+    // A body that diverges (e.g. ends by returning on every path) never falls
+    // through to the implicit end-of-function return, so the leftover stack is
+    // unreachable and need not match the signature's output.
+    if !flow.diverges() && !stack_view.eq_vec(out_t) {
         return Err((
             f.span,
             format!("Function `{func_name}` signature expects return of {out_t:?}, but {stack_view:?} was gotten"),

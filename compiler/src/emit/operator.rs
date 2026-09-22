@@ -15,8 +15,9 @@ pub fn emit_operator(
     function_state: &mut FunctionState,
     stack_view: &mut Stack<Type>,
     using_stack: &Stack<String>,
-) -> Result<String, (Span, String)> {
+) -> Result<(String, Flow), (Span, String)> {
     let mut operation = String::new();
+    let mut flow = Flow::Falls;
 
     match r {
         Operator::Add(span) => {
@@ -572,7 +573,10 @@ pub fn emit_operator(
     jmp!  .{label}
                 "
             );
+
+            // Control leaves the function here; anything after is unreachable.
+            flow = Flow::Diverges;
         }
     }
-    Ok(operation)
+    Ok((operation, flow))
 }

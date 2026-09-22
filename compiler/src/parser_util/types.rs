@@ -36,6 +36,40 @@ pub enum Operator {
     Hole(Span),
 }
 
+impl Operator {
+    pub fn span(&self) -> Span {
+        match self {
+            Operator::Add(s)
+            | Operator::Sub(s)
+            | Operator::Incr(s)
+            | Operator::Decr(s)
+            | Operator::BOr(s)
+            | Operator::BAnd(s)
+            | Operator::BNot(s)
+            | Operator::Sshr(s)
+            | Operator::Shr(s)
+            | Operator::Shl(s)
+            | Operator::Xor(s)
+            | Operator::LOr(s)
+            | Operator::LAnd(s)
+            | Operator::LNot(s)
+            | Operator::Eq(s)
+            | Operator::Lt(s)
+            | Operator::Lte(s)
+            | Operator::Gt(s)
+            | Operator::Gte(s)
+            | Operator::Return(s)
+            | Operator::Ptr(s, _)
+            | Operator::Call(s)
+            | Operator::As(s, _)
+            | Operator::SizeOf(s, _)
+            | Operator::StructAccess(s, _)
+            | Operator::ConstArrayAccess(s, _)
+            | Operator::Hole(s) => *s,
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct IntLiteral {
     pub span: Span,
@@ -72,6 +106,23 @@ pub enum Statement {
     If(If),
     While(While),
     Let(Let),
+}
+
+impl Statement {
+    pub fn span(&self) -> Span {
+        match self {
+            Statement::IntLiteral(x) => x.span,
+            Statement::IntArray(x) => x.span,
+            Statement::BoolLiteral(x) => x.span,
+            Statement::Identifier(x) => x.span,
+            Statement::Operator(o) => o.span(),
+            Statement::Block(x) => x.span,
+            Statement::Unroll(x) => x.span,
+            Statement::If(x) => x.span,
+            Statement::While(x) => x.span,
+            Statement::Let(x) => x.span,
+        }
+    }
 }
 
 #[derive(Debug, Clone)]

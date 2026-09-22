@@ -80,6 +80,12 @@ pub struct SourceMap {
 }
 
 impl SourceMap {
+    /// Every source file that contributed to the preprocessed output: the root
+    /// document first, then each transitively included file (deduplicated).
+    pub fn files(&self) -> &[String] {
+        &self.files
+    }
+
     fn intern(&mut self, path: &str) -> usize {
         if let Some(i) = self.files.iter().position(|f| f == path) {
             return i;

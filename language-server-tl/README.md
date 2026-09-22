@@ -77,11 +77,12 @@ generic LSPs cannot offer them.
 - [ ] **Hover** — show a word's type signature (stack effect) and its doc comment.
 - [x] **Go-to-definition** — jumps to a top-level `fn` / `struct` / `global` /
       `inline` / `mod`, following `#include` across files (`src/definition.rs`).
-      *v1 scope*: resolves the identifier under the cursor by module-qualified
-      name, falling back to bare name; **not yet** handled — local `let`
-      bindings, and struct-field (`.field`) targets. Name resolution is
-      match-based, so a bare name defined in several modules returns all of them
-      rather than applying `using` scoping.
+      *v1 scope*: when the cursor is on a definition's own name, it resolves to
+      exactly that definition (by AST position). For *uses*, a module-qualified
+      name (`io::print`) resolves exactly; a **bare** name defined in several
+      modules returns all candidates — `using`/enclosing-module scoping is not
+      applied yet. **Not yet** handled: local `let` bindings and struct-field
+      (`.field`) targets.
 - [ ] **Find references** (`textDocument/references`).
 - [ ] **Completion** — words in scope, struct fields after `.`, module members
       after `::`, keywords.

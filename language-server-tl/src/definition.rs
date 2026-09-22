@@ -21,6 +21,11 @@ struct Symbol {
     /// Bare name, e.g. `print`.
     simple: String,
     location: Location,
+    /// Byte span of the name within its file. Only meaningful (comparable to a
+    /// cursor offset) when [`in_doc`](Symbol::in_doc) is true.
+    name_span: (usize, usize),
+    /// Whether this definition lives in the document being edited.
+    in_doc: bool,
 }
 
 /// Resolve the identifier at `position` in `doc_text` to its definition(s).
@@ -31,6 +36,17 @@ pub fn goto(doc_uri: &Url, doc_text: &str, position: Position) -> Vec<Location> 
         None => return Vec::new(),
     };
     let index = build_index(doc_uri, doc_text);
+
+    // If the cursor is on a definition's own name, we know exactly which symbol
+    // it is from its position — no name resolution (which can't disambiguate a
+    // bare name like `init` shared by several modules) is needed. Jump to it.
+    if let Some(sym) = index
+        .iter()
+        .find(|s| s.in_doc && s.name_span.0 <= offset && offset <= s.name_span.1)
+    {
+        return vec![sym.location.clone()];
+    }
+
     resolve(&word, &index)
 }
 
@@ -53,7 +69,7 @@ fn build_index(doc_uri: &Url, doc_text: &str) -> Vec<Symbol> {
         Ok(p) => p,
         Err(_) => {
             if let (Some(module), _) = tlc::parse(doc_text) {
-                collect(&module, "", doc_uri, doc_text, &mut out);
+                collect(&module, "", doc_uri, doc_text, true, &mut out);
             }
             return out;
         }
@@ -62,8 +78,9 @@ fn build_index(doc_uri: &Url, doc_text: &str) -> Vec<Symbol> {
     let include_paths = crate::include_paths_for(&doc_path);
 
     for file in tlc::included_files(doc_text, &doc_path_str, &include_paths) {
+        let in_doc = file == doc_path_str;
         // Use the live buffer for the open document; read the rest from disk.
-        let (content, uri) = if file == doc_path_str {
+        let (content, uri) = if in_doc {
             (doc_text.to_string(), doc_uri.clone())
         } else {
             match (fs::read_to_string(&file), Url::from_file_path(&file)) {
@@ -72,7 +89,7 @@ fn build_index(doc_uri: &Url, doc_text: &str) -> Vec<Symbol> {
             }
         };
         if let (Some(module), _) = tlc::parse(&content) {
-            collect(&module, "", &uri, &content, &mut out);
+            collect(&module, "", &uri, &content, in_doc, &mut out);
         }
     }
     out
@@ -80,7 +97,14 @@ fn build_index(doc_uri: &Url, doc_text: &str) -> Vec<Symbol> {
 
 /// Walk a module tree, recording each top-level definition with its
 /// module-qualified name and the location of its name.
-fn collect(module: &Module, prefix: &str, uri: &Url, content: &str, out: &mut Vec<Symbol>) {
+fn collect(
+    module: &Module,
+    prefix: &str,
+    uri: &Url,
+    content: &str,
+    in_doc: bool,
+    out: &mut Vec<Symbol>,
+) {
     let push = |name: &str, span: Span, out: &mut Vec<Symbol>| {
         out.push(Symbol {
             qualified: format!("{prefix}{name}"),
@@ -89,6 +113,8 @@ fn collect(module: &Module, prefix: &str, uri: &Url, content: &str, out: &mut Ve
                 uri: uri.clone(),
                 range: span_to_range(content, span),
             },
+            name_span: (span.start(), span.end()),
+            in_doc,
         });
     };
 
@@ -107,7 +133,7 @@ fn collect(module: &Module, prefix: &str, uri: &Url, content: &str, out: &mut Ve
     for nm in &module.modules {
         push(&nm.name.name, nm.name.span, out);
         let inner = format!("{prefix}{}::", nm.name.name);
-        collect(&nm.module, &inner, uri, content, out);
+        collect(&nm.module, &inner, uri, content, in_doc, out);
     }
 }
 
@@ -194,6 +220,23 @@ mod tests {
         let locs = goto(&uri, src, Position { line: 1, character: 15 });
         assert_eq!(locs.len(), 1, "expected one definition, got {locs:?}");
         assert_eq!(locs[0].range.start.line, 0);
+    }
+
+    #[test]
+    fn definition_site_resolves_to_itself() {
+        // Two `init`s in different modules; a bare-name resolver would return
+        // both. Cursor on Game::init's own name must resolve to exactly it.
+        let src = "mod Game { fn init -> { } }\nmod Coll { fn init -> { } }";
+        let uri = Url::parse("mem://test.tl").unwrap();
+        // `init` in `mod Game` is at columns 14..18; put the cursor inside it.
+        let locs = goto(&uri, src, Position { line: 0, character: 15 });
+        assert_eq!(
+            locs.len(),
+            1,
+            "definition site must resolve to exactly itself, got {locs:?}"
+        );
+        assert_eq!(locs[0].range.start.line, 0);
+        assert_eq!(locs[0].range.start.character, 14);
     }
 
     #[test]

@@ -101,13 +101,46 @@ mod life {
         }
     }
 
+    // Fast neighbour count for interior cells given a pointer to the cell.
+    // Interior cells never wrap, so their 8 neighbours sit at fixed offsets
+    // from the centre: -WIDTH-1, -WIDTH, -WIDTH+1, -1, +1, +WIDTH-1, +WIDTH,
+    // +WIDTH+1. With WIDTH = 32 that is -33, -32, -31, -1, +1, +31, +32, +33.
+    // This computes one index (in the caller) instead of eight, and avoids
+    // the wrap masks and repeated front_buf loads that state_of does.
+    fn count8 bool* -> u16 {
+        dup  -33 + load as(u16)
+        over -32 + load as(u16) +
+        over -31 + load as(u16) +
+        over  -1 + load as(u16) +
+        over   1 + load as(u16) +
+        over  31 + load as(u16) +
+        over  32 + load as(u16) +
+        over  33 + load as(u16) +
+        swap drop
+    }
+
+    // Neighbour count with the same contract as num_neighbours, but using the
+    // fast interior path when the cell is off every edge (so no wrapping is
+    // needed) and falling back to the wrapped path on the borders.
+    //          x   y      count
+    fn neighbours u16 u16 -> u16 {
+        // interior? x in (0, WIDTH-1) && y in (0, HEIGHT-1)
+        over dup 0 > swap WIDTH  -- < &&
+        over dup 0 > swap HEIGHT -- < &&
+        && if {
+            index_of front_buf load + count8
+        } else {
+            num_neighbours
+        }
+    }
+
 
     fn iter -> {
         
         0 while { dup WIDTH < } {
             0 while { dup HEIGHT < } {
-                over over over over num_neighbours
-                rot rot state_of if {
+                over over over over neighbours
+                rot rot state_of if { 
                     // x, y, neighbours
                     dup 2 = swap 3 = ||
                 } else {

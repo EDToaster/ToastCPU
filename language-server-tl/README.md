@@ -42,6 +42,7 @@ Frontend API currently available to the LSP (`tlc::…`):
 | 1 | **Diagnostics** (live parse/type errors, include-aware) | ✅ done |
 | 1 | **Semantic highlighting** (`semanticTokens`) | ✅ done |
 | 2 | **Go-to-definition** (cross-file, top-level items) | ✅ done |
+| 3 | **Stack inspection** (hover) + **typed holes** (`??`) | ✅ done |
 
 Milestone 1 notes:
 
@@ -96,13 +97,15 @@ generic LSPs cannot offer them.
 - [ ] **Folding ranges**, **selection ranges**, **document highlight**.
 
 ### Tier 3 — ★ killer features unique to a typed stack language
-- [ ] **★ Stack-state hints** — inlay hints / hover showing the *stack contents*
-      at the cursor (e.g. `‹u16 u16 bool›`), or before/after each word. Tracking
-      "what is on the stack right now" is the hardest part of writing
-      concatenative code; the type checker already computes this.
-- [ ] **★ Typed holes (`??`)** — the grammar already has a `HOLE` token. When the
-      checker reaches `??`, report the expected type and the current stack, like
-      Haskell/Idris typed holes.
+- [x] **★ Stack-state inspection (hover)** — hovering a word shows the type stack
+      at that point (`Stack: u16 u16`). The checker records the stack after each
+      statement via `tlc::analyze_mapped`; the LSP surfaces it in `src/stack.rs`.
+- [x] **★ Typed holes (`??`)** — the checker records the stack at every `??`; the
+      LSP shows it both on hover (`Stack at ??: …`) and as an info diagnostic, so
+      it's always visible. *(Previously `??` printed to stdout, which corrupted
+      the LSP stream — fixed as part of this.)*
+- [ ] **★ Stack-state inlay hints** — the same probe data rendered inline
+      (between statements) instead of only on hover.
 - [ ] **★ Rich stack-effect mismatch diagnostics** — show declared vs. actual net
       stack effect, not just "type error".
 - [ ] **Inlay hints for generics/casts** — show what `$a` resolved to at a call

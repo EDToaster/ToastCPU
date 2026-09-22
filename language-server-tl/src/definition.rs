@@ -30,7 +30,7 @@ struct Symbol {
 
 /// Resolve the identifier at `position` in `doc_text` to its definition(s).
 pub fn goto(doc_uri: &Url, doc_text: &str, position: Position) -> Vec<Location> {
-    let offset = position_to_byte(doc_text, position);
+    let offset = crate::position_to_byte(doc_text, position);
     let word = match identifier_at(doc_text, offset) {
         Some(w) => w,
         None => return Vec::new(),
@@ -174,27 +174,6 @@ fn span_to_range(content: &str, span: Span) -> Range {
         start: crate::byte_to_position(content, span.start()),
         end: crate::byte_to_position(content, span.end()),
     }
-}
-
-/// Convert an LSP [`Position`] (line, UTF-16 column) to a byte offset.
-fn position_to_byte(text: &str, pos: Position) -> usize {
-    let mut line = 0u32;
-    let mut col = 0u32;
-    for (i, ch) in text.char_indices() {
-        if line == pos.line && col >= pos.character {
-            return i;
-        }
-        if line > pos.line {
-            return i;
-        }
-        if ch == '\n' {
-            line += 1;
-            col = 0;
-        } else {
-            col += ch.len_utf16() as u32;
-        }
-    }
-    text.len()
 }
 
 #[cfg(test)]

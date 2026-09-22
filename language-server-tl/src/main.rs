@@ -1,11 +1,13 @@
 //! Language server for ToastLang (`.tl`).
 //!
-//! Milestone 1 provides live **diagnostics** and semantic **highlighting**,
-//! both driven by the shared compiler frontend (`tlc`). See `README.md` for the
+//! Provides live **diagnostics** (include-aware), semantic **highlighting**,
+//! **go-to-definition**, and **stack inspection** (hover + `??` typed holes),
+//! all driven by the shared compiler frontend (`tlc`). See `README.md` for the
 //! roadmap of remaining features.
 
 mod definition;
 mod semantic;
+mod stack;
 
 use std::path::Path;
 
@@ -45,6 +47,7 @@ impl LanguageServer for Backend {
                     ),
                 ),
                 definition_provider: Some(OneOf::Left(true)),
+                hover_provider: Some(HoverProviderCapability::Simple(true)),
                 ..ServerCapabilities::default()
             },
         })
@@ -102,6 +105,16 @@ impl LanguageServer for Backend {
         }
     }
 
+    async fn hover(&self, params: HoverParams) -> Result<Option<Hover>> {
+        let uri = params.text_document_position_params.text_document.uri;
+        let position = params.text_document_position_params.position;
+        let text = match self.documents.get(&uri) {
+            Some(t) => t.clone(),
+            None => return Ok(None),
+        };
+        Ok(stack::hover(&uri, &text, position))
+    }
+
     async fn semantic_tokens_full(
         &self,
         params: SemanticTokensParams,
@@ -141,11 +154,18 @@ impl Backend {
             Ok(path) => {
                 let doc_path = path.to_string_lossy().into_owned();
                 let include_paths = include_paths_for(&path);
-                for md in tlc::check_mapped(text, &doc_path, &include_paths) {
-                    // Only diagnostics located in this document (mapped offsets
-                    // are into `text`); errors inside included files are theirs.
+                let analysis = tlc::analyze_mapped(text, &doc_path, &include_paths);
+                // Type/stack-effect errors located in this document (mapped
+                // offsets are into `text`); errors inside includes are theirs.
+                for md in &analysis.diagnostics {
                     if md.file == doc_path {
-                        diags.push(mapped_to_lsp_diagnostic(text, &md));
+                        diags.push(mapped_to_lsp_diagnostic(text, md));
+                    }
+                }
+                // `??` holes: show the stack there as an unobtrusive hint.
+                for probe in &analysis.probes {
+                    if probe.is_hole && probe.file == doc_path {
+                        diags.push(hole_diagnostic(text, probe));
                     }
                 }
             }
@@ -223,6 +243,25 @@ fn mapped_to_lsp_diagnostic(source: &str, d: &tlc::MappedDiagnostic) -> Diagnost
     }
 }
 
+/// Build an unobtrusive info diagnostic showing the stack at a `??` hole.
+fn hole_diagnostic(source: &str, probe: &tlc::StackInfo) -> Diagnostic {
+    let stack = if probe.stack.is_empty() {
+        "‹empty›".to_string()
+    } else {
+        probe.stack.clone()
+    };
+    Diagnostic {
+        range: Range {
+            start: byte_to_position(source, probe.start),
+            end: byte_to_position(source, probe.end),
+        },
+        severity: Some(DiagnosticSeverity::INFORMATION),
+        source: Some("toastlang".to_string()),
+        message: format!("?? — stack: {stack}"),
+        ..Diagnostic::default()
+    }
+}
+
 /// Convert a byte offset into `source` to an LSP [`Position`] (0-based line,
 /// 0-based UTF-16 character offset, per the LSP spec's default encoding).
 fn byte_to_position(source: &str, byte: usize) -> Position {
@@ -243,6 +282,28 @@ fn byte_to_position(source: &str, byte: usize) -> Position {
         idx += ch.len_utf8();
     }
     Position { line, character }
+}
+
+/// Convert an LSP [`Position`] (0-based line, UTF-16 column) to a byte offset
+/// into `source`. Inverse of [`byte_to_position`].
+fn position_to_byte(source: &str, pos: Position) -> usize {
+    let mut line = 0u32;
+    let mut col = 0u32;
+    for (i, ch) in source.char_indices() {
+        if line == pos.line && col >= pos.character {
+            return i;
+        }
+        if line > pos.line {
+            return i;
+        }
+        if ch == '\n' {
+            line += 1;
+            col = 0;
+        } else {
+            col += ch.len_utf16() as u32;
+        }
+    }
+    source.len()
 }
 
 #[tokio::main]

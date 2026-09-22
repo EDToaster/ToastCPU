@@ -398,7 +398,14 @@ pub fn emit_operator(
             )?;
         }
         Operator::Hole(span) => {
-            println!("Stack at {span:?}: {stack_view:?}");
+            // A `??` hole: record the current stack for the editor. (Previously
+            // this printed to stdout, which corrupts the LSP's JSON-RPC stream.)
+            crate::emit::probe::push_probe(
+                *span,
+                crate::emit::probe::ProbeKind::Hole,
+                stack_view.to_vec(),
+                &function_state.function_name,
+            );
         }
         Operator::Call(span) => {
             // check top of the stack is a function pointer

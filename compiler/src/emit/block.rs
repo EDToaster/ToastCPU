@@ -34,6 +34,15 @@ pub fn emit_block(
             using_stack,
         )?;
         flow = sflow;
+
+        // Record the stack state after this statement, for editor stack
+        // inspection (no-op unless probe recording is active).
+        crate::emit::probe::push_probe(
+            i.span(),
+            crate::emit::probe::ProbeKind::Statement,
+            stack_view.to_vec(),
+            &function_state.function_name,
+        );
         tasm!(
           block;;
             r"

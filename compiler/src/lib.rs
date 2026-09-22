@@ -339,43 +339,119 @@ pub fn check_mapped(
     root_path: &str,
     include_paths: &[String],
 ) -> Vec<MappedDiagnostic> {
+    analyze_mapped(source, root_path, include_paths).diagnostics
+}
+
+/// A rendered stack-state probe located in a real source file. Powers typed
+/// holes (`??`) and stack inspection in the editor.
+#[derive(Debug, Clone)]
+pub struct StackInfo {
+    /// Path of the file this probe is located in.
+    pub file: String,
+    /// Byte offset range within `file` (the statement or `??` span).
+    pub start: usize,
+    pub end: usize,
+    /// True for a `??` hole; false for an after-a-statement snapshot.
+    pub is_hole: bool,
+    /// The stack in `tl` type syntax, bottom-to-top (e.g. `u16 bool u16*`).
+    pub stack: String,
+    /// The enclosing function's name.
+    pub function: String,
+}
+
+/// The result of an include-aware, source-mapped analysis: type/stack-effect
+/// diagnostics plus stack-state probes, both mapped back to real files.
+#[derive(Debug, Default)]
+pub struct MappedAnalysis {
+    pub diagnostics: Vec<MappedDiagnostic>,
+    pub probes: Vec<StackInfo>,
+}
+
+/// Preprocess (with source map) → parse → type-check, while recording the stack
+/// state at each statement and `??` hole, mapping every result back to the real
+/// file it belongs to. One emit pass produces both diagnostics and probes.
+pub fn analyze_mapped(source: &str, root_path: &str, include_paths: &[String]) -> MappedAnalysis {
     let (preprocessed, map) = match preprocess::preprocess_mapped(source, root_path, include_paths) {
         Ok(pair) => pair,
         Err(e) => {
             let (start, end) = e.root_span.unwrap_or((0, 0));
-            return vec![MappedDiagnostic {
-                file: root_path.to_string(),
-                start,
-                end,
-                severity: Severity::Error,
-                kind: DiagnosticKind::Preprocess,
-                message: e.message,
-            }];
+            return MappedAnalysis {
+                diagnostics: vec![MappedDiagnostic {
+                    file: root_path.to_string(),
+                    start,
+                    end,
+                    severity: Severity::Error,
+                    kind: DiagnosticKind::Preprocess,
+                    message: e.message,
+                }],
+                probes: Vec::new(),
+            };
         }
     };
 
     let (ast, _parse_diags) = parse(&preprocessed);
     let module = match ast {
-        Some(m) => m,
         // Parse errors are reported separately (against the raw document, where
         // their offsets are correct), so don't duplicate them here.
-        None => return Vec::new(),
+        Some(m) => m,
+        None => return MappedAnalysis::default(),
     };
 
-    let mut out = Vec::new();
-    for d in check(&module) {
-        if let Some((file, start, end)) = map.map_range(d.start, d.end) {
-            out.push(MappedDiagnostic {
+    // A single emit pass, recording stack probes while it type-checks.
+    let (result, raw_probes) =
+        emit::probe::record_probes(|| emit::module::emit_root_module(&module));
+
+    let mut diagnostics = Vec::new();
+    if let Err((span, message)) = result {
+        if let Some((file, start, end)) = map.map_range(span.start(), span.end()) {
+            diagnostics.push(MappedDiagnostic {
                 file: file.to_string(),
                 start,
                 end,
-                severity: d.severity,
-                kind: d.kind,
-                message: d.message,
+                severity: Severity::Error,
+                kind: DiagnosticKind::TypeCheck,
+                message,
             });
         }
     }
-    out
+
+    let probes = raw_probes
+        .into_iter()
+        .filter_map(|p| {
+            map.map_range(p.span.start(), p.span.end())
+                .map(|(file, start, end)| StackInfo {
+                    file: file.to_string(),
+                    start,
+                    end,
+                    is_hole: p.kind == emit::probe::ProbeKind::Hole,
+                    stack: render_stack(&p.stack),
+                    function: p.function,
+                })
+        })
+        .collect();
+
+    MappedAnalysis { diagnostics, probes }
+}
+
+/// Render a type stack (bottom-to-top) in `tl` syntax, e.g. `u16 bool u16*`.
+fn render_stack(stack: &[emit::types::Type]) -> String {
+    stack.iter().map(render_type).collect::<Vec<_>>().join(" ")
+}
+
+fn render_type(t: &emit::types::Type) -> String {
+    use emit::types::Type;
+    match t {
+        Type::U16 => "u16".to_string(),
+        Type::Bool => "bool".to_string(),
+        Type::Struct(name) => name.clone(),
+        Type::Generic(label) => format!("${label}"),
+        Type::Pointer(_, inner) => format!("{}*", render_type(inner)),
+        Type::Function(ft) => {
+            let ins = ft.in_t.iter().map(render_type).collect::<Vec<_>>().join(" ");
+            let outs = ft.out_t.iter().map(render_type).collect::<Vec<_>>().join(" ");
+            format!("({ins} -> {outs})")
+        }
+    }
 }
 
 /// The transitive set of source files reachable from `source` via `#include`,
@@ -508,6 +584,31 @@ mod tests {
         );
 
         let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn analyze_mapped_records_hole_and_statement_stacks() {
+        // `??` after pushing 1 and 2: the stack there is `u16 u16`. (The
+        // function then type-errors because its declared output is empty, but
+        // probes recorded before the error are still returned.)
+        let src = "fn main -> { 1 2 ?? }";
+        let a = analyze_mapped(src, "mem://m.tl", &[]);
+
+        let hole = a
+            .probes
+            .iter()
+            .find(|p| p.is_hole)
+            .expect("expected a hole probe");
+        assert_eq!(hole.stack, "u16 u16");
+        assert_eq!(hole.file, "mem://m.tl");
+        assert_eq!(hole.function, "main");
+
+        // An after-statement snapshot with just `u16` exists (after `1`).
+        assert!(
+            a.probes.iter().any(|p| !p.is_hole && p.stack == "u16"),
+            "expected an after-statement probe with stack `u16`, got {:?}",
+            a.probes.iter().map(|p| &p.stack).collect::<Vec<_>>()
+        );
     }
 
     #[test]

@@ -74,8 +74,13 @@ generic LSPs cannot offer them.
 
 ### Tier 1 — core editor features
 - [ ] **Hover** — show a word's type signature (stack effect) and its doc comment.
-- [ ] **Go-to-definition** — jump to `fn` / `struct` / `global` / `inline` /
-      local `let`, following `#include` across files.
+- [x] **Go-to-definition** — jumps to a top-level `fn` / `struct` / `global` /
+      `inline` / `mod`, following `#include` across files (`src/definition.rs`).
+      *v1 scope*: resolves the identifier under the cursor by module-qualified
+      name, falling back to bare name; **not yet** handled — local `let`
+      bindings, and struct-field (`.field`) targets. Name resolution is
+      match-based, so a bare name defined in several modules returns all of them
+      rather than applying `using` scoping.
 - [ ] **Find references** (`textDocument/references`).
 - [ ] **Completion** — words in scope, struct fields after `.`, module members
       after `::`, keywords.

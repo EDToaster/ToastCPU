@@ -45,15 +45,11 @@ mod game {
             // check if letter is valid
             dup 'a' < over 'z' > || if {
                 drop drop return
-                // todo : fix this because `return` is buggy
-                0 as(Game*) 0
             }
 
             // check if we already guessed this letter and save it to the guessed letters list
             over .guessed_letters over 'a' - + dup load if {
                 drop drop drop return
-                // todo : fix this because `return` is buggy
-                0 as(Game*) 0 0 as(u16*)
             } 1 swap store
 
             false let game guess correct {

@@ -39,8 +39,9 @@ Frontend API currently available to the LSP (`tlc::…`):
 | Milestone | Feature | State |
 |-----------|---------|-------|
 | 0 | Shared-frontend refactor + Cargo workspace | ✅ done |
-| 1 | **Diagnostics** (live parse/type errors) | ✅ done |
+| 1 | **Diagnostics** (live parse/type errors, include-aware) | ✅ done |
 | 1 | **Semantic highlighting** (`semanticTokens`) | ✅ done |
+| 2 | **Go-to-definition** (cross-file, top-level items) | ✅ done |
 
 Milestone 1 notes:
 

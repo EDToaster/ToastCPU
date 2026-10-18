@@ -1,9 +1,4 @@
-use std::{
-    io::stdout,
-    process::exit,
-    sync::atomic::{AtomicBool, AtomicU16, Ordering},
-    time::Duration,
-};
+use std::{io::stdout, process::exit, time::Duration};
 
 use crossterm::{
     cursor::Show,
@@ -13,56 +8,54 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode},
 };
 
-pub struct Key<'a> {
-    irq: &'a AtomicBool,
-    key: &'a AtomicU16,
-}
+use crate::io::SharedIo;
 
-const CODES: [u16; 26] = [
+/// PS/2 set-2 make codes for `a`..=`z`.
+const LETTER_CODES: [u16; 26] = [
     0x001C, 0x0032, 0x0021, 0x0023, 0x0024, 0x002B, 0x0034, 0x0033, 0x0043, 0x003B, 0x0042, 0x004B,
     0x003A, 0x0031, 0x0044, 0x004D, 0x0015, 0x002D, 0x001B, 0x002C, 0x003C, 0x002A, 0x001D, 0x0022,
     0x0035, 0x001A,
 ];
 
-impl<'a> Key<'a> {
-    fn convert_to_scan_code(&self, c: u8) -> u16 {
-        CODES[(c - b'a') as usize]
-    }
+pub const SCAN_ENTER: u16 = 0x005A;
 
-    pub fn new(irq: &'a AtomicBool, key: &'a AtomicU16) -> Key<'a> {
+/// Scan code for a lowercase ASCII letter, as produced by the DE1-SoC's PS/2 port.
+pub fn letter_scan_code(c: char) -> Option<u16> {
+    c.is_ascii_lowercase()
+        .then(|| LETTER_CODES[(c as u8 - b'a') as usize])
+}
+
+/// Keyboard front-end for terminal mode: reads key events from the tty in raw
+/// mode and raises keyboard interrupts on the CPU.
+pub struct TerminalKeyboard<'a> {
+    io: &'a SharedIo,
+}
+
+impl<'a> TerminalKeyboard<'a> {
+    pub fn new(io: &'a SharedIo) -> TerminalKeyboard<'a> {
         enable_raw_mode().unwrap();
-        Key { irq, key }
+        TerminalKeyboard { io }
     }
 
-    fn irq(&mut self, code: u16) {
-        // Publish the key first, then raise the flag with Release ordering so a
-        // reader that observes the flag (with Acquire) is guaranteed to see the key.
-        self.key.store(code, Ordering::Relaxed);
-        self.irq.store(true, Ordering::Release);
-    }
-
-    pub fn handle(&mut self, term: &AtomicBool) {
-        while !term.load(Ordering::Relaxed) {
+    pub fn handle(&mut self) {
+        while !self.io.should_terminate() {
             if !poll(Duration::from_millis(100)).unwrap() {
                 continue;
             }
 
-            let event = read().unwrap();
-            match event {
+            match read().unwrap() {
                 Event::Key(KeyEvent {
                     code: KeyCode::Char(c),
                     modifiers: KeyModifiers::NONE,
                 }) => {
-                    if c.is_ascii_lowercase() {
-                        self.irq(self.convert_to_scan_code(c as u8));
+                    if let Some(code) = letter_scan_code(c) {
+                        self.io.press_key(code);
                     }
                 }
                 Event::Key(KeyEvent {
                     code: KeyCode::Enter,
                     modifiers: KeyModifiers::NONE,
-                }) => {
-                    self.irq(0x005A);
-                }
+                }) => self.io.press_key(SCAN_ENTER),
                 Event::Key(KeyEvent {
                     code: KeyCode::Char('c'),
                     modifiers: KeyModifiers::CONTROL,

@@ -5,7 +5,9 @@
 //! * [`window`] rasterises the grid with the FPGA's own 6x8 font into a
 //!   600x480 framebuffer and shows it in a native window, which is both
 //!   pixel-accurate and much cheaper than pushing escape codes through a tty.
+//!   It also hosts the debugger sidebar ([`debug_panel`]).
 
+pub mod debug_panel;
 pub mod font;
 pub mod terminal;
 pub mod window;

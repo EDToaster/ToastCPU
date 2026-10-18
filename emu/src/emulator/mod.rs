@@ -1,4 +1,6 @@
 mod cpu;
+pub mod debugger;
+pub mod disasm;
 
 use std::io::stdout;
 use std::time::Duration;
@@ -10,10 +12,12 @@ use crossterm::terminal::disable_raw_mode;
 
 use crate::devices::Devices;
 use crate::display::terminal::TerminalDisplay;
-use crate::display::window::{WindowDisplay, WindowOptions};
+use crate::display::window::{WindowApp, WindowOptions};
 use crate::hardware::def::*;
 use crate::hardware::key::TerminalKeyboard;
 use crate::io::SharedIo;
+use crate::program::Program;
+use debugger::{DebugLink, DebugRunner};
 
 pub use cpu::Cpu;
 
@@ -21,15 +25,24 @@ pub use cpu::Cpu;
 pub enum Frontend {
     /// ANSI escapes in the current terminal; keyboard input from the tty.
     Terminal,
-    /// A native window with the FPGA font; keyboard input from the window.
-    Window(WindowOptions),
+    /// A native window with the FPGA font and a debugger sidebar; keyboard
+    /// input from the window.
+    Window(WindowOptions, DebugStart),
 }
 
-pub fn emulate(rom: Vec<u16>, frontend: Frontend) -> Result<(), String> {
+/// Initial debugger state for window mode.
+#[derive(Default, Debug)]
+pub struct DebugStart {
+    pub paused: bool,
+    /// Addresses or label names.
+    pub breakpoints: Vec<String>,
+}
+
+pub fn emulate(program: Program, frontend: Frontend) -> Result<(), String> {
     let io = SharedIo::new();
     match frontend {
-        Frontend::Terminal => run_terminal(rom, &io),
-        Frontend::Window(opts) => run_window(rom, &io, opts),
+        Frontend::Terminal => run_terminal(program.rom, &io),
+        Frontend::Window(opts, start) => run_window(program, &io, opts, start),
     }
 }
 
@@ -61,17 +74,44 @@ fn run_terminal(rom: Vec<u16>, io: &SharedIo) -> Result<(), String> {
 }
 
 /// Window mode: the window owns the main thread (required for the event loop
-/// on macOS), the CPU runs on a worker. Closing the window stops the CPU; if
-/// the program halts first, the window stays open showing the final screen.
-fn run_window(rom: Vec<u16>, io: &SharedIo, opts: WindowOptions) -> Result<(), String> {
-    let mut display = WindowDisplay::new(io, opts)?;
+/// on macOS), the CPU runs on a worker under the debugger's control. Closing
+/// the window stops the CPU; if the program halts first, the window stays open
+/// on the final screen so it can be inspected or reset.
+fn run_window(program: Program, io: &SharedIo, opts: WindowOptions, start: DebugStart) -> Result<(), String> {
+    let Program { rom, debug } = program;
+    let (link, commands) = DebugLink::new();
+
+    let mem = Devices::new(rom.clone(), &io.vram, vec![0; RAM_SIZE], &io.key);
+    let mut runner = DebugRunner::new(mem, io, &link);
+    if start.paused {
+        runner.start_paused();
+    }
+    for bp in &start.breakpoints {
+        let addr = debug.resolve(bp).ok_or_else(|| format!("unknown breakpoint address or label: {bp}"))?;
+        runner.add_breakpoint(addr);
+    }
+
+    let native = eframe::NativeOptions {
+        viewport: eframe::egui::ViewportBuilder::default()
+            .with_title("ToastCPU")
+            .with_inner_size(WindowApp::initial_size(&opts))
+            .with_min_inner_size([320.0, 240.0]),
+        ..Default::default()
+    };
 
     std::thread::scope(|scope| {
-        let cpu = scope.spawn(move || run_cpu(rom, io));
+        let cpu = scope.spawn(move || runner.run(commands));
 
-        display.run();
+        let ui_result = eframe::run_native(
+            "ToastCPU",
+            native,
+            Box::new(|_cc| Ok(Box::new(WindowApp::new(io, &link, &rom, &debug, opts)))),
+        );
+
         io.terminate();
-
-        cpu.join().map_err(|_| "CPU thread panicked".to_string())?
+        link.close();
+        let cpu_result = cpu.join().map_err(|_| "CPU thread panicked".to_string())?;
+        ui_result.map_err(|e| format!("could not open window: {e}"))?;
+        cpu_result
     })
 }

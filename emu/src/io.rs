@@ -1,5 +1,4 @@
 use std::sync::atomic::{AtomicBool, AtomicU16, AtomicU64, Ordering};
-use std::sync::OnceLock;
 
 use crate::hardware::def::VRAM_SIZE;
 
@@ -16,12 +15,8 @@ pub struct SharedIo {
     pub irq: AtomicBool,
     /// Set when the emulator should shut down (CPU halted, window closed, ...).
     pub term: AtomicBool,
-    /// Set by the CPU thread once it has stopped executing (halt or error).
-    pub halted: AtomicBool,
     /// Instructions retired since the front-end last sampled it.
     pub running_count: AtomicU64,
-    /// The error that stopped the CPU, if any, so a front-end can display it.
-    pub error: OnceLock<String>,
 }
 
 impl SharedIo {
@@ -31,9 +26,7 @@ impl SharedIo {
             key: AtomicU16::new(0),
             irq: AtomicBool::new(false),
             term: AtomicBool::new(false),
-            halted: AtomicBool::new(false),
             running_count: AtomicU64::new(0),
-            error: OnceLock::new(),
         }
     }
 
@@ -47,10 +40,6 @@ impl SharedIo {
 
     pub fn should_terminate(&self) -> bool {
         self.term.load(Ordering::Relaxed)
-    }
-
-    pub fn is_halted(&self) -> bool {
-        self.halted.load(Ordering::Acquire)
     }
 
     pub fn terminate(&self) {

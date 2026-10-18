@@ -193,7 +193,8 @@ impl Cpu {
 
     /// Run until the program halts, an error occurs, or a front-end requests
     /// shutdown via `io.term`. Publishes retired-instruction counts to
-    /// `io.running_count` and marks `io.halted` on exit.
+    /// `io.running_count`. Used by the terminal front-end; the window uses
+    /// [`super::debugger::DebugRunner`].
     pub fn run(&mut self, mem: &mut Devices, io: &SharedIo) -> Result<(), String> {
         let mut local_count: u64 = 0;
         let result = loop {
@@ -218,10 +219,6 @@ impl Cpu {
         // Publish any instructions counted since the last batch so the final
         // diagnostics frame isn't missing them.
         io.running_count.fetch_add(local_count, Ordering::Relaxed);
-        if let Err(e) = &result {
-            let _ = io.error.set(e.clone());
-        }
-        io.halted.store(true, Ordering::Release);
         result
     }
 }

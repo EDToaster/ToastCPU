@@ -19,6 +19,17 @@ impl<'a> Devices<'a> {
         Devices { rom, vram, ram, key }
     }
 
+    /// Power-on state: RAM and VRAM cleared, ROM kept.
+    pub fn reset(&mut self) {
+        self.ram.iter_mut().for_each(|w| *w = 0);
+        self.vram.iter().for_each(|c| c.store(0, Ordering::Relaxed));
+    }
+
+    /// RAM contents, `0x8000..=0xBFFF`.
+    pub fn ram(&self) -> &[u16] {
+        &self.ram
+    }
+
     pub fn read(&self, addr: u16) -> Result<u16, String> {
         match addr {
             0..=0x7FFF => Ok(self.rom[addr as usize]),

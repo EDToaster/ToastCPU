@@ -1,13 +1,22 @@
+//! Native-window front-end (egui/eframe): the VGA screen, drawn with the
+//! FPGA's own font, plus an optional debugger sidebar.
+
 use std::sync::atomic::Ordering;
 use std::time::{Duration, Instant};
 
-use minifb::{Key, KeyRepeat, Scale, ScaleMode, Window};
+use eframe::egui::{
+    self, Color32, ColorImage, Event, Key, Modifiers, Panel, Pos2, Rect, Sense, TextureHandle,
+    TextureOptions, Vec2,
+};
 
+use super::debug_panel::DebugPanel;
 use super::font::{GLYPHS, GLYPH_HEIGHT, GLYPH_WIDTH};
 use super::{format_rate, Cell, PALETTE_RGB};
+use crate::emulator::debugger::{Command, DebugLink, RunState};
 use crate::hardware::def::{VGA_HEIGHT, VGA_WIDTH};
 use crate::hardware::key::{letter_scan_code, SCAN_ENTER};
 use crate::io::SharedIo;
+use crate::program::DebugInfo;
 
 /// Framebuffer size: 100x60 cells of 6x8 pixels, i.e. the 600x480 active text
 /// area of the FPGA's 640x480 VGA mode.
@@ -15,29 +24,23 @@ pub const FB_WIDTH: usize = VGA_WIDTH * GLYPH_WIDTH;
 pub const FB_HEIGHT: usize = VGA_HEIGHT * GLYPH_HEIGHT;
 
 const TITLE: &str = "ToastCPU";
+const SIDEBAR_WIDTH: f32 = 440.0;
+const COLLAPSED_WIDTH: f32 = 26.0;
 
 #[derive(Clone, Copy, Debug)]
 pub struct WindowOptions {
-    /// Integer upscale applied to the 600x480 framebuffer (1, 2, 4 or 8).
+    /// Initial integer upscale of the 600x480 screen.
     pub scale: usize,
-    /// Present at most this many frames per second (0 = uncapped).
+    /// Present at most this many frames per second (0 = as fast as vsync allows).
     pub fps: usize,
+    /// Open with the debugger sidebar expanded.
+    pub debug: bool,
 }
 
 impl Default for WindowOptions {
     fn default() -> Self {
-        WindowOptions { scale: 2, fps: 60 }
+        WindowOptions { scale: 2, fps: 60, debug: false }
     }
-}
-
-fn minifb_scale(scale: usize) -> Result<Scale, String> {
-    Ok(match scale {
-        1 => Scale::X1,
-        2 => Scale::X2,
-        4 => Scale::X4,
-        8 => Scale::X8,
-        other => return Err(format!("unsupported window scale {other}; use 1, 2, 4 or 8")),
-    })
 }
 
 /// Map a window key press to the scan code the PS/2 driver would deliver.
@@ -49,15 +52,15 @@ fn scan_code_of(key: Key) -> Option<u16> {
         H => 'h', I => 'i', J => 'j', K => 'k', L => 'l', M => 'm', N => 'n',
         O => 'o', P => 'p', Q => 'q', R => 'r', S => 's', T => 't', U => 'u',
         V => 'v', W => 'w', X => 'x', Y => 'y', Z => 'z',
-        Enter | NumPadEnter => return Some(SCAN_ENTER),
+        Enter => return Some(SCAN_ENTER),
         _ => return None,
     };
     letter_scan_code(letter)
 }
 
-/// Rasterises a VRAM cell into a 0RGB framebuffer exactly like the VGA
-/// driver's pixel pipeline: glyph bit set -> foreground, clear -> background.
-pub fn draw_cell(fb: &mut [u32], palette: &[u32; 8], col: usize, line: usize, val: u16) {
+/// Rasterises a VRAM cell into a framebuffer exactly like the VGA driver's
+/// pixel pipeline: glyph bit set -> foreground, clear -> background.
+pub fn draw_cell<P: Copy>(fb: &mut [P], palette: &[P; 8], col: usize, line: usize, val: u16) {
     let cell = Cell::decode(val);
     let glyph = GLYPHS[cell.ch as usize];
     let (fg, bg) = (palette[cell.fg], palette[cell.bg]);
@@ -72,110 +75,249 @@ pub fn draw_cell(fb: &mut [u32], palette: &[u32; 8], col: usize, line: usize, va
     }
 }
 
-/// Native-window front-end. Must be driven from the main thread.
-pub struct WindowDisplay<'a> {
+pub struct WindowApp<'a> {
     io: &'a SharedIo,
-    window: Window,
-    framebuffer: Vec<u32>,
-    palette: [u32; 8],
-    // Last-rasterised value of each cell; only changed cells are redrawn.
-    // All-zero matches the all-black initial framebuffer.
-    shadow: Vec<u16>,
+    link: &'a DebugLink,
+    opts: WindowOptions,
 
-    interval: Duration,
-    prev_time: Instant,
+    screen: ColorImage,
+    palette: [Color32; 8],
+    // Last-rasterised value of each cell; only changed cells are redrawn.
+    shadow: Vec<u16>,
+    texture: Option<TextureHandle>,
+
+    sidebar_open: bool,
+    panel: DebugPanel<'a>,
+
+    // stats
+    stats_since: Instant,
     frames: usize,
     rate: String,
+    title: String,
 }
 
-impl<'a> WindowDisplay<'a> {
-    pub fn new(io: &'a SharedIo, opts: WindowOptions) -> Result<WindowDisplay<'a>, String> {
-        let mut window = Window::new(
-            TITLE,
-            FB_WIDTH,
-            FB_HEIGHT,
-            minifb::WindowOptions {
-                scale: minifb_scale(opts.scale)?,
-                scale_mode: ScaleMode::AspectRatioStretch,
-                resize: true,
-                ..minifb::WindowOptions::default()
-            },
-        )
-        .map_err(|e| format!("could not open window: {e}"))?;
-        window.set_target_fps(opts.fps);
-
-        Ok(WindowDisplay {
+impl<'a> WindowApp<'a> {
+    pub fn new(
+        io: &'a SharedIo,
+        link: &'a DebugLink,
+        rom: &'a [u16],
+        debug: &'a DebugInfo,
+        opts: WindowOptions,
+    ) -> WindowApp<'a> {
+        let palette = PALETTE_RGB.map(|(r, g, b)| Color32::from_rgb(r, g, b));
+        WindowApp {
             io,
-            window,
-            framebuffer: vec![0u32; FB_WIDTH * FB_HEIGHT],
-            palette: PALETTE_RGB.map(|(r, g, b)| (r as u32) << 16 | (g as u32) << 8 | b as u32),
+            link,
+            opts,
+            screen: ColorImage::new([FB_WIDTH, FB_HEIGHT], vec![palette[0]; FB_WIDTH * FB_HEIGHT]),
+            palette,
             shadow: vec![0u16; VGA_WIDTH * VGA_HEIGHT],
-            interval: Duration::from_millis(500),
-            prev_time: Instant::now(),
+            texture: None,
+            sidebar_open: opts.debug,
+            panel: DebugPanel::new(io, link, rom, debug),
+            stats_since: Instant::now(),
             frames: 0,
             rate: String::new(),
-        })
+            title: String::new(),
+        }
     }
 
-    /// Re-rasterise cells that changed since the last frame. Returns whether
-    /// anything changed.
-    fn refresh(&mut self) -> bool {
+    /// Initial window size for the given options.
+    pub fn initial_size(opts: &WindowOptions) -> Vec2 {
+        let side = if opts.debug { SIDEBAR_WIDTH } else { COLLAPSED_WIDTH };
+        Vec2::new((FB_WIDTH * opts.scale) as f32 + side, (FB_HEIGHT * opts.scale) as f32)
+    }
+
+    /// Re-rasterise cells that changed since the last frame.
+    fn refresh_screen(&mut self, ctx: &egui::Context) {
         let mut dirty = false;
         for (i, (cell, seen)) in self.io.vram.iter().zip(self.shadow.iter_mut()).enumerate() {
             let val = cell.load(Ordering::Relaxed);
             if val != *seen {
                 *seen = val;
                 dirty = true;
-                draw_cell(&mut self.framebuffer, &self.palette, i % VGA_WIDTH, i / VGA_WIDTH, val);
+                draw_cell(&mut self.screen.pixels, &self.palette, i % VGA_WIDTH, i / VGA_WIDTH, val);
             }
         }
-        dirty
+        match &mut self.texture {
+            None => {
+                self.texture = Some(ctx.load_texture("vga", self.screen.clone(), TextureOptions::NEAREST));
+            }
+            Some(tex) if dirty => tex.set(self.screen.clone(), TextureOptions::NEAREST),
+            _ => {}
+        }
     }
 
-    fn update_title(&mut self) {
-        let now = Instant::now();
-        let elapsed = now.duration_since(self.prev_time);
-        if elapsed < self.interval {
+    fn handle_input(&mut self, ctx: &egui::Context, state: &RunState) {
+        // Debugger shortcuts work everywhere.
+        let (toggle_sidebar, run_pause, step, step_over, reset) = ctx.input_mut(|i| {
+            (
+                i.consume_key(Modifiers::NONE, Key::F1),
+                i.consume_key(Modifiers::NONE, Key::F5),
+                i.consume_key(Modifiers::NONE, Key::F11),
+                i.consume_key(Modifiers::NONE, Key::F10),
+                i.consume_key(Modifiers::NONE, Key::F6),
+            )
+        });
+        if toggle_sidebar {
+            self.set_sidebar(ctx, !self.sidebar_open);
+        }
+        if run_pause {
+            self.link.send(if state.is_running() { Command::Pause } else { Command::Resume });
+        }
+        if step {
+            self.link.send(Command::Step(1));
+        }
+        if step_over {
+            self.link.send(Command::StepOver);
+        }
+        if reset {
+            self.link.send(Command::Reset);
+        }
+
+        // Everything else goes to the emulated keyboard, unless a text field
+        // in the sidebar has focus.
+        if ctx.egui_wants_keyboard_input() {
             return;
         }
-        let insts = self.io.running_count.swap(0, Ordering::Relaxed);
-        let rate = format_rate(insts, self.frames, elapsed.as_secs_f64());
-        self.frames = 0;
-        self.prev_time = now;
-
-        let status = if let Some(err) = self.io.error.get() {
-            format!("{TITLE} - stopped: {err}")
-        } else if self.io.is_halted() {
-            format!("{TITLE} - halted")
-        } else {
-            format!("{TITLE} - {rate}")
-        };
-        if status != self.rate {
-            self.window.set_title(&status);
-            self.rate = status;
+        let codes: Vec<u16> = ctx.input(|i| {
+            i.events
+                .iter()
+                .filter_map(|e| match e {
+                    Event::Key { key, pressed: true, modifiers, .. }
+                        if !modifiers.ctrl && !modifiers.alt && !modifiers.command =>
+                    {
+                        scan_code_of(*key)
+                    }
+                    _ => None,
+                })
+                .collect()
+        });
+        for code in codes {
+            self.io.press_key(code);
         }
     }
 
-    /// Pump the window until it is closed. Keeps showing the final screen
-    /// after the program halts.
-    pub fn run(&mut self) {
-        while self.window.is_open() && !self.io.should_terminate() {
-            for key in self.window.get_keys_pressed(KeyRepeat::Yes) {
-                if let Some(code) = scan_code_of(key) {
-                    self.io.press_key(code);
-                }
-            }
+    /// Open/close the sidebar, growing or shrinking the window so the screen
+    /// keeps its size.
+    fn set_sidebar(&mut self, ctx: &egui::Context, open: bool) {
+        if open == self.sidebar_open {
+            return;
+        }
+        self.sidebar_open = open;
+        if let Some(rect) = ctx.input(|i| i.viewport().inner_rect) {
+            let delta = SIDEBAR_WIDTH - COLLAPSED_WIDTH;
+            let w = rect.width() + if open { delta } else { -delta };
+            ctx.send_viewport_cmd(egui::ViewportCommand::InnerSize(Vec2::new(w, rect.height())));
+        }
+    }
 
-            // `update*` also paces the loop to the target FPS.
-            if self.refresh() {
-                self.window
-                    .update_with_buffer(&self.framebuffer, FB_WIDTH, FB_HEIGHT)
-                    .expect("failed to present framebuffer");
-            } else {
-                self.window.update();
+    fn draw_screen(&mut self, ui: &mut egui::Ui) {
+        let avail = ui.max_rect();
+        ui.painter().rect_filled(avail, 0.0, Color32::BLACK);
+        let Some(tex) = &self.texture else { return };
+
+        // Largest integer scale that fits (crisp pixels), else shrink to fit.
+        let fit = (avail.width() / FB_WIDTH as f32).min(avail.height() / FB_HEIGHT as f32);
+        let scale = if fit >= 1.0 { fit.floor() } else { fit };
+        let size = Vec2::new(FB_WIDTH as f32, FB_HEIGHT as f32) * scale;
+        let rect = Rect::from_center_size(avail.center(), size);
+
+        let response = ui.allocate_rect(rect, Sense::hover());
+        ui.painter().image(
+            tex.id(),
+            rect,
+            Rect::from_min_max(Pos2::ZERO, Pos2::new(1.0, 1.0)),
+            Color32::WHITE,
+        );
+
+        // Hover a cell (with the sidebar open) to see its VRAM address/value.
+        if self.sidebar_open {
+            if let Some(pos) = response.hover_pos() {
+                let col = (((pos.x - rect.min.x) / scale) as usize / GLYPH_WIDTH).min(VGA_WIDTH - 1);
+                let line = (((pos.y - rect.min.y) / scale) as usize / GLYPH_HEIGHT).min(VGA_HEIGHT - 1);
+                let addr = line * VGA_WIDTH + col;
+                let val = self.io.vram[addr].load(Ordering::Relaxed);
+                let c = Cell::decode(val);
+                response.on_hover_text_at_pointer(format!(
+                    "col {col}, row {line}\nVRAM 0x{addr:04X} = 0x{val:04X}\nchar 0x{:02X} fg {} bg {}",
+                    c.ch, c.fg, c.bg
+                ));
             }
-            self.frames += 1;
-            self.update_title();
+        }
+    }
+
+    fn update_stats(&mut self, ctx: &egui::Context, state: &RunState) {
+        self.frames += 1;
+        let elapsed = self.stats_since.elapsed();
+        if elapsed >= Duration::from_millis(500) {
+            let insts = self.io.running_count.swap(0, Ordering::Relaxed);
+            self.rate = format_rate(insts, self.frames, elapsed.as_secs_f64());
+            self.frames = 0;
+            self.stats_since = Instant::now();
+        }
+        let status = match state {
+            RunState::Running => self.rate.clone(),
+            RunState::Paused(_) => "paused".to_string(),
+            RunState::Halted => "halted".to_string(),
+            RunState::Error(e) => format!("stopped: {e}"),
+        };
+        let title = format!("{TITLE} - {status}");
+        if title != self.title {
+            ctx.send_viewport_cmd(egui::ViewportCommand::Title(title.clone()));
+            self.title = title;
+        }
+    }
+}
+
+impl eframe::App for WindowApp<'_> {
+    fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
+        let ctx = ui.ctx().clone();
+
+        self.link.request_snapshot();
+        let snap = self.link.snapshot();
+
+        self.handle_input(&ctx, &snap.state);
+        self.refresh_screen(&ctx);
+        self.update_stats(&ctx, &snap.state);
+
+        let mut open = self.sidebar_open;
+        let mut want: Option<bool> = None;
+        let rate = self.rate.clone();
+        let panel = &mut self.panel;
+        Panel::show_switched(
+            ui,
+            &mut open,
+            Panel::right("debug_collapsed").exact_size(COLLAPSED_WIDTH).resizable(false),
+            Panel::right("debug_expanded").default_size(SIDEBAR_WIDTH).size_range(320.0..=720.0).resizable(true),
+            |ui, expanded| {
+                if expanded {
+                    if panel.show(ui, &snap, &rate) {
+                        want = Some(false);
+                    }
+                } else if ui
+                    .add(egui::Button::new("«").min_size(Vec2::new(COLLAPSED_WIDTH - 8.0, 40.0)))
+                    .on_hover_text("Open debugger (F1)")
+                    .clicked()
+                {
+                    want = Some(true);
+                }
+            },
+        );
+        // Dragging the panel edge can also open/close it.
+        if open != self.sidebar_open {
+            want = Some(open);
+        }
+        if let Some(w) = want {
+            self.set_sidebar(&ctx, w);
+        }
+
+        egui::CentralPanel::no_frame().show(ui, |ui| self.draw_screen(ui));
+
+        if self.opts.fps > 0 {
+            ctx.request_repaint_after(Duration::from_secs_f64(1.0 / self.opts.fps as f64));
+        } else {
+            ctx.request_repaint();
         }
     }
 }

@@ -19,6 +19,9 @@ pub struct Options {
     pub window: bool,
     pub scale: usize,
     pub fps: usize,
+    pub debug: bool,
+    pub paused: bool,
+    pub breakpoints: String,
 }
 
 pub fn get_args() -> Result<Options, ArgParseError> {
@@ -28,6 +31,9 @@ pub fn get_args() -> Result<Options, ArgParseError> {
         window: false,
         scale: 2,
         fps: 60,
+        debug: false,
+        paused: false,
+        breakpoints: String::new(),
     };
     {
         let mut ap = ArgumentParser::new();
@@ -40,9 +46,21 @@ pub fn get_args() -> Result<Options, ArgParseError> {
             "Render the VGA screen in a native window (pixel-accurate FPGA font) instead of the terminal",
         );
         ap.refer(&mut opts.scale)
-            .add_option(&["--scale"], Store, "Window mode: integer upscale of the 600x480 screen: 1, 2, 4 or 8 (default 2)");
+            .add_option(&["--scale"], Store, "Window mode: initial integer upscale of the 600x480 screen (default 2)");
         ap.refer(&mut opts.fps)
             .add_option(&["--fps"], Store, "Window mode: frame rate cap, 0 for uncapped (default 60)");
+        ap.refer(&mut opts.debug).add_option(
+            &["-d", "--debug"],
+            StoreTrue,
+            "Window mode: open with the debugger sidebar expanded (F1 toggles it)",
+        );
+        ap.refer(&mut opts.paused)
+            .add_option(&["--paused"], StoreTrue, "Window mode: start with the CPU paused at 0x0000");
+        ap.refer(&mut opts.breakpoints).add_option(
+            &["-b", "--break"],
+            Store,
+            "Window mode: comma-separated breakpoints, as hex addresses or labels (e.g. fn_main,0x1A)",
+        );
         ap.refer(&mut opts.mif_file)
             .add_argument("MIF_FILE", Store, "The rom file")
             .required();

@@ -1,7 +1,9 @@
 mod args;
 mod devices;
-mod hardware;
+mod display;
 mod emulator;
+mod hardware;
+mod io;
 mod jit;
 
 use std::fs;
@@ -10,7 +12,8 @@ use args::get_args;
 use hardware::def::ROM_SIZE;
 use regex::Regex;
 
-use crate::emulator::emulate;
+use crate::display::window::WindowOptions;
+use crate::emulator::{emulate, Frontend};
 use crate::jit::jit;
 
 fn parse_program(prog: &str) -> Vec<u16> {
@@ -69,7 +72,12 @@ fn main() -> Result<(), String> {
     if opts.jit_mode {
         jit(rom)?;
     } else {
-        emulate(rom)?;
+        let frontend = if opts.window {
+            Frontend::Window(WindowOptions { scale: opts.scale, fps: opts.fps })
+        } else {
+            Frontend::Terminal
+        };
+        emulate(rom, frontend)?;
     }
 
     Ok(())

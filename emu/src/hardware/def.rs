@@ -2,6 +2,7 @@ pub const ROM_SIZE: usize = 0x8000;
 pub const RAM_SIZE: usize = 0x4000;
 pub const VGA_WIDTH: usize = 100;
 pub const VGA_HEIGHT: usize = 60;
+pub const VRAM_SIZE: usize = VGA_WIDTH * VGA_HEIGHT;
 
 pub const LOAD: u16 = 0;
 pub const STR: u16 = 1;
